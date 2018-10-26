@@ -14,29 +14,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2018 (original work) Open Assessment Technologies SA (under the project TAO-PRODUCT);
  */
 
-namespace oat\taoLtiConsumer\scripts\update;
+namespace oat\taoLtiConsumer\model;
 
 
-use oat\taoLtiConsumer\scripts\install\RegisterLtiConsumerDeliveryRendererHelperService;
-
-/**
- * TAO Premium Edition Updater.
- */
-class Updater extends \common_ext_ExtensionUpdater
+class LtiLaunchDataCreator
 {
-    /**
-     * Perform update from $currentVersion to $versionUpdatedTo.
-     *
-     * @param string $initialVersion
-     * @return string $versionUpdatedTo
-     *
-     * @throws \common_Exception
-     */
-    public function update($initialVersion)
+    public function getOauthConsumerKey($consumerName)
     {
-        $this->skip('0.0.0', '0.0.1');
+        return 'Zu57Qj33';
+    }
+
+    public function getOauthConsumerSecret($consumerName)
+    {
+        return 'pNyGKUQAVkStI';
     }
 }

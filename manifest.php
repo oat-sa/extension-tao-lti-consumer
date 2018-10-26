@@ -17,11 +17,9 @@
  * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
  */
 
-use oat\taoPremium\scripts\install\RegisterTaoPremiumCategoryPresetProviders;
-use oat\taoPremium\scripts\install\RegisterTestRunnerPlugins;
-use oat\taoPremium\scripts\install\SetMultitenantTheme;
-use oat\taoPremium\scripts\install\RegisterTaoConsumer;
-use oat\taoPremium\scripts\install\RegisterLtiThemeDetailsProvider;
+use oat\tao\model\user\TaoRoles;
+use oat\taoLtiConsumer\scripts\install\RegisterTaoConsumer;
+use oat\taoLtiConsumer\scripts\install\RegisterLtiConsumerDeliveryRendererHelperService;
 
 $extpath = dirname(__FILE__).DIRECTORY_SEPARATOR;
 
@@ -33,20 +31,24 @@ return array(
     'version' => '0.0.1',
     'author' => 'Open Assessment Technologies SA',
     'requires' => array(
-        'taoDeliveryRdf' => '*',
+        'ltiDeliveryProvider' => '>=6.5.4',
+        'taoDelivery' => '>=10.1.0'
     ),
-    'update' => 'oat\\taoPremium\\scripts\\update\\Updater',
+    'update' => 'oat\\taoLtiConsumer\\scripts\\update\\Updater',
     'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoDeliveryRdfManager',
     'install' => array(
         'php' => array(
             RegisterTaoConsumer::class,
+            RegisterLtiConsumerDeliveryRendererHelperService::class,
         )
     ),
     'acl' => array(
+        array('grant', TaoRoles::ANONYMOUS, array('ext'=>'taoLtiConsumer', 'mod' => 'LtiConsumer', 'act' => 'launchToolProvider')),
     ),
     'uninstall' => array(
     ),
     'routes' => array(
+        '/taoLtiConsumer' => 'oat\\taoLtiConsumer\\controller'
     ),
     'constants' => array(
         'DIR_VIEWS' => $extpath . 'views' . DIRECTORY_SEPARATOR

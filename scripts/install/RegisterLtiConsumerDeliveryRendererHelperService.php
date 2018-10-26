@@ -17,26 +17,25 @@
  * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\scripts\update;
+namespace oat\taoLtiConsumer\scripts\install;
 
-
-use oat\taoLtiConsumer\scripts\install\RegisterLtiConsumerDeliveryRendererHelperService;
+use oat\oatbox\extension\InstallAction;
+use common_report_Report as Report;
+use oat\taoDelivery\model\DeliveryRendererHelperServiceInterface;
+use oat\taoLtiConsumer\model\LtiConsumerDeliveryRendererHelperService;
 
 /**
- * TAO Premium Edition Updater.
+ * Installation action that registers the test runner container
  */
-class Updater extends \common_ext_ExtensionUpdater
+class RegisterLtiConsumerDeliveryRendererHelperService extends InstallAction
 {
-    /**
-     * Perform update from $currentVersion to $versionUpdatedTo.
-     *
-     * @param string $initialVersion
-     * @return string $versionUpdatedTo
-     *
-     * @throws \common_Exception
-     */
-    public function update($initialVersion)
+    public function __invoke($params)
     {
-        $this->skip('0.0.0', '0.0.1');
+        $this->getServiceManager()->register(
+            DeliveryRendererHelperServiceInterface::SERVICE_ID,
+            new LtiConsumerDeliveryRendererHelperService()
+        );
+
+        return new Report(Report::TYPE_SUCCESS, 'LTI Consumer Delivery Renderer Helper Service registered.');
     }
 }
