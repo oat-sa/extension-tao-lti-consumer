@@ -20,34 +20,42 @@
 namespace oat\taoLtiConsumer\controller;
 
 
-use function GuzzleHttp\Psr7\build_query;
 use oat\ltiDeliveryProvider\model\LTIDeliveryTool;
-use oat\taoLti\models\classes\LaunchData\Validator\Lti11LaunchDataValidator;
-use oat\taoLti\models\classes\LtiLaunchData;
+use oat\tao\model\oauth\OauthService;
 use oat\taoLtiConsumer\model\LtiLaunchDataCreator;
-use oat\taoLtiConsumer\scripts\install\RegisterTaoConsumer;
 use tao_actions_CommonModule;
 
 class LtiConsumer extends tao_actions_CommonModule
 {
+    public function index()
+    {
+
+    }
+
     public function launchToolProvider()
     {
         $deliveryId = \tao_helpers_Uri::decode($this->getRequestParameter('deliveryId'));
-
         $ltiUrl = LTIDeliveryTool::singleton()->getLaunchUrl(array('delivery' => $deliveryId));
 
-        $ltiLaunchDataCreator = new LtiLaunchDataCreator();
+        $ltiLaunchDataCreator = new LtiLaunchDataCreator('ddd1', 'dsgfjkgjfdk1');
 
-        $params[LtiLaunchData::LTI_MESSAGE_TYPE]   = Lti11LaunchDataValidator::LTI_MESSAGE_TYPE;
-        $params[LtiLaunchData::LTI_VERSION]        = 'LTI-1p3';
-        $params[LtiLaunchData::RESOURCE_LINK_ID]   = 'ddd';
-        $params[LtiLaunchData::OAUTH_CONSUMER_KEY] = $ltiLaunchDataCreator->getOauthConsumerKey(RegisterTaoConsumer::DEFAULT_LABEL);
-        $params[LtiLaunchData::CONTEXT_ID]         = 'dsgfjkgjfdk';
+        /** @var OauthService $oauthService */
+        $oauthService = $this->getServiceLocator()->get(OauthService::SERVICE_ID);
+        $oauthRequest = $oauthService->signFromConsumerAndToken(
+            $ltiLaunchDataCreator->getHttpRequest(),
+            $ltiLaunchDataCreator->getOauthConsumer()
+        );
 
-        $ltiUrl .= '?';
-        $ltiUrl .= build_query($params);
+        echo sprintf('<form id="ltiForm" method="post" action="%s">' . PHP_EOL, $oauthRequest->getUrl());
+        foreach ($oauthRequest->getParams() as $key => $value) {
+            echo sprintf('<input type="hidden" name="%s" value="%s">' . PHP_EOL, $key, $value);
+        }
+        echo '</form>' . PHP_EOL;
+        echo '<script type="text/javascript">document.getElementById(\'ltiForm\').submit();</script>';
+    }
 
-        //$this->redirect($ltiUrl);
-        echo($ltiUrl);
+    public function stopToolProvider()
+    {
+        echo '<h1>Thank you!</h1>';
     }
 }

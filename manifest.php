@@ -44,6 +44,7 @@ return array(
     ),
     'acl' => array(
         array('grant', TaoRoles::ANONYMOUS, array('ext'=>'taoLtiConsumer', 'mod' => 'LtiConsumer', 'act' => 'launchToolProvider')),
+        array('grant', TaoRoles::ANONYMOUS, array('ext'=>'taoLtiConsumer', 'mod' => 'LtiConsumer', 'act' => 'stopToolProvider')),
     ),
     'uninstall' => array(
     ),
@@ -52,5 +53,8 @@ return array(
     ),
     'constants' => array(
         'DIR_VIEWS' => $extpath . 'views' . DIRECTORY_SEPARATOR
-    )
+    ),
+    'extra' => array(
+        'structures' => __DIR__.DIRECTORY_SEPARATOR.'controller'.DIRECTORY_SEPARATOR.'structures.xml',
+    ),
 );
