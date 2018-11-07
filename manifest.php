@@ -35,14 +35,21 @@ return array(
         'taoDelivery' => '>=10.1.0'
     ),
     'update' => 'oat\\taoLtiConsumer\\scripts\\update\\Updater',
-    'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoDeliveryRdfManager',
+    'managementRole' => 'http://www.tao.lu/Ontologies/TAOLTI.rdf#LtiManagerRole',
+    'models' => array(
+        'http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf',
+    ),
     'install' => array(
+        'rdf' => array(
+            $extpath . 'install/ontology/lticonsumer.rdf',
+        ),
         'php' => array(
             RegisterTaoConsumer::class,
             RegisterLtiConsumerDeliveryRendererHelperService::class,
         )
     ),
     'acl' => array(
+        array('grant', 'http://www.tao.lu/Ontologies/TAOLTI.rdf#LtiManagerRole', array('ext'=>'taoLtiConsumer')),
         array('grant', TaoRoles::ANONYMOUS, array('ext'=>'taoLtiConsumer', 'mod' => 'LtiConsumer', 'act' => 'launchToolProvider')),
         array('grant', TaoRoles::ANONYMOUS, array('ext'=>'taoLtiConsumer', 'mod' => 'LtiConsumer', 'act' => 'stopToolProvider')),
     ),
@@ -52,9 +59,19 @@ return array(
         '/taoLtiConsumer' => 'oat\\taoLtiConsumer\\controller'
     ),
     'constants' => array(
-        'DIR_VIEWS' => $extpath . 'views' . DIRECTORY_SEPARATOR
+        # controller directory
+        'DIR_ACTIONS'			=> $extpath . 'controller' . DIRECTORY_SEPARATOR,
+
+        # views directory
+        'DIR_VIEWS'				=> $extpath . 'views' . DIRECTORY_SEPARATOR,
+
+        #BASE PATH: the root path in the file system (usually the document root)
+        'BASE_PATH'				=> $extpath ,
+
+        #BASE URL (usually the domain root)
+        'BASE_URL'				=> ROOT_URL . 'taoLtiConsumer/',
     ),
     'extra' => array(
-        'structures' => __DIR__.DIRECTORY_SEPARATOR.'controller'.DIRECTORY_SEPARATOR.'structures.xml',
+        'structures' => __DIR__.DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . 'structures.xml',
     ),
 );

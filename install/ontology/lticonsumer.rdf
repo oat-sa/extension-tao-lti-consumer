@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<rdf:RDF 
+	xml:base="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
+	xmlns:widget="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#"
+	xmlns:generis="http://www.tao.lu/Ontologies/generis.rdf#" 
+	xmlns:taolti="http://www.tao.lu/Ontologies/TAOLTI.rdf#"
+	xmlns:wf="http://www.tao.lu/middleware/wfEngine.rdf#"	
+>
+
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LtiObject">
+    <rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#TAOObject"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Object]]></rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTIToolProvider">
+    <rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/TAO.rdf#OauthConsumer"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Tool Provider]]></rdfs:label>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTIUser">
+  	<rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/generis.rdf#User"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI User]]></rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#UserKey">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Tool Provider User Key]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Key of LTI User]]></rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTIUser"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#TextBox"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#UserToolProvider">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Tool Provider]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[LTI Tool Provider of User]]></rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTIUser"/>
+    <rdfs:range rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTIToolProvider"/>
+    <widget:widget rdf:resource="http://www.tao.lu/datatypes/WidgetDefinitions.rdf#Label"/>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTITool">
+    <rdfs:subClassOf rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LtiObject"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Tool]]></rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#ToolService">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Tool Service]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[Service to implemnt the Tool]]></rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTITool"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+  </rdf:Description>
+
+<!-- Service definition -->  
+  
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LtiLaunchUrl">
+    <rdf:type rdf:resource="http://www.tao.lu/middleware/wfEngine.rdf#ClassFormalParameters"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Launch Url]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[LTI Launch Url]]></rdfs:comment>
+    <wf:PropertyFormalParametersName><![CDATA[ltiLaunchUrl]]></wf:PropertyFormalParametersName>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LtiConsumerUri">
+    <rdf:type rdf:resource="http://www.tao.lu/middleware/wfEngine.rdf#ClassFormalParameters"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Consumer Uri]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[LTI Consumer Uri]]></rdfs:comment>
+    <wf:PropertyFormalParametersName><![CDATA[ltiConsumerUri]]></wf:PropertyFormalParametersName>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#ServiceLtiConsumer">
+    <rdf:type rdf:resource="http://www.tao.lu/middleware/wfEngine.rdf#ClassSupportServices"/>
+    <rdfs:label xml:lang="en-US"><![CDATA[LTI Consumer]]></rdfs:label>
+    <rdfs:comment xml:lang="en-US"><![CDATA[LTI Consumer service calls an LTI Producer]]></rdfs:comment>
+    <wf:PropertySupportServicesUrl><![CDATA[/taoLti/LtiConsumer/call?url=^ltiLaunchUrl&consumer=^ltiConsumerUri&height=100%&width=100%&]]></wf:PropertySupportServicesUrl>
+    <wf:PropertyServiceDefinitionsFormalParameterIn rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LtiLaunchUrl"/>
+    <wf:PropertyServiceDefinitionsFormalParameterIn rdf:resource="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LtiConsumerUri"/>
+  </rdf:Description>
+
+</rdf:RDF>

@@ -46,12 +46,10 @@ class LtiConsumer extends tao_actions_CommonModule
             $ltiLaunchDataCreator->getOauthConsumer()
         );
 
-        echo sprintf('<form id="ltiForm" method="post" action="%s">' . PHP_EOL, $oauthRequest->getUrl());
-        foreach ($oauthRequest->getParams() as $key => $value) {
-            echo sprintf('<input type="hidden" name="%s" value="%s">' . PHP_EOL, $key, $value);
-        }
-        echo '</form>' . PHP_EOL;
-        echo '<script type="text/javascript">document.getElementById(\'ltiForm\').submit();</script>';
+        $this->setData('launchUrl', $oauthRequest->getUrl());
+        $this->setData('ltiData', $oauthRequest->getParams());
+        $this->setData('client_config_url', $this->getClientConfigUrl());
+        $this->setView('ltiConsumer.tpl', 'taoLti');
     }
 
     public function stopToolProvider()

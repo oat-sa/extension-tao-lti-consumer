@@ -12,4 +12,39 @@
             </section>
         </sections>
     </structure>
+    <structure id="settings" name="Settings" level="11" group="invisible">
+        <description />
+        <sections>
+            <section id="settings_oauth_mng" name="LTI Tool Providers" url="/taoLtiConsumer/LtiToolProviderAdmin/index">
+                <trees>
+                    <tree name="LTI Tool Providers"
+                          className="LTI Tool Providers"
+                          dataUrl="/taoLtiConsumer/LtiToolProviderAdmin/getOntologyData"
+                          rootNode="http://www.tao.lu/Ontologies/TAOLTIConsumer.rdf#LTIToolProvider"
+                          selectClass="ltitoolprovider-index"
+                          selectInstance="ltitoolprovider-edit"
+                          delete="ltitoolprovider-delete"
+                    />
+                </trees>
+                <actions>
+                    <action id="ltitoolprovider-index" name="Index" url="/taoLtiConsumer/LtiToolProviderAdmin/index" context="class" group="none" />
+                    <action id="ltitoolprovider-edit" name="Properties" url="/taoLtiConsumer/LtiToolProviderAdmin/editInstance" context="instance" group="none">
+                        <icon id="icon-edit"/>
+                    </action>
+                    <action id="ltitoolprovider-delete" name="Delete" binding="removeNode" url="/taoLtiConsumer/LtiToolProviderAdmin/delete" context="instance" group="tree">
+                        <icon id="icon-bin"/>
+                    </action>
+                    <action id="ltitoolprovider-import" name="Import" url="/tao/Import/index"  context="class" group="tree">
+                        <icon id="icon-import"/>
+                    </action>
+                    <action id="ltitoolprovider-export" name="Export" url="/tao/Export/index"  context="resource" group="tree">
+                        <icon id="icon-export"/>
+                    </action>
+                    <action id="ltitoolprovider-new" name="Add Tool Provider" url="/taoLtiConsumer/LtiToolProviderAdmin/addInstanceForm" context="class" group="tree">
+                        <icon id="icon-add"/>
+                    </action>
+                </actions>
+            </section>
+        </sections>
+    </structure>
 </structures>
