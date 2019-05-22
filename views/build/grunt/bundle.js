@@ -1,4 +1,3 @@
-<?php
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,27 +13,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2014-2018 (original work) Open Assessment Technologies SA;
  */
-
-namespace oat\taoLtiConsumer\scripts\update;
-
 
 /**
- * TAO Premium Edition Updater.
+ * configure the extension bundles
+ * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
-class Updater extends \common_ext_ExtensionUpdater
-{
-    /**
-     * Perform update from $currentVersion to $versionUpdatedTo.
-     *
-     * @param string $currentVersion
-     * @return string $versionUpdatedTo
-     *
-     * @throws \common_Exception
-     */
-    public function update($initialVersion)
-    {
-        $this->skip('0.0.0', '0.0.1');
-    }
-}
+module.exports = function(grunt) {
+    'use strict';
+
+    grunt.config.merge({
+        bundle : {
+            taolticonsumer : {
+                options : {
+                    extension : 'taoLtiConsumer',
+                    outputDir : 'loader',
+                    bundles : [{
+                        name : 'taoLtiConsumer',
+                        default : true
+                    }]
+                }
+            }
+        }
+    });
+
+    // bundle task
+    grunt.registerTask('taolticonsumerbundle', ['bundle:taolticonsumer']);
+};
