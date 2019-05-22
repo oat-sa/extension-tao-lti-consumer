@@ -1,39 +1,35 @@
 {
-    "name": "oat-sa/extension-tao-lti-consumer",
-    "description": "Extension that creates TAO LTI consumer and handle inner LTI calls",
-    "type": "tao-extension",
-    "authors": [
-        {
-            "name": "Open Assessment Technologies S.A.",
-            "homepage": "http://www.taotesting.com"
-        }
-    ],
-    "support": {
-        "forum": "https://hub.taocloud.org",
-        "issues": "https://hub.taocloud.org"
-    },
-    "keywords": [
-        "tao",
-        "oat",
-        "QTI",
-        "computer-based-assessment",
-        "lti",
-        "lti consumer"
-    ],
-    "homepage": "http://www.taotesting.com",
-    "license": [
-        "GPL-2.0-only"
-    ],
-    "extra": {
-        "tao-extension-name": "taoLtiConsumer"
-    },
-    "minimum-stability": "dev",
-    "require": {
-        "oat-sa/oatbox-extension-installer": "~1.1||dev-master"
-    },
-    "autoload": {
-        "psr-4": {
-            "oat\\taoLtiConsumer\\": ""
-        }
+  "authors" : [{
+    "name" : "Open Assessment Technologies S.A.",
+    "homepage" : "http://www.taotesting.com"
+  }],
+  "description" : "extension to manage LTI services for TAO",
+  "support": {
+    "forum": "https://forum.taotesting.com",
+    "issues": "https://forum.taotesting.com/categories/support"
+  },
+  "homepage" : "http://www.taotesting.com",
+  "license" : [
+    "GPL-2.0-only"
+  ],
+  "keywords" : [
+    "tao",
+    "oat",
+    "LTI",
+    "computer-based-assessment"
+  ],
+
+  "name": "oat-sa/extension-tao-lti-consumer",
+  "type" : "tao-extension",
+  "extra" : {
+    "tao-extension-name" : "taoLtiConsumer"
+  },
+  "require": {
+    "oat-sa/oatbox-extension-installer": "~1.1||dev-master"
+  },
+  "autoload" : {
+    "psr-4" : {
+      "oat\\taoLtiConsumer\\" : ""
     }
+  }
 }
