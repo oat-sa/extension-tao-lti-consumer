@@ -26,8 +26,9 @@ define([
     'layout/actions',
     'core/promise',
     'core/taskQueue/taskQueue',
-    'ui/taskQueueButton/standardButton'
-], function (_, $, __, filterFactory, feedback, urlUtils, actionManager, Promise, taskQueue, taskCreationButtonFactory) {
+    'ui/taskQueueButton/standardButton',
+    'ui/switch/switch',
+], function (_, $, __, filterFactory, feedback, urlUtils, actionManager, Promise, taskQueue, taskCreationButtonFactory, switchFactory) {
     'use strict';
 
     var provider = {
@@ -93,6 +94,7 @@ define([
         });
     };
 
+
     return {
         start: function () {
             var $testFilterContainer = $('.test-select-container');
@@ -105,9 +107,41 @@ define([
             var $ltiContainer = $ltiForm.closest('.content-block');
             var taskCompiledCreationButton, taskLtiCreationButton, $oldCompiledSubmitter, $oldLtiSubmitter;
 
-            // $('.toggle-button').on('click', function (event) {
-            //     event.preventDefault();
-            //     $filterContainer.toggle();
+
+            $compiledForm.toggle();
+
+            switchFactory($('.form-switch'), {
+                on: {
+                    label: 'TAO delivery',
+                    active: true
+                },
+                off: {
+                    label: 'LTI based delivery',
+                },
+                monoStyle: true
+            })
+                .on('change', function () {
+                    $ltiForm.toggle();
+                    $compiledForm.toggle();
+                });
+
+
+            //
+            // $(this).find('.form-switch').each(function () {
+            //     switchFactory($(this), {
+            //         on: {
+            //             label: 'TAO delivery',
+            //             active: true
+            //         },
+            //         off: {
+            //             label: 'LTI based delivery',
+            //         },
+            //         monoStyle: true
+            //     })
+            //         .on('change', function () {
+            //             $compiledForm.toggle();
+            //             $ltiForm.toggle();
+            //         });
             // });
 
             filterFactory($testFilterContainer, {

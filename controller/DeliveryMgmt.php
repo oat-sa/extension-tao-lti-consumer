@@ -77,11 +77,13 @@ class DeliveryMgmt extends \tao_actions_SaSModule
         $this->defaultData();
         $formOptions = [
             'class' => $this->getCurrentClass(),
+            'isToggable' => true
         ];
 
         try {
             try {
                 $compiledDeliveryForm = (new WizardForm($formOptions))->getForm();
+
                 if ($compiledDeliveryForm->isSubmited() && $compiledDeliveryForm->isValid()) {
                     $test = $this->getResource($compiledDeliveryForm->getValue('test'));
                     $deliveryClass = $this->getClass($compiledDeliveryForm->getValue('classUri'));
@@ -90,6 +92,7 @@ class DeliveryMgmt extends \tao_actions_SaSModule
                     $initialProperties = $deliveryFactoryResources->getInitialPropertiesFromArray($compiledDeliveryForm->getValues());
                     return $this->returnTaskJson(CompileDelivery::createTask($test, $deliveryClass, $initialProperties));
                 }
+
                 $this->setData('compiled-delivery-form', $compiledDeliveryForm->render());
             } catch (NoTestsException $e) {
                 $this->setView('DeliveryMgmt/wizard_error.tpl', 'taoDeliveryRdf');

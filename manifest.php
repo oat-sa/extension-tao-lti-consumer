@@ -17,7 +17,6 @@
  * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
  */
 
-$extpath = dirname(__FILE__).DIRECTORY_SEPARATOR;
 
 return array(
     'name' => 'taoLtiConsumer',
@@ -32,25 +31,14 @@ return array(
     ),
     'update' => 'oat\\taoLtiConsumer\\scripts\\update\\Updater',
     'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager',
-    'install' => array(
-        'php' => array(
-        )
-    ),
     'acl' => array(
         array('grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', array('ext'=>'taoLtiConsumer')),
-    ),
-    'uninstall' => array(
     ),
     'routes' => array(
         '/taoLtiConsumer' => 'oat\\taoLtiConsumer\\controller'
     ),
     'constants' => array(
-        'DIR_VIEWS' => $extpath . 'views' . DIRECTORY_SEPARATOR,
-        #BASE PATH: the root path in the file system (usually the document root)
-        'BASE_PATH'                => __DIR__.DIRECTORY_SEPARATOR ,
-
-        #BASE URL (usually the domain root)
-        'BASE_URL'                => ROOT_URL . 'taoLtiConsumer/',
+        'DIR_VIEWS' => __DIR__ . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR,
     ),
     'extra' => array(
         'structures' => __DIR__ . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . 'structures.xml',

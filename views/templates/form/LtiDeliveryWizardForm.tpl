@@ -11,17 +11,11 @@ Template::inc('form_context.tpl', 'tao');
 <div class="main-container">
 
     <div class="flex-container-main-form">
-        <input type="checkbox" class="js-repeat-toggle">
-
-    </div>
-
-    <div class="flex-container-main-form">
-        <div class="form-content">
+        <div class="compiled-delivery-form-content">
             <?=get_data('compiled-delivery-form')?>
         </div>
-    </div>
-    <div class="flex-container-main-form">
-        <div class="form-content">
+
+        <div class="lti-delivery-form-content">
             <?=get_data('lti-delivery-form')?>
         </div>
     </div>
