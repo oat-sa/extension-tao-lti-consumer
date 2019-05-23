@@ -21,9 +21,11 @@
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
 use oat\generis\model\OntologyRdfs;
+use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\oatbox\service\ConfigurableService;
+use oat\tao\model\taskQueue\QueueDispatcher;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
@@ -32,8 +34,6 @@ use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 class LtiDeliveryFactory extends ConfigurableService
 {
     use LoggerAwareTrait;
-
-    const SERVICE_ID = 'ltiDeliveryProvider/LtiDeliveryFactory';
 
     public function create(
         \core_kernel_classes_Class $deliveryClass,
@@ -74,6 +74,27 @@ class LtiDeliveryFactory extends ConfigurableService
             __('LTI delivery successfully created.'),
             $deliveryResource
         );
+    }
+
+    public function deferredCreate(
+        \core_kernel_classes_Class $deliveryClass,
+        \core_kernel_classes_Resource $ltiProvider,
+        $ltiPath,
+        $label = '',
+        \core_kernel_classes_Resource $deliveryResource = null
+    ) {
+        $action = new LtiDeliveryCreationTask();
+        $parameters = [
+            'deliveryClass' => $deliveryClass->getUri(),
+            'ltiProvider' => $ltiProvider->getUri(),
+            'ltiPath' => $ltiPath,
+            'label' => $label,
+            'deliveryResource' => is_null($deliveryResource) ? null : $deliveryResource->getUri()
+        ];
+
+        return $this->getServiceLocator()
+            ->get(QueueDispatcher::SERVICE_ID)
+            ->createTask($action, $parameters, __('Publishing of LTI delivery : "%s"', $ltiProvider->getLabel()), null, true);
     }
 
     protected function getLtiDeliveryContainer(\core_kernel_classes_Resource $ltiProvider, $ltiPath)

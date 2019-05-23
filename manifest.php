@@ -18,29 +18,35 @@
  */
 
 
-return array(
+return [
     'name' => 'taoLtiConsumer',
     'label' => 'TAO LTI Consumer',
     'description' => 'TAO LTI Consumer extension',
     'license' => 'GPL-2.0',
-    'version' => '0.0.1',
+    'version' => '0.1.0',
     'author' => 'Open Assessment Technologies SA',
-    'requires' => array(
+    'requires' => [
         'taoLti' => '>=9.2.1',
         'taoDeliveryRdf' => '>=8.0.0',
-    ),
+    ],
+    'acl' => [
+        ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
+    ],
+    'install' => [
+        'rdf' => [],
+        'php'	=> [
+            \oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer::class
+        ],
+    ],
     'update' => 'oat\\taoLtiConsumer\\scripts\\update\\Updater',
     'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager',
-    'acl' => array(
-        array('grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', array('ext'=>'taoLtiConsumer')),
-    ),
-    'routes' => array(
+    'routes' => [
         '/taoLtiConsumer' => 'oat\\taoLtiConsumer\\controller'
-    ),
-    'constants' => array(
+    ],
+    'constants' => [
         'DIR_VIEWS' => __DIR__ . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR,
-    ),
-    'extra' => array(
+    ],
+    'extra' => [
         'structures' => __DIR__ . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . 'structures.xml',
-    )
-);
+    ]
+];

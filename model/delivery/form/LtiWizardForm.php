@@ -55,8 +55,6 @@ class LtiWizardForm extends WizardForm
         $classUriElt->setValue($class->getUri());
         $this->form->addElement($classUriElt);
 
-        $this->applyToggleElement();
-
         /** @var ComplexSearchService $search */
         $search = $this->getServiceManager()->get(ComplexSearchService::SERVICE_ID);
         $queryBuilder = $search->query();

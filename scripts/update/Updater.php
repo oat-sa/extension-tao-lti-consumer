@@ -20,6 +20,9 @@
 namespace oat\taoLtiConsumer\scripts\update;
 
 
+use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
+use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+
 /**
  * TAO Premium Edition Updater.
  */
@@ -36,5 +39,12 @@ class Updater extends \common_ext_ExtensionUpdater
     public function update($initialVersion)
     {
         $this->skip('0.0.0', '0.0.1');
+
+        if ($this->isVersion('0.0.1')) {
+            $registry = DeliveryContainerRegistry::getRegistry();
+            $registry->setServiceLocator($this->getServiceManager());
+            $registry->registerContainerType('lti', new LtiDeliveryContainer());
+            $this->setVersion('0.1.0');
+        }
     }
 }

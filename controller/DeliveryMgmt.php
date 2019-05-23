@@ -58,7 +58,6 @@ class DeliveryMgmt extends \tao_actions_RdfController
         $this->defaultData();
         $formOptions = [
             'class' => $this->getCurrentClass(),
-            'isToggable' => true
         ];
 
         $noAvailableTest = $noAvailableProvider = false;
@@ -70,9 +69,9 @@ class DeliveryMgmt extends \tao_actions_RdfController
                 if ($compiledDeliveryForm->isSubmited() && $compiledDeliveryForm->isValid()) {
                     $test = $this->getResource($compiledDeliveryForm->getValue('test'));
                     $deliveryClass = $this->getClass($compiledDeliveryForm->getValue('classUri'));
-                    /** @var DeliveryFactory $deliveryFactoryResources */
-                    $deliveryFactoryResources = $this->getServiceLocator()->get(DeliveryFactory::SERVICE_ID);
-                    $initialProperties = $deliveryFactoryResources->getInitialPropertiesFromArray($compiledDeliveryForm->getValues());
+                    /** @var DeliveryFactory $deliveryFactory */
+                    $deliveryFactory = $this->getServiceLocator()->get(DeliveryFactory::SERVICE_ID);
+                    $initialProperties = $deliveryFactory->getInitialPropertiesFromArray($compiledDeliveryForm->getValues());
                     return $this->returnTaskJson(CompileDelivery::createTask($test, $deliveryClass, $initialProperties));
                 }
 
@@ -89,11 +88,11 @@ class DeliveryMgmt extends \tao_actions_RdfController
                     $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
                     $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
 
-                    /** @var LtiDeliveryFactory $factory */
-                    $factory = $this->propagate(new LtiDeliveryFactory());
-                    $report = $factory->create($deliveryClass, $this->getResource($ltiProvider), $ltiPath);
-
-                    return $this->returnReport($report);
+                    /** @var LtiDeliveryFactory $deliveryFactory */
+                    $deliveryFactory = $this->getServiceLocator()->get(LtiDeliveryFactory::class);
+                    return $this->returnTaskJson(
+                        $deliveryFactory->deferredCreate($deliveryClass, $ltiProvider, $ltiPath)
+                    );
                 }
 
                 $this->setData('lti-delivery-form', $ltiDeliveryForm->render());

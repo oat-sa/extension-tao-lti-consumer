@@ -28,9 +28,13 @@ class LtiDeliveryContainer extends AbstractContainer
 {
     public function getExecutionContainer(DeliveryExecution $execution)
     {
+        throw new \common_exception_NotImplemented('Not yet');
+
         $container = new ExecutionClientContainer($execution);
         $container->setData('deliveryExecution', $execution->getIdentifier());
         $container->setData('deliveryServerConfig', []);
         return $container;
     }
+
+
 }
