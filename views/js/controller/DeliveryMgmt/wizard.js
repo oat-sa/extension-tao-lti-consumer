@@ -108,7 +108,7 @@ define([
             var taskCompiledCreationButton, taskLtiCreationButton, $oldCompiledSubmitter, $oldLtiSubmitter;
 
 
-            $compiledForm.toggle();
+            $ltiForm.toggleClass('hidden');
 
             switchFactory($('.form-switch'), {
                 on: {
@@ -121,8 +121,8 @@ define([
                 monoStyle: true
             })
                 .on('change', function () {
-                    $ltiForm.toggle();
-                    $compiledForm.toggle();
+                    $ltiForm.toggleClass('hidden');
+                    $compiledForm.toggleClass('hidden');
                 });
 
 

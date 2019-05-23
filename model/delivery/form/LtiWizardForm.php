@@ -20,14 +20,12 @@
 
 namespace oat\taoLtiConsumer\model\delivery\form;
 
+use oat\generis\model\kernel\persistence\smoothsql\search\ComplexSearchService;
 use oat\taoDeliveryRdf\view\form\WizardForm;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
-use Zend\ServiceManager\ServiceLocatorAwareTrait;
+use oat\taoLti\models\classes\ProviderService;
 
-class LtiWizardForm extends WizardForm implements ServiceLocatorAwareInterface
+class LtiWizardForm extends WizardForm
 {
-    use ServiceLocatorAwareTrait;
-
     protected function initForm()
     {
         $this->form = new \tao_helpers_form_xhtml_Form('simpleLtiWizard');
@@ -56,6 +54,20 @@ class LtiWizardForm extends WizardForm implements ServiceLocatorAwareInterface
         $classUriElt = \tao_helpers_form_FormFactory::getElement('classUri', 'Hidden');
         $classUriElt->setValue($class->getUri());
         $this->form->addElement($classUriElt);
+
+        $this->applyToggleElement();
+
+        /** @var ComplexSearchService $search */
+        $search = $this->getServiceManager()->get(ComplexSearchService::SERVICE_ID);
+        $queryBuilder = $search->query();
+        $query = $search->searchType($queryBuilder , ProviderService::CLASS_URI, true);
+        $queryBuilder->setCriteria($query);
+
+        $count = $search->getGateway()->count($queryBuilder);
+
+        if (0 === $count) {
+            throw new NoLtiProviderException();
+        }
 
         $selectProviderElt = \tao_helpers_form_FormFactory::getElement('ltiProviderSelect', 'Free');
         $selectProviderElt->setValue('<div class="lti-provider-select-container"></div>');

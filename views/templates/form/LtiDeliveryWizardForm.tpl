@@ -11,13 +11,16 @@ Template::inc('form_context.tpl', 'tao');
 <div class="main-container">
 
     <div class="flex-container-main-form">
+        <div class="outer-container">
+        <div class="form-switch"></div>
+
         <div class="compiled-delivery-form-content">
             <?=get_data('compiled-delivery-form')?>
         </div>
 
         <div class="lti-delivery-form-content">
             <?=get_data('lti-delivery-form')?>
-        </div>
+        </div></div>
     </div>
 
 </div>

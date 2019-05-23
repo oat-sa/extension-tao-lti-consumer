@@ -20,17 +20,17 @@
 namespace oat\taoLtiConsumer\controller;
 
 use oat\generis\model\kernel\persistence\smoothsql\search\ComplexSearchService;
+use oat\generis\model\OntologyAwareTrait;
 use oat\generis\model\OntologyRdfs;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use oat\taoLtiConsumer\model\delivery\form\LtiWizardForm;
-use oat\oatbox\event\EventManager;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
 use oat\taoDeliveryRdf\model\DeliveryFactory;
 use oat\taoDeliveryRdf\model\tasks\CompileDelivery;
 use oat\taoDeliveryRdf\view\form\WizardForm;
 use oat\taoDeliveryRdf\model\NoTestsException;
-use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoLti\models\classes\ProviderService;
+use oat\taoLtiConsumer\model\delivery\form\NoLtiProviderException;
 
 /**
  * Controller to managed assembled deliveries
@@ -38,29 +38,10 @@ use oat\taoLti\models\classes\ProviderService;
  * @author CRP Henri Tudor - TAO Team - {@link http://www.tao.lu}
  * @package taoDelivery
  */
-class DeliveryMgmt extends \tao_actions_SaSModule
+class DeliveryMgmt extends \tao_actions_RdfController
 {
+    use OntologyAwareTrait;
     use TaskLogActionTrait;
-
-    /**
-     * @return EventManager
-     */
-    protected function getEventManager()
-    {
-        return $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \tao_actions_SaSModule::getClassService()
-     */
-    protected function getClassService()
-    {
-        if (!$this->service) {
-            $this->service = DeliveryAssemblyService::singleton();
-        }
-        return $this->service;
-    }
 
     /**
      * Manage the delivery wizard form
@@ -102,6 +83,7 @@ class DeliveryMgmt extends \tao_actions_SaSModule
 
             try {
                 $ltiDeliveryForm = (new LtiWizardForm($formOptions))->getForm();
+
                 if ($ltiDeliveryForm->isSubmited() && $ltiDeliveryForm->isValid()) {
                     $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
                     $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
@@ -113,13 +95,16 @@ class DeliveryMgmt extends \tao_actions_SaSModule
 
                     return $this->returnReport($report);
                 }
-            } catch (NoTestsException $e) {
+
+                $this->setData('lti-delivery-form', $ltiDeliveryForm->render());
+            } catch (NoLtiProviderException $e) {
                 $noAvailableProvider = true;
             }
 
             if ($noAvailableProvider === true && $noAvailableTest === true) {
                 throw new \Exception('Delivery creation impossible without qti test neither lti provider.');
             }
+
 
         } catch (\Exception $e) {
             return $this->returnJson([
@@ -129,60 +114,45 @@ class DeliveryMgmt extends \tao_actions_SaSModule
             ]);
         }
 
-        $this->setData('lti-delivery-form', $ltiDeliveryForm->render());
         $this->setData('formTitle', __('Create a new delivery'));
         $this->setView('form/LtiDeliveryWizardForm.tpl', 'taoLtiConsumer');
     }
 
     /**
-     * Prepare formatted for select2 component filtered list of available for compilation tests
-     * @throws \common_Exception
-     * @throws \oat\oatbox\service\ServiceNotFoundException
+     * Prepare formatted for select2 component filtered list of available for LTI providers
      */
     public function getAvailableLtiProviders()
     {
-        $q = $this->getRequestParameter('q');
-        $tests = [];
+        $q = trim($this->getGetParameter('q'));
+        $providers = [];
 
-//        $testService = \taoTests_models_classes_TestsService::singleton();
         /** @var ComplexSearchService $search */
         $search = $this->getServiceLocator()->get(ComplexSearchService::SERVICE_ID);
+        try {
+            $queryBuilder = $search->query();
+            $query = $search->searchType($queryBuilder, ProviderService::CLASS_URI, true)
+                ->add(OntologyRdfs::RDFS_LABEL)
+                ->contains($q);
+            $queryBuilder->setCriteria($query);
+            $result = $search->getGateway()->search($queryBuilder);
+        } catch (\Exception $e) {
+            $this->logError('Unable to retrieve providers: ' . $e->getMessage());
+            $result = [];
+        }
 
-        $queryBuilder = $search->query();
-        $query = $search->searchType($queryBuilder , ProviderService::CLASS_URI, true)
-            ->add(OntologyRdfs::RDFS_LABEL)
-            ->contains($q);
-
-        $queryBuilder->setCriteria($query);
-
-        $result = $search->getGateway()->search($queryBuilder);
-
-        $result = (new \core_kernel_classes_Class(ProviderService::CLASS_URI))->getInstances(true);
-        foreach ($result as $test) {
-//        var_dump($test);
+        foreach ($result as $provider) {
             try {
-//                $testItems = $testService->getTestItems($test);
-                //Filter tests which has no items
-//                if (!empty($testItems)) {
-                    $testUri = $test->getUri();
-                    $tests[] = ['id' => $testUri, 'uri' => $testUri, 'text' => $test->getLabel()];
-//                }
+                $providerUri = $provider->getUri();
+                $providers[] = ['id' => $providerUri, 'uri' => $providerUri, 'text' => $provider->getLabel()];
             } catch (\Exception $e) {
-                $this->logWarning('Unable to load items for test ' . $testUri);
+                $this->logWarning('Unable to load items for test ' . $providerUri);
             }
         }
-        $this->returnJson(['total' => count($tests), 'items' => $tests]);
+        $this->returnJson(['total' => count($providers), 'items' => $providers]);
     }
 
-    /**
-     * @param array $options
-     * @throws \common_exception_IsAjaxAction
-     */
-    protected function getTreeOptionsFromRequest($options = [])
+    protected function getRootClass()
     {
-        $config = $this->getServiceLocator()->get('taoDeliveryRdf/DeliveryMgmt')->getConfig();
-        $options['order'] = key($config['OntologyTreeOrder']);
-        $options['orderdir'] = $config['OntologyTreeOrder'][$options['order']];
-        return parent::getTreeOptionsFromRequest($options);
+        // Should not be called
     }
 }
