@@ -21,8 +21,8 @@ namespace oat\taoLtiConsumer\controller;
 
 use oat\generis\model\kernel\persistence\smoothsql\search\ComplexSearchService;
 use oat\generis\model\OntologyRdfs;
-use oat\ltiDeliveryProvider\model\delivery\factory\LtiDeliveryFactory;
-use oat\ltiDeliveryProvider\model\delivery\form\LtiWizardForm;
+use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
+use oat\taoLtiConsumer\model\delivery\form\LtiWizardForm;
 use oat\oatbox\event\EventManager;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
 use oat\taoDeliveryRdf\model\DeliveryFactory;
@@ -80,6 +80,8 @@ class DeliveryMgmt extends \tao_actions_SaSModule
             'isToggable' => true
         ];
 
+        $noAvailableTest = $noAvailableProvider = false;
+
         try {
             try {
                 $compiledDeliveryForm = (new WizardForm($formOptions))->getForm();
@@ -95,21 +97,30 @@ class DeliveryMgmt extends \tao_actions_SaSModule
 
                 $this->setData('compiled-delivery-form', $compiledDeliveryForm->render());
             } catch (NoTestsException $e) {
-                $this->setView('DeliveryMgmt/wizard_error.tpl', 'taoDeliveryRdf');
+                $noAvailableTest = true;
             }
 
-            $ltiDeliveryForm = (new LtiWizardForm($formOptions))->getForm();
-            if ($ltiDeliveryForm->isSubmited() && $ltiDeliveryForm->isValid()) {
-                $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
-                $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
-                $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
+            try {
+                $ltiDeliveryForm = (new LtiWizardForm($formOptions))->getForm();
+                if ($ltiDeliveryForm->isSubmited() && $ltiDeliveryForm->isValid()) {
+                    $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
+                    $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
+                    $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
 
-                /** @var LtiDeliveryFactory $factory */
-                $factory = $this->propagate(new LtiDeliveryFactory());
-                $report = $factory->create($deliveryClass, $this->getResource($ltiProvider), $ltiPath);
+                    /** @var LtiDeliveryFactory $factory */
+                    $factory = $this->propagate(new LtiDeliveryFactory());
+                    $report = $factory->create($deliveryClass, $this->getResource($ltiProvider), $ltiPath);
 
-                return $this->returnReport($report);
+                    return $this->returnReport($report);
+                }
+            } catch (NoTestsException $e) {
+                $noAvailableProvider = true;
             }
+
+            if ($noAvailableProvider === true && $noAvailableTest === true) {
+                throw new \Exception('Delivery creation impossible without qti test neither lti provider.');
+            }
+
         } catch (\Exception $e) {
             return $this->returnJson([
                 'success' => false,
