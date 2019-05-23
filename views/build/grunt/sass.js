@@ -9,7 +9,7 @@ module.exports = function(grunt) {
     sass.taolticonsumer.files = { };
     sass.taolticonsumer.files[root + 'css/wizard.css'] = root + 'scss/wizard.scss';
 
-    watch.taodeliveryrdfsass = {
+    watch.taolticonsumersass = {
         files : [root + 'scss/**/*.scss'],
         tasks : ['sass:taolticonsumer', 'notify:taolticonsumer'],
         options : {

@@ -1,3 +1,3 @@
-.outer-container{background:#f3f1ef;padding:30px;border:1px solid #ddd;border-radius:2px}.outer-container form{background:inherit;padding:30px 0 0 0;border:none;border-radius:0}
+.outer-container{background:#f3f1ef;padding:30px;border:1px solid #ddd;border-radius:2px}.outer-container form{background:inherit;padding:0;border:none !important;border-radius:0}.outer-container .form-switch-block{display:block;padding:0 30px}.outer-container .form-switch-block>label{position:relative;width:35%}.outer-container .form-switch{position:relative;display:inline-block;width:64%}.outer-container .form-switch input{border-radius:3px;height:25px}.outer-container .form-switch label span{padding:3px}
 
 /*# sourceMappingURL=wizard.css.map */

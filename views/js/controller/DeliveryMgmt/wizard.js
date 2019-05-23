@@ -28,6 +28,7 @@ define([
     'core/taskQueue/taskQueue',
     'ui/taskQueueButton/standardButton',
     'ui/switch/switch',
+    'css!/taoLtiConsumer/views/css/wizard.css'
 ], function (_, $, __, filterFactory, feedback, urlUtils, actionManager, Promise, taskQueue, taskCreationButtonFactory, switchFactory) {
     'use strict';
 
