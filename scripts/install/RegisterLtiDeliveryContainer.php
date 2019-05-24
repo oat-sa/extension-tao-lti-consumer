@@ -34,5 +34,4 @@ class RegisterLtiDeliveryContainer extends InstallAction
 
         return \common_report_Report::createSuccess(__('LTI delivery container successfully registered.'));
     }
-
 }
