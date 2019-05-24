@@ -22,19 +22,31 @@ namespace oat\taoLtiConsumer\model\delivery\container;
 
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
+use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 
+/**
+ * Class LtiDeliveryContainer
+ *
+ * A delivery container to manage LTI based delivery
+ *
+ * @package oat\taoLtiConsumer\model\delivery\container
+ */
 class LtiDeliveryContainer extends AbstractContainer
 {
+    /**
+     * Get the execution container to render LTI based delivery
+     *
+     * @param DeliveryExecution $execution
+     * @return ExecutionClientContainer|ExecutionContainer
+     * @throws \common_exception_NotImplemented
+     */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
-        throw new \common_exception_NotImplemented('Not yet');
-
+        throw new \common_exception_NotImplemented('LTI delivery execution container is not yet implemented.');
         $container = new ExecutionClientContainer($execution);
         $container->setData('deliveryExecution', $execution->getIdentifier());
         $container->setData('deliveryServerConfig', []);
         return $container;
     }
-
-
 }

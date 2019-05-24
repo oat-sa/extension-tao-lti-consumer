@@ -14,9 +14,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+use oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer;
+use oat\taoLtiConsumer\scripts\update\Updater;
 
 return [
     'name' => 'taoLtiConsumer',
@@ -27,7 +29,7 @@ return [
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'taoLti' => '>=9.2.1',
-        'taoDeliveryRdf' => '>=8.0.0',
+        'taoDeliveryRdf' => '>=8.0.1',
     ],
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
@@ -35,10 +37,10 @@ return [
     'install' => [
         'rdf' => [],
         'php'	=> [
-            \oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer::class
+            RegisterLtiDeliveryContainer::class
         ],
     ],
-    'update' => 'oat\\taoLtiConsumer\\scripts\\update\\Updater',
+    'update' => Updater::class,
     'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager',
     'routes' => [
         '/taoLtiConsumer' => 'oat\\taoLtiConsumer\\controller'

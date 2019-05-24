@@ -24,17 +24,15 @@ use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 
 /**
- * TAO Premium Edition Updater.
+ * taoLtiConsumer Updater.
  */
 class Updater extends \common_ext_ExtensionUpdater
 {
     /**
      * Perform update from $currentVersion to $versionUpdatedTo.
      *
-     * @param string $currentVersion
-     * @return string $versionUpdatedTo
-     *
-     * @throws \common_Exception
+     * @param string $initialVersion
+     * @return void
      */
     public function update($initialVersion)
     {

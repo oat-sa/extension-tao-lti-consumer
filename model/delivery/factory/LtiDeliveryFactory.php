@@ -31,10 +31,28 @@ use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
 
+/**
+ * Class LtiDeliveryFactory
+ *
+ * A factory to create LTI based delivery, this creation can done in a deferred way
+ *
+ * @package oat\taoLtiConsumer\model\delivery\factory
+ */
 class LtiDeliveryFactory extends ConfigurableService
 {
     use LoggerAwareTrait;
 
+    /**
+     * Create a LTI based delivery under $delvieryClass with $provider & $ltiPath
+     *
+     * @param \core_kernel_classes_Class $deliveryClass
+     * @param \core_kernel_classes_Resource $ltiProvider
+     * @param $ltiPath
+     * @param string $label
+     * @param \core_kernel_classes_Resource|null $deliveryResource
+     * @return \common_report_Report
+     * @throws \common_exception_InconsistentData
+     */
     public function create(
         \core_kernel_classes_Class $deliveryClass,
         \core_kernel_classes_Resource $ltiProvider,
@@ -42,11 +60,10 @@ class LtiDeliveryFactory extends ConfigurableService
         $label = '',
         \core_kernel_classes_Resource $deliveryResource = null
     ) {
-
-        $this->logInfo(
-            'Creating LTI delivery with LTI provider "' . $ltiProvider->getLabel() . '" '.
-            'with LTI test url "' . $ltiPath . '" under delivery class "' . $deliveryClass->getLabel() . '"'
-        );
+        $this->logInfo(sprintf(
+            'Creating LTI delivery with LTI provider "%s" '. 'with LTI test url "%s" under delivery class "%s"',
+            $ltiProvider->getLabel(), $ltiPath, $deliveryClass->getLabel()
+        ));
 
         $container = $this->getLtiDeliveryContainer($ltiProvider, $ltiPath);
 
@@ -76,6 +93,16 @@ class LtiDeliveryFactory extends ConfigurableService
         );
     }
 
+    /**
+     * Create a task for LTI delivery creation
+     *
+     * @param \core_kernel_classes_Class $deliveryClass
+     * @param \core_kernel_classes_Resource $ltiProvider
+     * @param $ltiPath
+     * @param string $label
+     * @param \core_kernel_classes_Resource|null $deliveryResource
+     * @return mixed
+     */
     public function deferredCreate(
         \core_kernel_classes_Class $deliveryClass,
         \core_kernel_classes_Resource $ltiProvider,
@@ -97,6 +124,14 @@ class LtiDeliveryFactory extends ConfigurableService
             ->createTask($action, $parameters, __('Publishing of LTI delivery : "%s"', $ltiProvider->getLabel()), null, true);
     }
 
+    /**
+     * Retrieve the delivery container associated to LTI
+     *
+     * @param \core_kernel_classes_Resource $ltiProvider
+     * @param $ltiPath
+     * @return string
+     * @throws \common_exception_InconsistentData
+     */
     protected function getLtiDeliveryContainer(\core_kernel_classes_Resource $ltiProvider, $ltiPath)
     {
         /** @var DeliveryContainerRegistry $registry */
