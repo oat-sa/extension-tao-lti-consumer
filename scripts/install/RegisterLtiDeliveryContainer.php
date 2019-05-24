@@ -15,34 +15,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ *
  */
 
-namespace oat\taoLtiConsumer\scripts\update;
+namespace oat\taoLtiConsumer\scripts\install;
 
-
+use oat\oatbox\extension\InstallAction;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 
-/**
- * taoLtiConsumer Updater.
- */
-class Updater extends \common_ext_ExtensionUpdater
+class RegisterLtiDeliveryContainer extends InstallAction
 {
-    /**
-     * Perform update from $currentVersion to $versionUpdatedTo.
-     *
-     * @param string $initialVersion
-     * @return void
-     */
-    public function update($initialVersion)
+    public function __invoke($params)
     {
-        $this->skip('0.0.0', '0.0.1');
+        $registry = DeliveryContainerRegistry::getRegistry();
+        $registry->setServiceLocator($this->getServiceManager());
+        $registry->registerContainerType('lti', new LtiDeliveryContainer());
 
-        if ($this->isVersion('0.0.1')) {
-            $registry = DeliveryContainerRegistry::getRegistry();
-            $registry->setServiceLocator($this->getServiceManager());
-            $registry->registerContainerType('lti', new LtiDeliveryContainer());
-            $this->setVersion('0.1.0');
-        }
+        return \common_report_Report::createSuccess(__('LTI delivery container successfully registered.'));
     }
 }

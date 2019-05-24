@@ -3,7 +3,7 @@
     "name" : "Open Assessment Technologies S.A.",
     "homepage" : "http://www.taotesting.com"
   }],
-  "description" : "extension to manage LTI services for TAO",
+  "description" : "TAO LTI Consumer extension",
   "support": {
     "forum": "https://forum.taotesting.com",
     "issues": "https://forum.taotesting.com/categories/support"

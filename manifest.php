@@ -14,41 +14,41 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2017 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-use oat\taoPremium\scripts\install\RegisterTaoPremiumCategoryPresetProviders;
-use oat\taoPremium\scripts\install\RegisterTestRunnerPlugins;
-use oat\taoPremium\scripts\install\SetMultitenantTheme;
-use oat\taoPremium\scripts\install\RegisterTaoConsumer;
-use oat\taoPremium\scripts\install\RegisterLtiThemeDetailsProvider;
+use oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer;
+use oat\taoLtiConsumer\scripts\update\Updater;
 
-$extpath = dirname(__FILE__).DIRECTORY_SEPARATOR;
-
-return array(
+return [
     'name' => 'taoLtiConsumer',
     'label' => 'TAO LTI Consumer',
     'description' => 'TAO LTI Consumer extension',
     'license' => 'GPL-2.0',
-    'version' => '0.0.1',
+    'version' => '0.1.0',
     'author' => 'Open Assessment Technologies SA',
-    'requires' => array(
-        'taoDeliveryRdf' => '*',
-    ),
-    'update' => 'oat\\taoPremium\\scripts\\update\\Updater',
-    'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoDeliveryRdfManager',
-    'install' => array(
-        'php' => array(
-            RegisterTaoConsumer::class,
-        )
-    ),
-    'acl' => array(
-    ),
-    'uninstall' => array(
-    ),
-    'routes' => array(
-    ),
-    'constants' => array(
-        'DIR_VIEWS' => $extpath . 'views' . DIRECTORY_SEPARATOR
-    )
-);
+    'requires' => [
+        'taoLti' => '>=9.2.1',
+        'taoDeliveryRdf' => '>=8.0.1',
+    ],
+    'acl' => [
+        ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
+    ],
+    'install' => [
+        'rdf' => [],
+        'php'	=> [
+            RegisterLtiDeliveryContainer::class
+        ],
+    ],
+    'update' => Updater::class,
+    'managementRole' => 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager',
+    'routes' => [
+        '/taoLtiConsumer' => 'oat\\taoLtiConsumer\\controller'
+    ],
+    'constants' => [
+        'DIR_VIEWS' => __DIR__ . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR,
+    ],
+    'extra' => [
+        'structures' => __DIR__ . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . 'structures.xml',
+    ]
+];
