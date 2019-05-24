@@ -104,7 +104,6 @@ class DeliveryMgmt extends \tao_actions_RdfController
                 throw new \Exception('Delivery creation impossible without qti test neither lti provider.');
             }
 
-
         } catch (\Exception $e) {
             return $this->returnJson([
                 'success' => false,

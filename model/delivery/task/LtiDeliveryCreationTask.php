@@ -36,7 +36,7 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
      *
      * The only responsability of this task is to parse parameters and forward request to LtiDeliveryFactory
      *
-     * @param $params
+     * @param array $params
      * @throws \common_exception_MissingParameter
      * @throws \common_exception_InconsistentData
      * @return Report
