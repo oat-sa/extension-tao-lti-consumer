@@ -62,58 +62,53 @@ class DeliveryMgmt extends \tao_actions_RdfController
 
         $noAvailableTest = $noAvailableProvider = false;
 
+        $this->setData('formTitle', __('Create a new delivery'));
+
         try {
-            try {
-                $compiledDeliveryForm = (new WizardForm($formOptions))->getForm();
+            $compiledDeliveryForm = (new WizardForm($formOptions))->getForm();
 
-                if ($compiledDeliveryForm->isSubmited() && $compiledDeliveryForm->isValid()) {
-                    $test = $this->getResource($compiledDeliveryForm->getValue('test'));
-                    $deliveryClass = $this->getClass($compiledDeliveryForm->getValue('classUri'));
-                    /** @var DeliveryFactory $deliveryFactory */
-                    $deliveryFactory = $this->getServiceLocator()->get(DeliveryFactory::SERVICE_ID);
-                    $initialProperties = $deliveryFactory->getInitialPropertiesFromArray($compiledDeliveryForm->getValues());
-                    return $this->returnTaskJson(CompileDelivery::createTask($test, $deliveryClass, $initialProperties));
-                }
-
-                $this->setData('compiled-delivery-form', $compiledDeliveryForm->render());
-            } catch (NoTestsException $e) {
-                $noAvailableTest = true;
+            if ($compiledDeliveryForm->isSubmited() && $compiledDeliveryForm->isValid()) {
+                $test = $this->getResource($compiledDeliveryForm->getValue('test'));
+                $deliveryClass = $this->getClass($compiledDeliveryForm->getValue('classUri'));
+                /** @var DeliveryFactory $deliveryFactory */
+                $deliveryFactory = $this->getServiceLocator()->get(DeliveryFactory::SERVICE_ID);
+                $initialProperties = $deliveryFactory->getInitialPropertiesFromArray($compiledDeliveryForm->getValues());
+                return $this->returnTaskJson(CompileDelivery::createTask($test, $deliveryClass, $initialProperties));
             }
 
-            try {
-                $ltiDeliveryForm = (new LtiWizardForm($formOptions))->getForm();
-
-                if ($ltiDeliveryForm->isSubmited() && $ltiDeliveryForm->isValid()) {
-                    $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
-                    $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
-                    $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
-
-                    /** @var LtiDeliveryFactory $deliveryFactory */
-                    $deliveryFactory = $this->getServiceLocator()->get(LtiDeliveryFactory::class);
-                    return $this->returnTaskJson(
-                        $deliveryFactory->deferredCreate($deliveryClass, $ltiProvider, $ltiPath)
-                    );
-                }
-
-                $this->setData('lti-delivery-form', $ltiDeliveryForm->render());
-            } catch (NoLtiProviderException $e) {
-                $noAvailableProvider = true;
-            }
-
-            if ($noAvailableProvider === true && $noAvailableTest === true) {
-                throw new \Exception('Delivery creation impossible without qti test neither lti provider.');
-            }
-
-        } catch (\Exception $e) {
-            return $this->returnJson([
-                'success' => false,
-                'errorMsg' => $e instanceof \common_exception_UserReadableException ? $e->getUserMessage() : $e->getMessage(),
-                'errorCode' => $e->getCode(),
-            ]);
+            $this->setData('compiled-delivery-form', $compiledDeliveryForm->render());
+        } catch (NoTestsException $e) {
+            $noAvailableTest = true;
+            $this->setData('compiled-form-message', __('There are currently no tests available to publish.'));
         }
 
-        $this->setData('formTitle', __('Create a new delivery'));
-        $this->setView('form/LtiDeliveryWizardForm.tpl', 'taoLtiConsumer');
+        try {
+            $ltiDeliveryForm = (new LtiWizardForm($formOptions))->getForm();
+
+            if ($ltiDeliveryForm->isSubmited() && $ltiDeliveryForm->isValid()) {
+                $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
+                $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
+                $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
+
+                /** @var LtiDeliveryFactory $deliveryFactory */
+                $deliveryFactory = $this->getServiceLocator()->get(LtiDeliveryFactory::class);
+                return $this->returnTaskJson(
+                    $deliveryFactory->deferredCreate($deliveryClass, $ltiProvider, $ltiPath)
+                );
+            }
+
+            $this->setData('lti-delivery-form', $ltiDeliveryForm->render());
+        } catch (NoLtiProviderException $e) {
+            $noAvailableProvider = true;
+            $this->setData('lti-form-message', __('There are currently no lti provider available.'));
+        }
+
+        if ($noAvailableProvider === true && $noAvailableTest === true) {
+            $this->setData('message', __('Delivery creation impossible without QTI test neither LTI provider.'));
+            $this->setView('form/wizard_error.tpl', 'taoLtiConsumer');
+        } else {
+            $this->setView('form/LtiDeliveryWizardForm.tpl', 'taoLtiConsumer');
+        }
     }
 
     /**

@@ -114,6 +114,9 @@ define([
             var $testFormElement = $('#test');
             var $providerFormElement = $('#ltiProvider');
 
+            var $compiledFormContentBlock = $('.compiled-delivery-form-content');
+            var $ltiFormContentBlock = $('.lti-delivery-form-content');
+
             var $compiledContainer = $compiledForm.closest('.content-block');
             var $ltiContainer = $ltiForm.closest('.content-block');
 
@@ -123,7 +126,7 @@ define([
             var taskCompiledCreationButton;
             var taskLtiCreationButton;
 
-            $ltiForm.addClass('hidden');
+            $ltiFormContentBlock.addClass('hidden');
 
             switchFactory($switch, {
                 on: {
@@ -136,8 +139,8 @@ define([
                 monoStyle: true
             })
             .on('change', function() {
-                $ltiForm.toggleClass('hidden');
-                $compiledForm.toggleClass('hidden');
+                $compiledFormContentBlock.toggleClass('hidden');
+                $ltiFormContentBlock.toggleClass('hidden');
             });
 
             filterFactory($testFilterContainer, {

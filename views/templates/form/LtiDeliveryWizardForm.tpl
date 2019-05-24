@@ -17,10 +17,26 @@ Template::inc('form_context.tpl', 'tao');
         </div>
 
         <div class="compiled-delivery-form-content">
+            <?php if (!empty(get_data('compiled-form-message'))): ?>
+                <div class="feedback-warning">
+                    <span class="icon-warning"></span><?= get_data('compiled-form-message') ?>
+                </div>
+                <div>
+                    <a class="btn-info" href="<?=_url('index', 'Main', 'tao', array('structure' => 'tests', 'ext' => 'taoTests'))?>"><?=__('Create a test')?></a>
+                </div>
+            <?php endif; ?>
             <?= get_data('compiled-delivery-form') ?>
         </div>
 
         <div class="lti-delivery-form-content">
+            <?php if (!empty(get_data('lti-form-message'))): ?>
+                <div class="feedback-warning">
+                    <span class="icon-warning"></span><?= get_data('lti-form-message') ?>
+                </div>
+                <div>
+                    <a class="btn-info" href="<?=_url('index', 'Main', 'tao', array('structure' => 'settings', 'ext' => 'taoLti', 'section' => 'settings_oauth_mng_provider'))?>"><?=__('Create a LTI provider')?></a>
+                </div>
+            <?php endif; ?>
             <?= get_data('lti-delivery-form') ?>
         </div>
 
