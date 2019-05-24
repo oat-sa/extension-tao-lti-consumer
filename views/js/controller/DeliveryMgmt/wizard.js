@@ -129,11 +129,11 @@ define([
             $ltiFormContentBlock.addClass('hidden');
 
             switchFactory($switch, {
-                on: {
+                off: {
                     label: __('TAO delivery'),
                     active: true
                 },
-                off: {
+                on: {
                     label: __('LTI based delivery'),
                 },
                 monoStyle: true
@@ -231,6 +231,7 @@ define([
             .on('error', function(err) {
                 //format and display error message to user
                 feedback().error(err);
+                this.trigger('finished');
             })
             .render($oldCompiledSubmitter.closest('.form-toolbar'))
             .disable();
@@ -272,6 +273,7 @@ define([
             .on('error', function(err){
                 //format and display error message to user
                 feedback().error(err);
+                this.trigger('finished');
             })
             .render($oldLtiSubmitter.closest('.form-toolbar'))
             .disable();

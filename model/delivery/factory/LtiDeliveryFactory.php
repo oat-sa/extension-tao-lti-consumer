@@ -21,6 +21,7 @@
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
 use oat\generis\model\OntologyRdfs;
+use oat\tao\model\taskQueue\Task\TaskInterface;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
@@ -101,7 +102,7 @@ class LtiDeliveryFactory extends ConfigurableService
      * @param $ltiPath
      * @param string $label
      * @param \core_kernel_classes_Resource|null $deliveryResource
-     * @return mixed
+     * @return TaskInterface
      */
     public function deferredCreate(
         \core_kernel_classes_Class $deliveryClass,
