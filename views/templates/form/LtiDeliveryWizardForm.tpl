@@ -9,10 +9,10 @@ Template::inc('form_context.tpl', 'tao');
 
 <div class="main-container">
 
-    <div class="outer-container">
+    <div class="multi-form-container">
 
         <div class="form-switch-block">
-            <label class="form_desc">Delivery method</label>
+            <label class="form_desc"><?= __('Delivery method') ?></label>
             <div class="form-switch"></div>
         </div>
 

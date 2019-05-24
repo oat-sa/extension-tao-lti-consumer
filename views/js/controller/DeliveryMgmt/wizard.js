@@ -29,17 +29,17 @@ define([
     'ui/taskQueueButton/standardButton',
     'ui/switch/switch',
     'css!/taoLtiConsumer/views/css/wizard.css'
-], function (_, $, __, filterFactory, feedback, urlUtils, actionManager, Promise, taskQueue, taskCreationButtonFactory, switchFactory) {
+], function(_, $, __, filterFactory, feedback, urlUtils, actionManager, Promise, taskQueue, taskCreationButtonFactory, switchFactory) {
     'use strict';
 
     var provider = {
-
         /**
          * List available Lti providers
+         * @param {Object} data - the query parameters
          * @returns {Promise}
          */
         listProviders: function listProviders(data) {
-            return new Promise(function (resolve, reject) {
+            return new Promise(function(resolve, reject) {
                 $.ajax({
                     url: urlUtils.route('getAvailableLtiProviders', 'DeliveryMgmt', 'taoLtiConsumer'),
                     data: {
@@ -48,20 +48,25 @@ define([
                     },
                     type: 'GET',
                     dataType: 'JSON'
-                }).done(function (tests) {
+                }).done(function(tests) {
                     if (tests) {
                         resolve(tests);
                     } else {
                         reject(new Error(__('Unable to load lti providers')));
                     }
-                }).fail(function () {
+                }).fail(function() {
                     reject(new Error(__('Unable to load lti providers')));
                 });
             });
         },
 
+        /**
+         * List available tests
+         * @param {Object} data - the query parameters
+         * @returns {Promise}
+         */
         listTests: function listTests(data) {
-            return new Promise(function (resolve, reject) {
+            return new Promise(function(resolve, reject) {
                 $.ajax({
                     url: urlUtils.route('getAvailableTests', 'DeliveryMgmt', 'taoDeliveryRdf'),
                     data: {
@@ -70,19 +75,17 @@ define([
                     },
                     type: 'GET',
                     dataType: 'JSON'
-                }).done(function (tests) {
+                }).done(function(tests) {
                     if (tests) {
                         resolve(tests);
                     } else {
                         reject(new Error(__('Unable to load tests')));
                     }
-                }).fail(function () {
+                }).fail(function() {
                     reject(new Error(__('Unable to load tests')));
                 });
             });
-        },
-
-
+        }
     };
 
     /**
@@ -95,106 +98,103 @@ define([
         });
     };
 
-
     return {
-        start: function () {
-            var $testFilterContainer = $('.test-select-container');
-            var $providerFilterContainer = $('.lti-provider-select-container');
-            var $testFormElement = $('#test');
-            var $providerFormElement = $('#ltiProvider');
+        // Builds form elements & defines button actions
+        // TODO: refactor into some logical functions and deduplicate a little
+        start: function() {
+            var $multiForm = $('.multi-form-container');
+            var $switch = $('.form-switch', $multiForm);
+
             var $compiledForm = $('#simpleWizard');
             var $ltiForm = $('#simpleLtiWizard');
+
+            var $testFilterContainer = $compiledForm.find('.test-select-container');
+            var $providerFilterContainer = $ltiForm.find('.lti-provider-select-container');
+
+            var $testFormElement = $('#test');
+            var $providerFormElement = $('#ltiProvider');
+
             var $compiledContainer = $compiledForm.closest('.content-block');
             var $ltiContainer = $ltiForm.closest('.content-block');
-            var taskCompiledCreationButton, taskLtiCreationButton, $oldCompiledSubmitter, $oldLtiSubmitter;
 
+            var $oldCompiledSubmitter = $compiledForm.find('.form-submitter');
+            var $oldLtiSubmitter = $ltiForm.find('.form-submitter');
 
-            $ltiForm.toggleClass('hidden');
+            var taskCompiledCreationButton;
+            var taskLtiCreationButton;
 
-            switchFactory($('.form-switch'), {
+            $ltiForm.addClass('hidden');
+
+            switchFactory($switch, {
                 on: {
-                    label: 'TAO delivery',
+                    label: __('TAO delivery'),
                     active: true
                 },
                 off: {
-                    label: 'LTI based delivery',
+                    label: __('LTI based delivery'),
                 },
                 monoStyle: true
             })
-                .on('change', function () {
-                    $ltiForm.toggleClass('hidden');
-                    $compiledForm.toggleClass('hidden');
-                });
-
-
-            //
-            // $(this).find('.form-switch').each(function () {
-            //     switchFactory($(this), {
-            //         on: {
-            //             label: 'TAO delivery',
-            //             active: true
-            //         },
-            //         off: {
-            //             label: 'LTI based delivery',
-            //         },
-            //         monoStyle: true
-            //     })
-            //         .on('change', function () {
-            //             $compiledForm.toggle();
-            //             $ltiForm.toggle();
-            //         });
-            // });
+            .on('change', function() {
+                $ltiForm.toggleClass('hidden');
+                $compiledForm.toggleClass('hidden');
+            });
 
             filterFactory($testFilterContainer, {
                 placeholder: __('Select the test you want to publish to the test-takers'),
                 width: '64%',
                 quietMillis: 1000,
                 label: __('Select the test')
-            }).on('change', function (test) {
-                $testFormElement.val(test);
-                if(test){
+            })
+            .on('change', function(chosenTest) {
+                $testFormElement.val(chosenTest);
+                if (chosenTest) {
                     taskCompiledCreationButton.enable();
-                }else{
+                } else {
                     taskCompiledCreationButton.disable();
                 }
-            }).on('request', function (params) {
+            })
+            .on('request', function(params) {
                 provider
                     .listTests(params.data)
-                    .then(function (tests) {
+                    .then(function(tests) {
                         params.success(tests);
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         params.error(err);
                         feedback().error(err);
                     });
-            }).render('<%- text %>');
+            })
+            .render('<%- text %>');
 
             filterFactory($providerFilterContainer, {
                 placeholder: __('Select the Provider you want to publish'),
                 width: '64%',
                 quietMillis: 1000,
                 label: __('LTI Provider')
-            }).on('change', function (provider) {
-                $providerFormElement.val(provider);
-                if(provider){
+            })
+            .on('change', function(chosenProvider) {
+                $providerFormElement.val(chosenProvider);
+                if (chosenProvider) {
                     taskLtiCreationButton.enable();
-                }else{
+                } else {
                     taskLtiCreationButton.disable();
                 }
-            }).on('request', function (params) {
+            })
+            .on('request', function(params) {
                 provider
                     .listProviders(params.data)
-                    .then(function (tests) {
+                    .then(function(tests) {
                         params.success(tests);
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         params.error(err);
                         feedback().error(err);
                     });
-            }).render('<%- text %>');
+            })
+            .render('<%- text %>');
 
             //find the old submitter and replace it with the new component
-            $oldCompiledSubmitter = $compiledForm.find('.form-submitter');
             taskCompiledCreationButton = taskCreationButtonFactory({
                 type : 'info',
                 icon : 'delivery',
@@ -202,33 +202,39 @@ define([
                 label : __('Publish'),
                 taskQueue : taskQueue,
                 taskCreationUrl : $compiledForm.prop('action'),
-                taskCreationData : function getTaskCreationData(){
+                taskCreationData : function getTaskCreationData() {
                     return $compiledForm.serializeArray();
                 },
                 taskReportContainer : $compiledContainer
-            }).on('finished', function(result){
+            })
+            .on('finished', function(result){
                 if (result.task
                     && result.task.report
                     && _.isArray(result.task.report.children)
                     && result.task.report.children.length
                     && result.task.report.children[0]) {
-                    if(result.task.report.children[0].data
-                        && result.task.report.children[0].data.uriResource){
+                    if (result.task.report.children[0].data
+                        && result.task.report.children[0].data.uriResource) {
                         feedback().info(__('%s completed', result.task.taskLabel));
                         refreshTree(result.task.report.children[0].data.uriResource);
-                    }else{
+                    } else {
                         this.displayReport(result.task.report.children[0], __('Error'));
                     }
                 }
-            }).on('continue', function(){
+            })
+            .on('continue', function() {
                 refreshTree();
-            }).on('error', function(err){
+            })
+            .on('error', function(err) {
                 //format and display error message to user
                 feedback().error(err);
-            }).render($oldCompiledSubmitter.closest('.form-toolbar')).disable();
-            $oldCompiledSubmitter.replaceWith(taskCompiledCreationButton.getElement().css({float: 'right'}));
+            })
+            .render($oldCompiledSubmitter.closest('.form-toolbar'))
+            .disable();
 
-            $oldLtiSubmitter = $ltiForm.find('.form-submitter');
+            //replace the old submitter with the new one
+            $oldCompiledSubmitter.replaceWith(taskCompiledCreationButton.getElement());
+
             taskLtiCreationButton = taskCreationButtonFactory({
                 type : 'info',
                 icon : 'delivery',
@@ -240,29 +246,35 @@ define([
                     return $ltiForm.serializeArray();
                 },
                 taskReportContainer : $ltiContainer
-            }).on('finished', function(result){
+            })
+            .on('finished', function(result){
                 if (result.task
                     && result.task.report
                     && _.isArray(result.task.report.children)
                     && result.task.report.children.length
                     && result.task.report.children[0]) {
-                    if(result.task.report.children[0].data
-                        && result.task.report.children[0].data.uriResource){
+
+                    if (result.task.report.children[0].data
+                        && result.task.report.children[0].data.uriResource) {
                         feedback().info(__('%s completed', result.task.taskLabel));
                         refreshTree(result.task.report.children[0].data.uriResource);
-                    }else{
+                    } else {
                         this.displayReport(result.task.report.children[0], __('Error'));
                     }
                 }
-            }).on('continue', function(){
+            })
+            .on('continue', function(){
                 refreshTree();
-            }).on('error', function(err){
+            })
+            .on('error', function(err){
                 //format and display error message to user
                 feedback().error(err);
-            }).render($oldLtiSubmitter.closest('.form-toolbar')).disable();
+            })
+            .render($oldLtiSubmitter.closest('.form-toolbar'))
+            .disable();
 
-            //replace the old submitter with the new one and apply its style
-            $oldLtiSubmitter.replaceWith(taskLtiCreationButton.getElement().css({float: 'right'}));
+            //replace the old submitter with the new one
+            $oldLtiSubmitter.replaceWith(taskLtiCreationButton.getElement());
         }
     };
 });
