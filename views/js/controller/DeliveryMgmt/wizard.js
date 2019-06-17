@@ -25,7 +25,7 @@ define([
     'util/url',
     'layout/actions',
     'core/promise',
-    'core/taskQueue/taskQueue',
+    'ui/taskQueue/taskQueue',
     'ui/taskQueueButton/standardButton',
     'ui/switch/switch',
     'css!/taoLtiConsumer/views/css/wizard.css'
