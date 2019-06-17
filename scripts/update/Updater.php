@@ -44,5 +44,7 @@ class Updater extends \common_ext_ExtensionUpdater
             $registry->registerContainerType('lti', new LtiDeliveryContainer());
             $this->setVersion('0.1.0');
         }
+
+        $this->skip('0.1.0', '0.1.1');
     }
 }
