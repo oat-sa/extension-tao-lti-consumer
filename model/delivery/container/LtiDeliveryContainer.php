@@ -24,6 +24,10 @@ use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use IMSGlobal\LTI\ToolProvider\ToolConsumer;
+use oat\oatbox\session\SessionService;
+use oat\generis\model\OntologyAwareTrait;
+use oat\tao\model\oauth\DataStore;
 
 /**
  * Class LtiDeliveryContainer
@@ -34,6 +38,7 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
  */
 class LtiDeliveryContainer extends AbstractContainer
 {
+    use OntologyAwareTrait;
     /**
      * Get the execution container to render LTI based delivery
      *
@@ -43,10 +48,27 @@ class LtiDeliveryContainer extends AbstractContainer
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
-        throw new \common_exception_NotImplemented('LTI delivery execution container is not yet implemented.');
-        $container = new ExecutionClientContainer($execution);
-        $container->setData('deliveryExecution', $execution->getIdentifier());
-        $container->setData('deliveryServerConfig', []);
+        $params = $this->getRuntimeParams();
+        $providerResource = $this->getResource($params['ltiProvider']);
+        $ltiUrl = $params['ltiPath'];
+        $ltiProvider = $providerResource->getPropertiesValues([
+            DataStore::PROPERTY_OAUTH_KEY,
+            DataStore::PROPERTY_OAUTH_SECRET,
+        ]);
+        $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
+        $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
+        $data = [
+            'lti_message_type' => 'basic-lti-launch-request',
+            'lti_version' => 'LTI-1p0',
+            'resource_link_id' => $execution->getDelivery()->getUri(),
+            'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
+            'roles' => 'Learner'
+        ];
+        $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
+
+        $container = new LtiExecutionContainer($execution);
+        $container->setData('launchUrl', $ltiUrl);
+        $container->setData('launchParams', $data);
         return $container;
     }
 }

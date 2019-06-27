@@ -138,7 +138,7 @@ class LtiDeliveryFactory extends ConfigurableService
         /** @var DeliveryContainerRegistry $registry */
         $registry = $this->propagate(DeliveryContainerRegistry::getRegistry());
         return $registry->getDeliveryContainer('lti', [
-            'ltiProvider' => $ltiProvider,
+            'ltiProvider' => $ltiProvider->getUri(),
             'ltiPath' => $ltiPath
         ]);
     }
