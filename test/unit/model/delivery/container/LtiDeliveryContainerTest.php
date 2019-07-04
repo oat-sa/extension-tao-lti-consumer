@@ -33,22 +33,22 @@ use oat\tao\model\oauth\DataStore;
  * Class LtiDeliveryContainer
  *
  * A delivery container to manage LTI based delivery
+ *
+ * @package oat\taoLtiConsumer\model\delivery\container
  */
 class LtiDeliveryContainer extends AbstractContainer
 {
     use OntologyAwareTrait;
-
     /**
      * Get the execution container to render LTI based delivery
      *
      * @param DeliveryExecution $execution
-     *
      * @return ExecutionClientContainer|ExecutionContainer
-     * @throws \common_exception_InvalidArgumentType
-     * @throws \common_exception_NotFound
+     * @throws \common_exception_NotImplemented
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
+        // TODO: this has to be covered
         $params = $this->getRuntimeParams();
         $providerResource = $this->getResource($params['ltiProvider']);
         $ltiUrl = $params['ltiPath'];
