@@ -36,7 +36,7 @@ class LtiExecutionContainer extends AbstractExecutionContainer
     /**
      * @inheritDoc
      */
-    protected $contentTemplate = 'container/template.tpl';
+    protected $contentTemplate = 'container/ltiExecutionContainerForm.tpl';
 
     /**
      * The name of the extension containing the loader template
