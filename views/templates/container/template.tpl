@@ -7,3 +7,7 @@ foreach (get_data('launchParams') as $key => $value) {
 ?>
     <input type="submit"/>
 </form>
+<script>
+    form = document.getElementById('launch-test-form');
+    form.submit();
+</script>

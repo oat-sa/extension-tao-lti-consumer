@@ -54,17 +54,22 @@ class LtiDeliveryContainer extends AbstractContainer
         $ltiProvider = $providerResource->getPropertiesValues([
             DataStore::PROPERTY_OAUTH_KEY,
             DataStore::PROPERTY_OAUTH_SECRET,
+            DataStore::PROPERTY_OAUTH_CALLBACK,
         ]);
         $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
         $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
+        $consumerCallback = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_CALLBACK]);
+        var_dump($consumerCallback);
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
             'lti_version' => 'LTI-1p0',
             'resource_link_id' => $execution->getDelivery()->getUri(),
             'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
-            'roles' => 'Learner'
+            'roles' => 'Learner',
+            'oauth_callback' => $consumerCallback,
         ];
         $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
+        var_dump($data);
 
         $container = new LtiExecutionContainer($execution);
         $container->setData('launchUrl', $ltiUrl);
