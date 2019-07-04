@@ -1,3 +1,7 @@
+<?php
+use oat\tao\helpers\Template;
+?>
+
 <h1>Launching test...</h1>
 
 <form action="<?= get_data('launchUrl') ?>" method="post" id="launch-test-form" style="display:none;"">
@@ -9,7 +13,4 @@ foreach (get_data('launchParams') as $key => $value) {
 ?>
     <input type="submit"/>
 </form>
-<script>
-    form = document.getElementById('launch-test-form');
-    form.submit();
-</script>
+<script src="<?= Template::js('ltiConsumerLauncher.js', 'taoLtiConsumer')?>"></script>

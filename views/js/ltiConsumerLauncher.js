@@ -17,10 +17,12 @@
  * 
  */
 
-define({
-    'DeliveryMgmt': {
-        'actions' : {
-            'wizard' : 'controller/DeliveryMgmt/wizard'
-        }
-    },
-});
+ /**
+ * Form submit handler for ltiExecutionContainerForm.tpl
+ */
+ (() => {
+    const form = document.getElementById('launch-test-form');
+    form.submit();
+ })();
+
+
