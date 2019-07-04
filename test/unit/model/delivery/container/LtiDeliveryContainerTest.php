@@ -18,63 +18,135 @@
  *
  */
 
-namespace oat\taoLtiConsumer\model\delivery\container;
+namespace oat\taoLtiConsumer\test\unit\model\delivery\container;
 
-use oat\taoDelivery\model\container\delivery\AbstractContainer;
-use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
-use oat\taoDelivery\model\container\ExecutionContainer;
-use oat\taoDelivery\model\execution\DeliveryExecution;
+use core_kernel_classes_Resource as RdfResource;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
+use oat\generis\model\data\Model;
+use oat\generis\test\unit\OntologyMockTest;
 use oat\oatbox\session\SessionService;
-use oat\generis\model\OntologyAwareTrait;
+use oat\oatbox\user\User;
 use oat\tao\model\oauth\DataStore;
+use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+use oat\taoLtiConsumer\model\delivery\container\LtiExecutionContainer;
+use phpmock\MockBuilder;
+use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
-/**
- * Class LtiDeliveryContainer
- *
- * A delivery container to manage LTI based delivery
- *
- * @package oat\taoLtiConsumer\model\delivery\container
- */
-class LtiDeliveryContainer extends AbstractContainer
+class LtiDeliveryContainerTest extends OntologyMockTest
 {
-    use OntologyAwareTrait;
-    /**
-     * Get the execution container to render LTI based delivery
-     *
-     * @param DeliveryExecution $execution
-     * @return ExecutionClientContainer|ExecutionContainer
-     * @throws \common_exception_NotImplemented
-     */
-    public function getExecutionContainer(DeliveryExecution $execution)
+    public function testGetExecutionContainer()
     {
-        // TODO: this has to be covered
-        $params = $this->getRuntimeParams();
-        $providerResource = $this->getResource($params['ltiProvider']);
-        $ltiUrl = $params['ltiPath'];
-        $ltiProvider = $providerResource->getPropertiesValues([
+        $resourceLinkId = 'id of the resource';
+        $identifier = 'delivery identifier';
+        $ltiProviderId = 'lti provider id';
+        $ltiUrl = 'path to lti';
+        $consumerKey = 'consumerKey';
+        $consumerSecret = 'consumerSecret';
+        $consumerCallback = 'consumerCallback';
+        $userId = 'userId';
+        $md5 = 'random-md5';
+
+        $params = [
+            'ltiProvider' => $ltiProviderId,
+            'ltiPath' => $ltiUrl,
+        ];
+        $ltiProvider = [
+            DataStore::PROPERTY_OAUTH_KEY => [$consumerKey],
+            DataStore::PROPERTY_OAUTH_SECRET => [$consumerSecret],
+            DataStore::PROPERTY_OAUTH_CALLBACK => [$consumerCallback],
+        ];
+
+        /** @var RdfResource|MockObject $delivery */
+        $delivery = $this->getMockBuilder(RdfResource::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getUri'])
+            ->getMock();
+        $delivery->method('getUri')->willReturn($resourceLinkId);
+
+        /** @var DeliveryExecution|MockObject $execution */
+        $execution = $this->getMockBuilder(DeliveryExecution::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getDelivery', 'getIdentifier'])
+            ->getMock();
+        $execution->method('getDelivery')->willReturn($delivery);
+        $execution->method('getIdentifier')->willReturn($identifier);
+
+        /** @var RdfResource|MockObject $providerResource */
+        $providerResource = $this->getMockBuilder(RdfResource::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getPropertiesValues'])
+            ->getMock();
+        $providerResource->method('getPropertiesValues')->with([
             DataStore::PROPERTY_OAUTH_KEY,
             DataStore::PROPERTY_OAUTH_SECRET,
             DataStore::PROPERTY_OAUTH_CALLBACK,
-        ]);
-        $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
-        $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
-        $consumerCallback = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_CALLBACK]);
+        ])->willReturn($ltiProvider);
+
+        /** @var Model|MockObject $providerModel */
+        $providerModel = $this->getMockBuilder(Model::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getResource'])
+            ->getMockForAbstractClass();
+        $providerModel->method('getResource')->with($ltiProviderId)->willReturn($providerResource);
+
+        /** @var User|MockObject $serviceLocator */
+        $user = $this->getMockBuilder(User::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getIdentifier'])
+            ->getMockForAbstractClass();
+        $user->method('getIdentifier')->willReturn($userId);
+
+        /** @var SessionService|MockObject $serviceLocator */
+        $sessionService = $this->getMockBuilder(SessionService::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getCurrentUser'])
+            ->getMock();
+        $sessionService->method('getCurrentUser')->willReturn($user);
+
+        /** @var ServiceLocatorInterface|MockObject $serviceLocator */
+        $serviceLocator = $this->getMockBuilder(ServiceLocatorInterface::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['get'])
+            ->getMockForAbstractClass();
+        $serviceLocator->method('get')->with(SessionService::SERVICE_ID)->willReturn($sessionService);
 
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
             'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $execution->getDelivery()->getUri(),
-            'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
+            'resource_link_id' => $resourceLinkId,
+            'user_id' => $userId,
             'roles' => 'Learner',
             'launch_presentation_return_url' => $consumerCallback,
-            'lis_result_sourcedid' => $execution->getIdentifier(),
+            'lis_result_sourcedid' => $identifier,
         ];
+
+        // Mock general scope's md5 function to have a testable signature.
+        $builder = new MockBuilder();
+        $builder->setNamespace('IMSGlobal\LTI\OAuth')
+            ->setName("md5")
+            ->setFunction(
+                function () use ($md5) {
+                    return $md5;
+                }
+            );
+
+        $mock = $builder->build();
+        $mock->enable();
         $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
 
-        $container = new LtiExecutionContainer($execution);
-        $container->setData('launchUrl', $ltiUrl);
-        $container->setData('launchParams', $data);
-        return $container;
+        $subject = new LtiDeliveryContainer();
+
+        $subject->setRuntimeParams($params);
+        $subject->setModel($providerModel);
+        $subject->setServiceLocator($serviceLocator);
+
+        $expected = new LtiExecutionContainer($execution);
+        $expected->setData('launchUrl', $ltiUrl);
+        $expected->setData('launchParams', $data);
+
+        $this->assertEquals($expected, $subject->getExecutionContainer($execution));
+        $mock->disable();
     }
 }
