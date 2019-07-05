@@ -17,29 +17,12 @@
  *
  */
 
-/**
- * configure the extension bundles
- * @author Bertrand Chevrier <bertrand@taotesting.com>
+ /**
+ * Form submit handler for ltiExecutionContainerForm.tpl
  */
-module.exports = function(grunt) {
-    'use strict';
+ (() => {
+    const form = document.getElementById('launch-test-form');
+    form.submit();
+ })();
 
-    grunt.config.merge({
-        bundle : {
-            taolticonsumer : {
-                options : {
-                    extension : 'taoLtiConsumer',
-                    outputDir : 'loader',
-                    bundles : [{
-                        name : 'taoLtiConsumer',
-                        default : true,
-                        babel: true,
-                    }]
-                }
-            }
-        }
-    });
 
-    // bundle task
-    grunt.registerTask('taolticonsumerbundle', ['bundle:taolticonsumer']);
-};

@@ -20,6 +20,10 @@
 
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
+use common_exception_InconsistentData as InconsistentDataException;
+use common_report_Report as Report;
+use core_kernel_classes_Resource as RdfResource;
+use core_kernel_classes_Class as RdfClass;
 use oat\generis\model\OntologyRdfs;
 use oat\tao\model\taskQueue\Task\TaskInterface;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
@@ -36,8 +40,6 @@ use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
  * Class LtiDeliveryFactory
  *
  * A factory to create LTI based delivery, this creation can done in a deferred way
- *
- * @package oat\taoLtiConsumer\model\delivery\factory
  */
 class LtiDeliveryFactory extends ConfigurableService
 {
@@ -46,20 +48,21 @@ class LtiDeliveryFactory extends ConfigurableService
     /**
      * Create a LTI based delivery under $delvieryClass with $provider & $ltiPath
      *
-     * @param \core_kernel_classes_Class $deliveryClass
-     * @param \core_kernel_classes_Resource $ltiProvider
-     * @param $ltiPath
+     * @param RdfClass $deliveryClass
+     * @param RdfResource $ltiProvider
+     * @param string $ltiPath
      * @param string $label
-     * @param \core_kernel_classes_Resource|null $deliveryResource
-     * @return \common_report_Report
-     * @throws \common_exception_InconsistentData
+     * @param RdfResource|null $deliveryResource
+     *
+     * @return Report
+     * @throws InconsistentDataException
      */
     public function create(
-        \core_kernel_classes_Class $deliveryClass,
-        \core_kernel_classes_Resource $ltiProvider,
+        RdfClass $deliveryClass,
+        RdfResource $ltiProvider,
         $ltiPath,
         $label = '',
-        \core_kernel_classes_Resource $deliveryResource = null
+        RdfResource $deliveryResource = null
     ) {
         $this->logInfo(sprintf(
             'Creating LTI delivery with LTI provider "%s" '. 'with LTI test url "%s" under delivery class "%s"',
@@ -78,17 +81,17 @@ class LtiDeliveryFactory extends ConfigurableService
             ContainerRuntime::PROPERTY_CONTAINER => json_encode($container),
         ];
 
-        if (!$deliveryResource instanceof \core_kernel_classes_Resource) {
-            $deliveryResource = $deliveryClass->createInstanceWithProperties($properties);
-        } else {
+        if ($deliveryResource instanceof RdfResource) {
             $deliveryResource->setPropertiesValues($properties);
+        } else {
+            $deliveryResource = $deliveryClass->createInstanceWithProperties($properties);
         }
 
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
         $eventManager->trigger(new DeliveryCreatedEvent($deliveryResource->getUri()));
 
-        return new \common_report_Report(
-            \common_report_Report::TYPE_SUCCESS,
+        return new Report(
+            Report::TYPE_SUCCESS,
             __('LTI delivery successfully created.'),
             $deliveryResource
         );
@@ -97,19 +100,20 @@ class LtiDeliveryFactory extends ConfigurableService
     /**
      * Create a task for LTI delivery creation
      *
-     * @param \core_kernel_classes_Class $deliveryClass
-     * @param \core_kernel_classes_Resource $ltiProvider
-     * @param $ltiPath
+     * @param RdfClass $deliveryClass
+     * @param RdfResource $ltiProvider
+     * @param string $ltiPath
      * @param string $label
-     * @param \core_kernel_classes_Resource|null $deliveryResource
+     * @param RdfResource|null $deliveryResource
+     *
      * @return TaskInterface
      */
     public function deferredCreate(
-        \core_kernel_classes_Class $deliveryClass,
-        \core_kernel_classes_Resource $ltiProvider,
+        RdfClass $deliveryClass,
+        RdfResource $ltiProvider,
         $ltiPath,
         $label = '',
-        \core_kernel_classes_Resource $deliveryResource = null
+        RdfResource $deliveryResource = null
     ) {
         $action = new LtiDeliveryCreationTask();
         $parameters = [
@@ -128,17 +132,17 @@ class LtiDeliveryFactory extends ConfigurableService
     /**
      * Retrieve the delivery container associated to LTI
      *
-     * @param \core_kernel_classes_Resource $ltiProvider
+     * @param RdfResource $ltiProvider
      * @param $ltiPath
      * @return string
-     * @throws \common_exception_InconsistentData
+     * @throws InconsistentDataException
      */
-    protected function getLtiDeliveryContainer(\core_kernel_classes_Resource $ltiProvider, $ltiPath)
+    private function getLtiDeliveryContainer(RdfResource $ltiProvider, $ltiPath)
     {
         /** @var DeliveryContainerRegistry $registry */
         $registry = $this->propagate(DeliveryContainerRegistry::getRegistry());
         return $registry->getDeliveryContainer('lti', [
-            'ltiProvider' => $ltiProvider,
+            'ltiProvider' => $ltiProvider->getUri(),
             'ltiPath' => $ltiPath
         ]);
     }

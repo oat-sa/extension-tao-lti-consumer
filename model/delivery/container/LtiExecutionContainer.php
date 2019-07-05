@@ -17,34 +17,31 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\scripts\update;
+namespace oat\taoLtiConsumer\model\delivery\container;
 
-
-use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
-use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+use oat\tao\helpers\Template;
+use oat\taoDelivery\model\container\execution\AbstractExecutionContainer;
 
 /**
- * taoLtiConsumer Updater.
+ * Class DeliveryClientContainer
  */
-class Updater extends \common_ext_ExtensionUpdater
+class LtiExecutionContainer extends AbstractExecutionContainer
 {
+    const LOADER_TEMPLATE = 'container/loader.tpl';
+    const CONTENT_TEMPLATE = 'container/ltiExecutionContainerForm.tpl';
+
     /**
-     * Perform update from $currentVersion to $versionUpdatedTo.
-     *
-     * @param string $initialVersion
-     * @return void
+     * Name of the extension containing the loader template.
      */
-    public function update($initialVersion)
+    const TEMPLATE_EXTENSION = 'taoLtiConsumer';
+
+    protected function getHeaderTemplate()
     {
-        $this->skip('0.0.0', '0.0.1');
+        return Template::getTemplate(self::LOADER_TEMPLATE, self::TEMPLATE_EXTENSION);
+    }
 
-        if ($this->isVersion('0.0.1')) {
-            $registry = DeliveryContainerRegistry::getRegistry();
-            $registry->setServiceLocator($this->getServiceManager());
-            $registry->registerContainerType('lti', new LtiDeliveryContainer());
-            $this->setVersion('0.1.0');
-        }
-
-        $this->skip('0.1.0', '0.2.0');
+    protected function getBodyTemplate()
+    {
+        return Template::getTemplate(self::CONTENT_TEMPLATE, self::TEMPLATE_EXTENSION);
     }
 }
