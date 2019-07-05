@@ -24,41 +24,24 @@ use oat\taoDelivery\model\container\execution\AbstractExecutionContainer;
 
 /**
  * Class DeliveryClientContainer
- * @package oat\taoDelivery\helper
  */
 class LtiExecutionContainer extends AbstractExecutionContainer
 {
-    /**
-     * @inheritDoc
-     */
-    protected $loaderTemplate = 'container/loader.tpl';
+    const LOADER_TEMPLATE = 'container/loader.tpl';
+    const CONTENT_TEMPLATE = 'container/ltiExecutionContainerForm.tpl';
 
     /**
-     * @inheritDoc
+     * Name of the extension containing the loader template.
      */
-    protected $contentTemplate = 'container/ltiExecutionContainerForm.tpl';
+    const TEMPLATE_EXTENSION = 'taoLtiConsumer';
 
-    /**
-     * The name of the extension containing the loader template
-     * @var string
-     */
-    protected $templateExtension = 'taoLtiConsumer';
-
-    /**
-     * {@inheritDoc}
-     * @see \oat\taoDelivery\model\container\execution\AbstractExecutionContainer::getHeaderTemplate()
-     */
     protected function getHeaderTemplate()
     {
-        return Template::getTemplate($this->loaderTemplate, $this->templateExtension);
+        return Template::getTemplate(self::LOADER_TEMPLATE, self::TEMPLATE_EXTENSION);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see \oat\taoDelivery\model\container\execution\AbstractExecutionContainer::getBodyTemplate()
-     */
     protected function getBodyTemplate()
     {
-        return Template::getTemplate($this->contentTemplate, $this->templateExtension);
+        return Template::getTemplate(self::CONTENT_TEMPLATE, self::TEMPLATE_EXTENSION);
     }
 }
