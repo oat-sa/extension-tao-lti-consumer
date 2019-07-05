@@ -6,9 +6,9 @@ use oat\tao\helpers\Template;
 
 <form action="<?= get_data('launchUrl') ?>" method="post" id="launch-test-form" style="display:none;"">
 <?php 
-foreach (get_data('launchParams') as $key => $value) {
+foreach (get_data('launchParams') as $key => $value):
     echo '<input type="hidden" name="' . $key . '" value="' . $value . '"/>' . PHP_EOL;
-}
+endforeach;
 ?>
     <input type="submit"/>
 </form>
