@@ -20,12 +20,14 @@
 
 namespace oat\taoLtiConsumer\model\delivery\task;
 
+use core_kernel_classes_Class as RdfClass;
+use common_exception_InconsistentData as InconsistentDataException;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\extension\AbstractAction;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use common_report_Report as Report;
-use common_exception_MissingParameter as MissingParameter;
+use common_exception_MissingParameter as MissingParameterException;
 
 class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializable
 {
@@ -37,33 +39,26 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
      * The only responsability of this task is to parse parameters and forward request to LtiDeliveryFactory
      *
      * @param array $params
-     * @throws \common_exception_MissingParameter
-     * @throws \common_exception_InconsistentData
+     * @throws MissingParameterException
+     * @throws InconsistentDataException
      * @return Report
      */
     public function __invoke($params)
     {
         if (!isset($params['ltiProvider'])) {
-            throw new MissingParameter('Missing parameter `ltiProvider` in ' . self::class);
+            throw new MissingParameterException('ltiProvider', self::class);
         }
 
         if (!isset($params['ltiPath'])) {
-            throw new MissingParameter('Missing parameter `ltiPath` in ' . self::class);
+            throw new MissingParameterException('ltiPath', self::class);
         }
 
-        if (isset($params['deliveryClass'])) {
-            $deliveryClass = $this->getClass($params['deliveryClass']);
-            if (!$deliveryClass->exists()) {
-                $deliveryClass = $this->getClass(DeliveryAssemblyService::CLASS_URI);
-            }
-        } else {
-            $deliveryClass = $this->getClass(DeliveryAssemblyService::CLASS_URI);
-        }
+        $deliveryClass = $this->getDeliveryClass($params);
 
         $ltiProvider = $this->getResource($params['ltiProvider']);
-        $ltiPath = $params['ltiProvider'];
+        $ltiPath = $params['ltiPath'];
         $label = isset($params['label']) ? $params['label'] : '';
-        $deliveryResource = isset($params['deliveryResource']) ? $this->getResource($params['deliveryResource']) : null;
+        $deliveryResource = isset($params['deliveryResource'])? $this->getResource($params['deliveryResource']) : null;
 
         /** @var Report $report */
         $report = $this->getLtiDeliveryFactory()->create(
@@ -91,5 +86,22 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
     protected function getLtiDeliveryFactory()
     {
         return $this->getServiceLocator()->get(LtiDeliveryFactory::class);
+    }
+
+    /**
+     * @param $params
+     *
+     * @return RdfClass
+     */
+    protected function getDeliveryClass($params)
+    {
+        if (isset($params['deliveryClass'])) {
+            $deliveryClass = $this->getClass($params['deliveryClass']);
+            if ($deliveryClass->exists()) {
+                return $deliveryClass;
+            }
+        }
+
+        return $this->getClass(DeliveryAssemblyService::CLASS_URI);
     }
 }
