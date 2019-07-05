@@ -75,6 +75,7 @@ class LtiDeliveryContainer extends AbstractContainer
         $container = new LtiExecutionContainer($execution);
         $container->setData('launchUrl', $ltiUrl);
         $container->setData('launchParams', $data);
+
         return $container;
     }
 }
