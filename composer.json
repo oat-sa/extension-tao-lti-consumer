@@ -27,9 +27,6 @@
   "require": {
     "oat-sa/oatbox-extension-installer": "~1.1||dev-master"
   },
-  "require-dev": {
-    "php-mock/php-mock": "^2.0"
-  },
   "autoload" : {
     "psr-4" : {
       "oat\\taoLtiConsumer\\" : ""
