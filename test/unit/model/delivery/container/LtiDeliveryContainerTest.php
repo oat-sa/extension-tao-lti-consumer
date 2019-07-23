@@ -44,7 +44,7 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $ltiUrl = 'path to lti';
         $consumerKey = 'consumerKey';
         $consumerSecret = 'consumerSecret';
-        $consumerCallback = 'consumerCallback';
+        $returnUrl = 'returnUrl';
         $userId = 'userId';
         $md5 = 'random-md5';
 
@@ -55,7 +55,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $ltiProvider = [
             DataStore::PROPERTY_OAUTH_KEY => [$consumerKey],
             DataStore::PROPERTY_OAUTH_SECRET => [$consumerSecret],
-            DataStore::PROPERTY_OAUTH_CALLBACK => [$consumerCallback],
         ];
 
         /** @var RdfResource|MockObject $delivery */
@@ -81,7 +80,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $providerResource->method('getPropertiesValues')->with([
             DataStore::PROPERTY_OAUTH_KEY,
             DataStore::PROPERTY_OAUTH_SECRET,
-            DataStore::PROPERTY_OAUTH_CALLBACK,
         ])->willReturn($ltiProvider);
 
         /** @var Model|MockObject $providerModel */
@@ -118,23 +116,15 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             'resource_link_id' => $resourceLinkId,
             'user_id' => $userId,
             'roles' => 'Learner',
-            'launch_presentation_return_url' => $consumerCallback,
+            'launch_presentation_return_url' => $returnUrl,
             'lis_result_sourcedid' => $identifier,
         ];
 
         // Mock general scope's md5 function to have a testable signature.
-        $builder = new MockBuilder();
-        $builder->setNamespace('IMSGlobal\LTI\OAuth')
-            ->setName("md5")
-            ->setFunction(
-                function () use ($md5) {
-                    return $md5;
-                }
-            );
-
-        $mock = $builder->build();
-        $mock->enable();
+        $mockedMd5 = $this->mockGlobalFunction('IMSGlobal\LTI\OAuth', 'md5', $md5);
         $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
+
+        $mockedUrl = $this->mockGlobalFunction('oat\taoLtiConsumer\model\delivery\container', '_url', $returnUrl);
 
         $subject = new LtiDeliveryContainer();
 
@@ -147,6 +137,25 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $expected->setData('launchParams', $data);
 
         $this->assertEquals($expected, $subject->getExecutionContainer($execution));
-        $mock->disable();
+        $mockedMd5->disable();
+        $mockedUrl->disable();
+    }
+
+    public function mockGlobalFunction($namespace, $name, $value)
+    {
+        // Mock general scope's md5 function to have a testable signature.
+        $builder = new MockBuilder();
+        $builder->setNamespace($namespace)
+            ->setName($name)
+            ->setFunction(
+                function () use ($value) {
+                    return $value;
+                }
+            );
+
+        $mock = $builder->build();
+        $mock->enable();
+
+        return $mock;
     }
 }
