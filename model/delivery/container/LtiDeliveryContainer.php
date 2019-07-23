@@ -55,11 +55,10 @@ class LtiDeliveryContainer extends AbstractContainer
         $ltiProvider = $providerResource->getPropertiesValues([
             DataStore::PROPERTY_OAUTH_KEY,
             DataStore::PROPERTY_OAUTH_SECRET,
-            DataStore::PROPERTY_OAUTH_CALLBACK,
         ]);
         $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
         $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
-        $consumerCallback = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_CALLBACK]);
+        $returnUrl = _url('index', 'DeliveryServer', 'taoDelivery');
 
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
@@ -67,7 +66,7 @@ class LtiDeliveryContainer extends AbstractContainer
             'resource_link_id' => $execution->getDelivery()->getUri(),
             'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
             'roles' => 'Learner',
-            'launch_presentation_return_url' => $consumerCallback,
+            'launch_presentation_return_url' => $returnUrl,
             'lis_result_sourcedid' => $execution->getIdentifier(),
         ];
         $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
