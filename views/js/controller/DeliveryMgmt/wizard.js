@@ -23,49 +23,36 @@ define([
     'taoDeliveryRdf/util/providers',
     'taoLtiConsumer/util/providers',
     'taoDeliveryRdf/util/forms/inputBehaviours',
-    'ui/switch/switch',
+    'ui/tabs',
     'css!taoLtiConsumerCss/wizard.css'
-], function($, __, testProviders, ltiProviders, inputBehaviours, switchFactory) {
+], function($, __, testProviders, ltiProviders, inputBehaviours, tabsComponent) {
     'use strict';
 
     const providers = Object.assign({}, testProviders, ltiProviders);
 
     return {
         // Builds form elements & defines button actions
-        start: function() {
-            var $multiForm = $('.multi-form-container');
-            var $switch = $('.form-switch', $multiForm);
+        start() {
+            const $multiForm = $('.multi-form-container');
 
-            var $compiledForm = $('#simpleWizard');
-            var $ltiForm = $('#simpleLtiWizard');
+            const $compiledForm = $('#simpleWizard');
+            const $ltiForm = $('#simpleLtiWizard');
 
-            var $testFilterContainer = $compiledForm.find('.test-select-container');
-            var $providerFilterContainer = $ltiForm.find('.lti-provider-select-container');
+            const $testFilterContainer = $compiledForm.find('.test-select-container');
+            const $providerFilterContainer = $ltiForm.find('.lti-provider-select-container');
 
-            var $testFormElement = $('#test');
-            var $providerFormElement = $('#ltiProvider');
+            const $testFormElement = $('input#test');
+            const $providerFormElement = $('input#ltiProvider');
 
-            var $compiledFormContentBlock = $('.compiled-delivery-form-content');
-            var $ltiFormContentBlock = $('.lti-delivery-form-content');
+            const $compiledContainer = $compiledForm.closest('.content-block');
+            const $ltiContainer = $ltiForm.closest('.content-block');
 
-            var $compiledContainer = $compiledForm.closest('.content-block');
-            var $ltiContainer = $ltiForm.closest('.content-block');
-
-            $ltiFormContentBlock.addClass('hidden');
-
-            switchFactory($switch, {
-                off: {
-                    label: __('TAO delivery'),
-                    active: true
-                },
-                on: {
-                    label: __('LTI based delivery'),
-                },
-                monoStyle: true
-            })
-            .on('change', function() {
-                $compiledFormContentBlock.toggleClass('hidden');
-                $ltiFormContentBlock.toggleClass('hidden');
+            tabsComponent({
+                renderTo: $('.tab-selector', $multiForm),
+                tabs: [
+                    { label: __('TAO Local'), name: 'tao-local' },
+                    { label: __('LTI-based'), name: 'lti-based' }
+                ]
             });
 
             // Replace submit button with taskQueue requester

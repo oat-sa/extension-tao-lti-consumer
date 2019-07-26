@@ -11,12 +11,9 @@ Template::inc('form_context.tpl', 'tao');
 
     <div class="multi-form-container">
 
-        <div class="form-switch-block">
-            <label class="form_desc"><?= __('Delivery method') ?></label>
-            <div class="form-switch"></div>
-        </div>
+        <nav class="tab-selector"></nav>
 
-        <div class="compiled-delivery-form-content">
+        <div class="compiled-delivery-form-content" data-tab-content="tao-local">
             <?php if (!empty(get_data('compiled-form-message'))): ?>
                 <div class="feedback-warning">
                     <span class="icon-warning"></span><?= get_data('compiled-form-message') ?>
@@ -28,7 +25,7 @@ Template::inc('form_context.tpl', 'tao');
             <?= get_data('compiled-delivery-form') ?>
         </div>
 
-        <div class="lti-delivery-form-content">
+        <div class="lti-delivery-form-content" data-tab-content="lti-based">
             <?php if (!empty(get_data('lti-form-message'))): ?>
                 <div class="feedback-warning">
                     <span class="icon-warning"></span><?= get_data('lti-form-message') ?>
