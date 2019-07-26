@@ -18,90 +18,20 @@
  */
 
 define([
-    'lodash',
     'jquery',
     'i18n',
-    'ui/filter',
-    'ui/feedback',
-    'util/url',
-    'layout/actions',
-    'core/promise',
-    'ui/taskQueue/taskQueue',
-    'ui/taskQueueButton/standardButton',
+    'taoDeliveryRdf/util/providers',
+    'taoLtiConsumer/util/providers',
+    'taoDeliveryRdf/util/forms/inputBehaviours',
     'ui/switch/switch',
     'css!taoLtiConsumerCss/wizard.css'
-], function(_, $, __, filterFactory, feedback, urlUtils, actionManager, Promise, taskQueue, taskCreationButtonFactory, switchFactory) {
+], function($, __, testProviders, ltiProviders, inputBehaviours, switchFactory) {
     'use strict';
 
-    var provider = {
-        /**
-         * List available Lti providers
-         * @param {Object} data - the query parameters
-         * @returns {Promise}
-         */
-        listProviders: function listProviders(data) {
-            return new Promise(function(resolve, reject) {
-                $.ajax({
-                    url: urlUtils.route('getAvailableLtiProviders', 'DeliveryMgmt', 'taoLtiConsumer'),
-                    data: {
-                        q: data.q,
-                        page: data.page
-                    },
-                    type: 'GET',
-                    dataType: 'JSON'
-                }).done(function(tests) {
-                    if (tests) {
-                        resolve(tests);
-                    } else {
-                        reject(new Error(__('Unable to load lti providers')));
-                    }
-                }).fail(function() {
-                    reject(new Error(__('Unable to load lti providers')));
-                });
-            });
-        },
-
-        /**
-         * List available tests
-         * @param {Object} data - the query parameters
-         * @returns {Promise}
-         */
-        listTests: function listTests(data) {
-            return new Promise(function(resolve, reject) {
-                $.ajax({
-                    url: urlUtils.route('getAvailableTests', 'DeliveryMgmt', 'taoDeliveryRdf'),
-                    data: {
-                        q: data.q,
-                        page: data.page
-                    },
-                    type: 'GET',
-                    dataType: 'JSON'
-                }).done(function(tests) {
-                    if (tests) {
-                        resolve(tests);
-                    } else {
-                        reject(new Error(__('Unable to load tests')));
-                    }
-                }).fail(function() {
-                    reject(new Error(__('Unable to load tests')));
-                });
-            });
-        }
-    };
-
-    /**
-     * wrapped the old jstree API used to refresh the tree and optionally select a resource
-     * @param {String} [uriResource] - the uri resource node to be selected
-     */
-    var refreshTree = function refreshTree(uriResource){
-        actionManager.trigger('refresh', {
-            uri : uriResource
-        });
-    };
+    const providers = Object.assign({}, testProviders, ltiProviders);
 
     return {
         // Builds form elements & defines button actions
-        // TODO: refactor into some logical functions and deduplicate a little
         start: function() {
             var $multiForm = $('.multi-form-container');
             var $switch = $('.form-switch', $multiForm);
@@ -121,12 +51,6 @@ define([
             var $compiledContainer = $compiledForm.closest('.content-block');
             var $ltiContainer = $ltiForm.closest('.content-block');
 
-            var $oldCompiledSubmitter = $compiledForm.find('.form-submitter');
-            var $oldLtiSubmitter = $ltiForm.find('.form-submitter');
-
-            var taskCompiledCreationButton;
-            var taskLtiCreationButton;
-
             $ltiFormContentBlock.addClass('hidden');
 
             switchFactory($switch, {
@@ -144,142 +68,45 @@ define([
                 $ltiFormContentBlock.toggleClass('hidden');
             });
 
-
-            this.createTestSelector({
-                filterContainer: $testFilterContainer,
-                formElement: $testFormElement,
-                button: taskCompiledCreationButton,
-                dataProvider: provider.listTests,
-                placeholder: __('Select the test you want to publish to the test-takers'),
-                label: __('Select the test')
+            // Replace submit button with taskQueue requester
+            const taskButton = inputBehaviours.replaceSubmitWithTaskButton({
+                $form: $compiledForm,
+                $reportContainer: $compiledContainer,
+                buttonTitle: __('Publish the test'),
+                buttonLabel: __('Publish')
             });
 
-            this.createTestSelector({
-                filterContainer: $providerFilterContainer,
-                formElement: $providerFormElement,
-                button: taskLtiCreationButton,
-                dataProvider: provider.listProviders,
-                placeholder: __('Select the Provider you want to publish'),
-                label: __('LTI Provider')
+            // Replace submit button with taskQueue requester
+            const ltiTaskButton = inputBehaviours.replaceSubmitWithTaskButton({
+                $form: $ltiForm,
+                $reportContainer: $ltiContainer,
+                buttonTitle: __('Publish the test'),
+                buttonLabel: __('Publish')
             });
 
-
-
-            //find the old submitter and replace it with the new component
-            taskCompiledCreationButton = taskCreationButtonFactory({
-                type : 'info',
-                icon : 'delivery',
-                title : __('Publish the test'),
-                label : __('Publish'),
-                taskQueue : taskQueue,
-                taskCreationUrl : $compiledForm.prop('action'),
-                taskCreationData : function getTaskCreationData() {
-                    return $compiledForm.serializeArray();
+            // Enhanced selector input for tests:
+            inputBehaviours.createSelectorInput({
+                $filterContainer: $testFilterContainer,
+                $formElement: $testFormElement,
+                taskButton: taskButton,
+                dataProvider: {
+                    list: providers.listTests
                 },
-                taskReportContainer : $compiledContainer
-            })
-            .on('finished', function(result){
-                if (result.task
-                    && result.task.report
-                    && _.isArray(result.task.report.children)
-                    && result.task.report.children.length
-                    && result.task.report.children[0]) {
-                    if (result.task.report.children[0].data
-                        && result.task.report.children[0].data.uriResource) {
-                        feedback().info(__('%s completed', result.task.taskLabel));
-                        refreshTree(result.task.report.children[0].data.uriResource);
-                    } else {
-                        this.displayReport(result.task.report.children[0], __('Error'));
-                    }
-                }
-            })
-            .on('continue', function() {
-                refreshTree();
-            })
-            .on('error', function(err) {
-                //format and display error message to user
-                feedback().error(err);
-                this.trigger('finished');
-            })
-            .render($oldCompiledSubmitter.closest('.form-toolbar'))
-            .disable();
+                inputPlaceholder: __('Select the test you want to publish to the test-takers'),
+                inputLabel: __('Select the test')
+            });
 
-            //replace the old submitter with the new one
-            $oldCompiledSubmitter.replaceWith(taskCompiledCreationButton.getElement());
-
-
-
-            taskLtiCreationButton = taskCreationButtonFactory({
-                type : 'info',
-                icon : 'delivery',
-                title : __('Publish the test'),
-                label : __('Publish'),
-                taskQueue : taskQueue,
-                taskCreationUrl : $ltiForm.prop('action'),
-                taskCreationData : function getTaskCreationData(){
-                    return $ltiForm.serializeArray();
+            // Enhanced selector input for LTI providers:
+            inputBehaviours.createSelectorInput({
+                $filterContainer: $providerFilterContainer,
+                $formElement: $providerFormElement,
+                taskButton: ltiTaskButton,
+                dataProvider: {
+                    list: providers.listLtiProviders
                 },
-                taskReportContainer : $ltiContainer
-            })
-            .on('finished', function(result){
-                if (result.task
-                    && result.task.report
-                    && _.isArray(result.task.report.children)
-                    && result.task.report.children.length
-                    && result.task.report.children[0]) {
-
-                    if (result.task.report.children[0].data
-                        && result.task.report.children[0].data.uriResource) {
-                        feedback().info(__('%s completed', result.task.taskLabel));
-                        refreshTree(result.task.report.children[0].data.uriResource);
-                    } else {
-                        this.displayReport(result.task.report.children[0], __('Error'));
-                    }
-                }
-            })
-            .on('continue', function(){
-                refreshTree();
-            })
-            .on('error', function(err){
-                //format and display error message to user
-                feedback().error(err);
-                this.trigger('finished');
-            })
-            .render($oldLtiSubmitter.closest('.form-toolbar'))
-            .disable();
-
-            //replace the old submitter with the new one
-            $oldLtiSubmitter.replaceWith(taskLtiCreationButton.getElement());
-        },
-
-        createTestSelector: function createTestSelector(options) {
-            //TODO: unpack options
-            filterFactory($filterContainer, {
-                placeholder: __('Select the test you want to publish to the test-takers'),
-                width: '64%',
-                quietMillis: 1000,
-                label: __('Select the test')
-            })
-            .on('change', function(chosenTest) {
-                $formElement.val(chosenTest);
-                if (chosenTest) {
-                    taskCompiledCreationButton.enable();
-                } else {
-                    taskCompiledCreationButton.disable();
-                }
-            })
-            .on('request', function(params) {
-                provider
-                    .listTests(params.data)
-                    .then(function(tests) {
-                        params.success(tests);
-                    })
-                    .catch(function(err) {
-                        params.error(err);
-                        feedback().error(err);
-                    });
-            })
-            .render('<%- text %>');
+                inputPlaceholder: __('Select the Provider you want to publish'),
+                inputLabel: __('LTI Provider')
+            });
         }
     };
 });
