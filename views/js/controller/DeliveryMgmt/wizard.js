@@ -144,59 +144,26 @@ define([
                 $ltiFormContentBlock.toggleClass('hidden');
             });
 
-            filterFactory($testFilterContainer, {
-                placeholder: __('Select the test you want to publish to the test-takers'),
-                width: '64%',
-                quietMillis: 1000,
-                label: __('Select the test')
-            })
-            .on('change', function(chosenTest) {
-                $testFormElement.val(chosenTest);
-                if (chosenTest) {
-                    taskCompiledCreationButton.enable();
-                } else {
-                    taskCompiledCreationButton.disable();
-                }
-            })
-            .on('request', function(params) {
-                provider
-                    .listTests(params.data)
-                    .then(function(tests) {
-                        params.success(tests);
-                    })
-                    .catch(function(err) {
-                        params.error(err);
-                        feedback().error(err);
-                    });
-            })
-            .render('<%- text %>');
 
-            filterFactory($providerFilterContainer, {
+            this.createTestSelector({
+                filterContainer: $testFilterContainer,
+                formElement: $testFormElement,
+                button: taskCompiledCreationButton,
+                dataProvider: provider.listTests,
+                placeholder: __('Select the test you want to publish to the test-takers'),
+                label: __('Select the test')
+            });
+
+            this.createTestSelector({
+                filterContainer: $providerFilterContainer,
+                formElement: $providerFormElement,
+                button: taskLtiCreationButton,
+                dataProvider: provider.listProviders,
                 placeholder: __('Select the Provider you want to publish'),
-                width: '64%',
-                quietMillis: 1000,
                 label: __('LTI Provider')
-            })
-            .on('change', function(chosenProvider) {
-                $providerFormElement.val(chosenProvider);
-                if (chosenProvider) {
-                    taskLtiCreationButton.enable();
-                } else {
-                    taskLtiCreationButton.disable();
-                }
-            })
-            .on('request', function(params) {
-                provider
-                    .listProviders(params.data)
-                    .then(function(tests) {
-                        params.success(tests);
-                    })
-                    .catch(function(err) {
-                        params.error(err);
-                        feedback().error(err);
-                    });
-            })
-            .render('<%- text %>');
+            });
+
+
 
             //find the old submitter and replace it with the new component
             taskCompiledCreationButton = taskCreationButtonFactory({
@@ -240,6 +207,8 @@ define([
             //replace the old submitter with the new one
             $oldCompiledSubmitter.replaceWith(taskCompiledCreationButton.getElement());
 
+
+
             taskLtiCreationButton = taskCreationButtonFactory({
                 type : 'info',
                 icon : 'delivery',
@@ -281,6 +250,36 @@ define([
 
             //replace the old submitter with the new one
             $oldLtiSubmitter.replaceWith(taskLtiCreationButton.getElement());
+        },
+
+        createTestSelector: function createTestSelector(options) {
+            //TODO: unpack options
+            filterFactory($filterContainer, {
+                placeholder: __('Select the test you want to publish to the test-takers'),
+                width: '64%',
+                quietMillis: 1000,
+                label: __('Select the test')
+            })
+            .on('change', function(chosenTest) {
+                $formElement.val(chosenTest);
+                if (chosenTest) {
+                    taskCompiledCreationButton.enable();
+                } else {
+                    taskCompiledCreationButton.disable();
+                }
+            })
+            .on('request', function(params) {
+                provider
+                    .listTests(params.data)
+                    .then(function(tests) {
+                        params.success(tests);
+                    })
+                    .catch(function(err) {
+                        params.error(err);
+                        feedback().error(err);
+                    });
+            })
+            .render('<%- text %>');
         }
     };
 });
