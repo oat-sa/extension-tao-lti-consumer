@@ -16,84 +16,73 @@
  * Copyright (c) 2019 (original work) Open Assessment Technlogies SA
  *
  */
-
+/**
+ * @author Martin Nicholson <martin@taotesting.com>
+ */
 define([
     'jquery',
     'i18n',
     'taoDeliveryRdf/util/providers',
     'taoLtiConsumer/util/providers',
     'taoDeliveryRdf/util/forms/inputBehaviours',
+    'taoLtiConsumer/util/forms/inputBehaviours',
     'ui/tabs',
     'css!taoLtiConsumerCss/wizard.css'
-], function($, __, testProviders, ltiProviders, inputBehaviours, tabsComponent) {
+], function($, __, testProviders, ltiProviders, testInputBehaviours, ltiInputBehaviours, tabsComponent) {
     'use strict';
 
+    // Extend data & behaviour providers:
     const providers = Object.assign({}, testProviders, ltiProviders);
+    const inputBehaviours = Object.assign({}, testInputBehaviours, ltiInputBehaviours);
 
     return {
-        // Builds form elements & defines button actions
+        /**
+         * Creates a tabs component if multiple forms rendered
+         * Initialises the special input fields in the forms
+         * @returns {void}
+         */
         start() {
             const $multiForm = $('.multi-form-container');
 
-            const $compiledForm = $('#simpleWizard');
-            const $ltiForm = $('#simpleLtiWizard');
+            // Extract tabs config from HTML data attrs:
+            const tabsData = $('.multi-form-container [data-tab-content]')
+            .toArray()
+            .map(el => ({
+                label: $(el).data('tab-label'),
+                name: $(el).data('tab-content')
+            }));
 
-            const $testFilterContainer = $compiledForm.find('.test-select-container');
-            const $providerFilterContainer = $ltiForm.find('.lti-provider-select-container');
+            if (tabsData.length > 1) {
+                tabsComponent({
+                    renderTo: $('.tab-selector', $multiForm),
+                    tabs: tabsData
+                });
+            }
 
-            const $testFormElement = $('input#test');
-            const $providerFormElement = $('input#ltiProvider');
+            const tabNames = tabsData.map(t => t.name);
 
-            const $compiledContainer = $compiledForm.closest('.content-block');
-            const $ltiContainer = $ltiForm.closest('.content-block');
+            if (tabNames.includes('tao-local')) {
+                this.setupTaoLocalForm();
+            }
+            if (tabNames.includes('lti-based')) {
+                this.setupLtiForm();
+            }
+        },
 
-            tabsComponent({
-                renderTo: $('.tab-selector', $multiForm),
-                tabs: [
-                    { label: __('TAO Local'), name: 'tao-local' },
-                    { label: __('LTI-based'), name: 'lti-based' }
-                ]
-            });
+        // calls setup from taoDeliveryRdf
+        setupTaoLocalForm() {
+            const $tabContent1 = $('[data-tab-content="tao-local"]');
+            const $form = $('#simpleWizard', $tabContent1);
 
-            // Replace submit button with taskQueue requester
-            const taskButton = inputBehaviours.replaceSubmitWithTaskButton({
-                $form: $compiledForm,
-                $reportContainer: $compiledContainer,
-                buttonTitle: __('Publish the test'),
-                buttonLabel: __('Publish')
-            });
+            inputBehaviours.setupTaoLocalForm($form, providers);
+        },
 
-            // Replace submit button with taskQueue requester
-            const ltiTaskButton = inputBehaviours.replaceSubmitWithTaskButton({
-                $form: $ltiForm,
-                $reportContainer: $ltiContainer,
-                buttonTitle: __('Publish the test'),
-                buttonLabel: __('Publish')
-            });
+        // calls setup from taoLtiConsumer
+        setupLtiForm() {
+            const $tabContent3 = $('[data-tab-content="lti-based"]');
+            const $form = $('#simpleWizard', $tabContent3);
 
-            // Enhanced selector input for tests:
-            inputBehaviours.createSelectorInput({
-                $filterContainer: $testFilterContainer,
-                $formElement: $testFormElement,
-                taskButton: taskButton,
-                dataProvider: {
-                    list: providers.listTests
-                },
-                inputPlaceholder: __('Select the test you want to publish to the test-takers'),
-                inputLabel: __('Select the test')
-            });
-
-            // Enhanced selector input for LTI providers:
-            inputBehaviours.createSelectorInput({
-                $filterContainer: $providerFilterContainer,
-                $formElement: $providerFormElement,
-                taskButton: ltiTaskButton,
-                dataProvider: {
-                    list: providers.listLtiProviders
-                },
-                inputPlaceholder: __('Select the Provider you want to publish'),
-                inputLabel: __('LTI Provider')
-            });
+            inputBehaviours.setupLtiForm($form, providers);
         }
     };
 });
