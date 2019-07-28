@@ -34,7 +34,7 @@ define([
          */
         setupLtiForm($form, providers) {
             const $reportContainer = $form.closest('.content-block');
-            const $providerFilterContainer = $('.test-select-container', $form);
+            const $providerFilterContainer = $('.lti-provider-select-container', $form);
             const $providerFormElement = $('#test', $form);
 
             // Replace submit button with taskQueue requester

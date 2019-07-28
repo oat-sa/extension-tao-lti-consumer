@@ -80,7 +80,7 @@ define([
         // calls setup from taoLtiConsumer
         setupLtiForm() {
             const $tabContent3 = $('[data-tab-content="lti-based"]');
-            const $form = $('#simpleWizard', $tabContent3);
+            const $form = $('#simpleLtiWizard', $tabContent3);
 
             inputBehaviours.setupLtiForm($form, providers);
         }
