@@ -45,12 +45,12 @@ define([
             const $multiForm = $('.multi-form-container');
 
             // Extract tabs config from HTML data attrs:
-            const tabsData = $('.multi-form-container [data-tab-content]')
-            .toArray()
-            .map(el => ({
-                label: $(el).data('tab-label'),
-                name: $(el).data('tab-content')
-            }));
+            const tabsData = $('[data-tab-content]', $multiForm)
+                .toArray()
+                .map(el => ({
+                    label: $(el).data('tab-label'),
+                    name: $(el).data('tab-content')
+                }));
 
             if (tabsData.length > 1) {
                 tabsComponent({
@@ -71,16 +71,16 @@ define([
 
         // calls setup from taoDeliveryRdf
         setupTaoLocalForm() {
-            const $tabContent1 = $('[data-tab-content="tao-local"]');
-            const $form = $('#simpleWizard', $tabContent1);
+            const $tabContent = $('[data-tab-content="tao-local"]');
+            const $form = $('#simpleWizard', $tabContent);
 
             inputBehaviours.setupTaoLocalForm($form, providers);
         },
 
         // calls setup from taoLtiConsumer
         setupLtiForm() {
-            const $tabContent3 = $('[data-tab-content="lti-based"]');
-            const $form = $('#simpleLtiWizard', $tabContent3);
+            const $tabContent = $('[data-tab-content="lti-based"]');
+            const $form = $('#simpleLtiWizard', $tabContent);
 
             inputBehaviours.setupLtiForm($form, providers);
         }

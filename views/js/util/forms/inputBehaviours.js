@@ -35,7 +35,7 @@ define([
         setupLtiForm($form, providers) {
             const $reportContainer = $form.closest('.content-block');
             const $providerFilterContainer = $('.lti-provider-select-container', $form);
-            const $providerFormElement = $('#test', $form);
+            const $providerInputElement = $('#ltiProvider', $form);
 
             // Replace submit button with taskQueue requester
             const ltiTaskButton = inputBehaviours.replaceSubmitWithTaskButton({
@@ -46,7 +46,7 @@ define([
             // Enhanced selector input for LTI providers:
             inputBehaviours.createSelectorInput({
                 $filterContainer: $providerFilterContainer,
-                $formElement: $providerFormElement,
+                $inputElement: $providerInputElement,
                 taskButton: ltiTaskButton,
                 dataProvider: {
                     list: providers.listLtiProviders
