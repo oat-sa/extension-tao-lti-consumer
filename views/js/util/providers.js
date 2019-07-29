@@ -46,10 +46,10 @@ define([
                     if (tests) {
                         resolve(tests);
                     } else {
-                        reject(new Error(__('Unable to load lti providers')));
+                        reject(new Error(__('Unable to load LTI providers')));
                     }
                 }).fail(function() {
-                    reject(new Error(__('Unable to load lti providers')));
+                    reject(new Error(__('Unable to load LTI providers')));
                 });
             });
         }
