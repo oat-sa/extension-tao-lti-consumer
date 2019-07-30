@@ -25,7 +25,7 @@ Template::inc('form_context.tpl', 'tao');
             <?= get_data('compiled-delivery-form') ?>
         </div>
 
-        <div class="lti-delivery-form-content" data-tab-content="lti-based" data-tab-label="LTI-based">
+        <div class="lti-delivery-form-content hidden" data-tab-content="lti-based" data-tab-label="LTI-based">
             <?php if (!empty(get_data('lti-form-message'))): ?>
                 <div class="feedback-warning">
                     <span class="icon-warning"></span><?= get_data('lti-form-message') ?>
