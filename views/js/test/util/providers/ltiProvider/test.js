@@ -21,9 +21,9 @@
  */
 define([
     'jquery',
-    'taoLtiConsumer/util/providers',
+    'taoLtiConsumer/util/providers/ltiProvider',
     'lib/jquery.mockjax/jquery.mockjax'
-], function ($, providers) {
+], function ($, ltiProvider) {
     'use strict';
 
     var requests;
@@ -37,16 +37,16 @@ define([
         $.mockjax.clear();
     });
 
-    QUnit.module('providers');
+    QUnit.module('ltiProvider');
 
     QUnit.test('module', function(assert) {
         assert.expect(1);
-        assert.equal(typeof providers, 'object', 'The providers module exposes an object');
+        assert.equal(typeof ltiProvider, 'object', 'The ltiProvider module exposes an object');
     });
 
     QUnit.test('instance API ', function(assert) {
         assert.expect(1);
-        assert.equal(typeof providers.listLtiProviders, 'function', 'The providers instance exposes a "listLtiProviders" function');
+        assert.equal(typeof ltiProvider.listLtiProviders, 'function', 'The ltiProvider instance exposes a "listLtiProviders" function');
     });
 
     requests = {
@@ -99,7 +99,7 @@ define([
 
         assert.expect(3);
 
-        prom = providers.listLtiProviders(caseData)
+        prom = ltiProvider.listLtiProviders(caseData)
             .then(function(value) {
                 assert.deepEqual(value, caseData.results, 'The promise resolved with the expected value');
                 ready();
@@ -129,7 +129,7 @@ define([
 
         assert.expect(4);
 
-        prom = providers.listLtiProviders(caseData)
+        prom = ltiProvider.listLtiProviders(caseData)
             .then(function() {
                 assert.ok(false, 'Should not resolve');
                 ready();

@@ -22,8 +22,8 @@
 define([
     'jquery',
     'i18n',
-    'taoDeliveryRdf/util/forms/inputBehaviours'
-], function ($, __, inputBehaviours) {
+    'taoDeliveryRdf/util/forms/deliveryFormHelper'
+], function ($, __, deliveryFormHelper) {
     'use strict';
 
     return {
@@ -38,13 +38,13 @@ define([
             const $providerInputElement = $('#ltiProvider', $form);
 
             // Replace submit button with taskQueue requester
-            const ltiTaskButton = inputBehaviours.replaceSubmitWithTaskButton({
+            const ltiTaskButton = deliveryFormHelper.replaceSubmitWithTaskButton({
                 $form,
                 $reportContainer
             });
 
             // Enhanced selector input for LTI providers:
-            inputBehaviours.createSelectorInput({
+            deliveryFormHelper.createSelectorInput({
                 $filterContainer: $providerFilterContainer,
                 $inputElement: $providerInputElement,
                 taskButton: ltiTaskButton,

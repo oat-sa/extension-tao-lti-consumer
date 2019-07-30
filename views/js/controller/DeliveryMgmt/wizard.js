@@ -21,19 +21,18 @@
  */
 define([
     'jquery',
-    'i18n',
-    'taoDeliveryRdf/util/providers',
-    'taoLtiConsumer/util/providers',
-    'taoDeliveryRdf/util/forms/inputBehaviours',
-    'taoLtiConsumer/util/forms/inputBehaviours',
+    'taoDeliveryRdf/util/providers/testsProvider',
+    'taoLtiConsumer/util/providers/ltiProvider',
+    'taoDeliveryRdf/util/forms/deliveryFormHelper',
+    'taoLtiConsumer/util/forms/deliveryFormHelper',
     'ui/tabs',
     'css!taoLtiConsumerCss/wizard.css'
-], function($, __, testProviders, ltiProviders, testInputBehaviours, ltiInputBehaviours, tabsComponent) {
+], function($, testsProvider, ltiProvider, rdfDeliveryFormHelper, ltiDeliveryFormHelper, tabsComponent) {
     'use strict';
 
     // Extend data & behaviour providers:
-    const providers = Object.assign({}, testProviders, ltiProviders);
-    const inputBehaviours = Object.assign({}, testInputBehaviours, ltiInputBehaviours);
+    const providers = Object.assign({}, testsProvider, ltiProvider);
+    const deliveryFormHelper = Object.assign({}, rdfDeliveryFormHelper, ltiDeliveryFormHelper);
 
     return {
         /**
@@ -74,7 +73,7 @@ define([
             const $tabContent = $('[data-tab-content="tao-local"]');
             const $form = $('#simpleWizard', $tabContent);
 
-            inputBehaviours.setupTaoLocalForm($form, providers);
+            deliveryFormHelper.setupTaoLocalForm($form, providers);
         },
 
         // calls setup from taoLtiConsumer
@@ -82,7 +81,7 @@ define([
             const $tabContent = $('[data-tab-content="lti-based"]');
             const $form = $('#simpleLtiWizard', $tabContent);
 
-            inputBehaviours.setupLtiForm($form, providers);
+            deliveryFormHelper.setupLtiForm($form, providers);
         }
     };
 });
