@@ -19,9 +19,7 @@
 
 namespace oat\taoLtiConsumer\controller;
 
-use oat\generis\model\kernel\persistence\smoothsql\search\ComplexSearchService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\generis\model\OntologyRdfs;
 use oat\tao\model\taskQueue\Task\TaskInterface;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use oat\taoLtiConsumer\model\delivery\form\LtiWizardForm;
@@ -30,7 +28,7 @@ use oat\taoDeliveryRdf\model\DeliveryFactory;
 use oat\taoDeliveryRdf\model\tasks\CompileDelivery;
 use oat\taoDeliveryRdf\view\form\WizardForm;
 use oat\taoDeliveryRdf\model\NoTestsException;
-use oat\taoLti\models\classes\ProviderService;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\delivery\form\NoLtiProviderException;
 
 /**
@@ -90,7 +88,7 @@ class DeliveryMgmt extends \tao_actions_RdfController
                 $noAvailableProvider = true;
                 $this->setData('lti-form-message', __('There are currently no lti provider available.'));
             }
-            
+
         } catch (\tao_helpers_form_Exception $e) {
             return $this->returnJson([
                 'success' => false,
@@ -114,30 +112,13 @@ class DeliveryMgmt extends \tao_actions_RdfController
     public function getAvailableLtiProviders()
     {
         $q = trim($this->getGetParameter('q'));
-        $providers = [];
 
-        /** @var ComplexSearchService $search */
-        $search = $this->getServiceLocator()->get(ComplexSearchService::SERVICE_ID);
-        try {
-            $queryBuilder = $search->query();
-            $query = $search->searchType($queryBuilder, ProviderService::CLASS_URI, true)
-                ->add(OntologyRdfs::RDFS_LABEL)
-                ->contains($q);
-            $queryBuilder->setCriteria($query);
-            $result = $search->getGateway()->search($queryBuilder);
-        } catch (\Exception $e) {
-            $this->logError('Unable to retrieve providers: ' . $e->getMessage());
-            $result = [];
-        }
+        $ltiProviderService = $this->getServiceLocator()->get(LtiProviderService::SERVICE_ID);
 
-        foreach ($result as $provider) {
-            try {
-                $providerUri = $provider->getUri();
-                $providers[] = ['id' => $providerUri, 'uri' => $providerUri, 'text' => $provider->getLabel()];
-            } catch (\Exception $e) {
-                $this->logWarning('Unable to load items for test ' . $providerUri);
-            }
-        }
+        $providers = $q === ''
+            ? $ltiProviderService->findAll()
+            : $ltiProviderService->searchByLabel($q);
+
         $this->returnJson(['total' => count($providers), 'items' => $providers]);
     }
 
