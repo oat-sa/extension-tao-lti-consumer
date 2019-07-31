@@ -28,7 +28,7 @@ return [
     'version' => '0.3.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
-        'taoLti' => '>=9.2.1',
+        'taoLti' => '>=10.3.0',
         'taoDeliveryRdf' => '>=8.0.1',
     ],
     'acl' => [
