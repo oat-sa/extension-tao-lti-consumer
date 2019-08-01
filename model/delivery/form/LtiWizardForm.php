@@ -21,13 +21,12 @@
 namespace oat\taoLtiConsumer\model\delivery\form;
 
 use common_Exception;
-use oat\generis\model\kernel\persistence\smoothsql\search\ComplexSearchService;
+use core_kernel_classes_Class as RdfClass;
 use oat\taoDeliveryRdf\view\form\WizardForm;
-use oat\taoLti\models\classes\ProviderService;
-use \tao_helpers_form_xhtml_Form as XhtmlForm;
-use \tao_helpers_form_xhtml_TagWrapper as TagWrapper;
-use \tao_helpers_form_FormFactory as FormFactory;
-use \core_kernel_classes_Class as RdfClass;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use tao_helpers_form_FormFactory as FormFactory;
+use tao_helpers_form_xhtml_Form as XhtmlForm;
+use tao_helpers_form_xhtml_TagWrapper as TagWrapper;
 
 class LtiWizardForm extends WizardForm
 {
@@ -40,12 +39,12 @@ class LtiWizardForm extends WizardForm
         $this->form = new XhtmlForm('simpleLtiWizard');
 
         $createElt = FormFactory::getElement('create', 'Free');
-        $createElt->setValue('<button class="form-submitter btn-success small" type="button"><span class="icon-publish"></span> ' .__('Publish').'</button>');
+        $createElt->setValue('<button class="form-submitter btn-success small" type="button"><span class="icon-publish"></span> ' . __('Publish') . '</button>');
         $this->form->setDecorators([
             'actions-bottom' => new TagWrapper(['tag' => 'div', 'cssClass' => 'form-toolbar']),
         ]);
-        $this->form->setActions(array(), 'top');
-        $this->form->setActions(array($createElt), 'bottom');
+        $this->form->setActions([], 'top');
+        $this->form->setActions([$createElt], 'bottom');
     }
 
     /**
@@ -65,15 +64,9 @@ class LtiWizardForm extends WizardForm
         $classUriElt->setValue($class->getUri());
         $this->form->addElement($classUriElt);
 
-        /** @var ComplexSearchService $search */
-        $search = $this->getServiceManager()->get(ComplexSearchService::SERVICE_ID);
-        $queryBuilder = $search->query();
-        $query = $search->searchType($queryBuilder , ProviderService::CLASS_URI, true);
-        $queryBuilder->setCriteria($query);
-
-        $count = $search->getGateway()->count($queryBuilder);
-
-        if (0 === $count) {
+        /** @var LtiProviderService $ltiProviderService */
+        $ltiProviderService = $this->getServiceManager()->get(LtiProviderService::SERVICE_ID);
+        if ($ltiProviderService->count() === 0) {
             throw new NoLtiProviderException();
         }
 
