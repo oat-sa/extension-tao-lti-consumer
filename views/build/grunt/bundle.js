@@ -30,6 +30,7 @@ module.exports = function(grunt) {
                 options : {
                     extension : 'taoLtiConsumer',
                     outputDir : 'loader',
+                    dependencies : ['taoDeliveryRdf'],
                     bundles : [{
                         name : 'taoLtiConsumer',
                         default : true,

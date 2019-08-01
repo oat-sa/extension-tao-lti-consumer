@@ -39,28 +39,8 @@
                     }
                 }
             }
-
-            .form-switch-block {
-                padding-bottom: 30px;
-
-                & > label {
-                    display: inline-block;
-                    width: 35%;
-                }
-                .form-switch {
-                    display: inline-block;
-                    width: 64%;
-
-                    label {
-                        display: flex;
-                        flex-wrap: nowrap;
-                        padding: 0px;
-
-                        span {
-                            padding: 2px 8px;
-                        }
-                    }
-                }
+            nav {
+                margin-bottom: 30px;
             }
         }
     }
