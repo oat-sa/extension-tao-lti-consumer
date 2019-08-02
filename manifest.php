@@ -29,7 +29,7 @@ return [
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'taoLti' => '>=10.3.0',
-        'taoDeliveryRdf' => '>=8.0.1',
+        'taoDeliveryRdf' => '>=8.3.3',
     ],
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
