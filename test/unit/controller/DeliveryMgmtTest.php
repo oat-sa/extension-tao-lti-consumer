@@ -20,34 +20,31 @@
 
 namespace oat\taoLtiConsumer\test\unit\model\delivery\container;
 
-use core_kernel_classes_Resource as RdfResource;
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
-use oat\generis\model\data\Model;
 use oat\generis\test\TestCase;
-use oat\oatbox\session\SessionService;
-use oat\oatbox\user\User;
-use oat\tao\model\oauth\DataStore;
-use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\controller\DeliveryMgmt;
-use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
-use oat\taoLtiConsumer\model\delivery\container\LtiExecutionContainer;
-use phpmock\MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 class LtiDeliveryContainerTest extends TestCase
 {
-    public function testGetAvailableLtiProviders()
+    /**
+     * @dataProvider queryStringsToTest
+     *
+     * @param $queryString
+     */
+    public function testGetLtiProvidersFromLtiProviderService($queryString)
     {
         $providers = ['whatever1', 'whatever2'];
 
         /** @var LtiProviderService|MockObject $ltiProviderService */
         $ltiProviderService = $this->getMockBuilder(LtiProviderService::class)
             ->disableOriginalConstructor()
-            ->setMethods(['findAll'])
+            ->setMethods(['findAll', 'searchByLabel'])
             ->getMockForAbstractClass();
         $ltiProviderService->method('findAll')->willReturn($providers);
+        $ltiProviderService->method('searchByLabel')->with(trim($queryString))->willReturn($providers);
 
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */
         $serviceLocator = $this->getMockBuilder(ServiceLocatorInterface::class)
@@ -56,11 +53,27 @@ class LtiDeliveryContainerTest extends TestCase
             ->getMockForAbstractClass();
         $serviceLocator->method('get')->with(LtiProviderService::SERVICE_ID)->willReturn($ltiProviderService);
 
+        /** @var ServerRequestInterface|MockObject $request */
+        $request = $this->getMockBuilder(ServerRequestInterface::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getQueryParams'])
+            ->getMockForAbstractClass();
+        $request->method('getQueryParams')->willReturn($queryString);
+
         $subject = new DeliveryMgmt();
         $subject->setServiceLocator($serviceLocator);
+        $subject->setRequest($request);
 
-        $expected = json_encode(['total' => count($providers), 'items' => $providers]);
+        $expected = ['total' => count($providers), 'items' => $providers];
 
-        $this->assertEquals($expected, $subject->getAvailableLtiProviders());
+        $this->assertEquals($expected, $subject->getLtiProvidersFromLtiProviderService());
+    }
+
+    public function queryStringsToTest()
+    {
+        return [
+            [''],
+            ['blah'],
+        ];
     }
 }
