@@ -111,6 +111,16 @@ class DeliveryMgmt extends \tao_actions_RdfController
      */
     public function getAvailableLtiProviders()
     {
+        $this->returnJson($this->getLtiProvidersFromLtiProviderService());
+    }
+
+    /**
+     * Performs the LtiProviders search.
+     *
+     * @return array
+     */
+    public function getLtiProvidersFromLtiProviderService()
+    {
         $q = trim($this->getGetParameter('q'));
 
         $ltiProviderService = $this->getServiceLocator()->get(LtiProviderService::SERVICE_ID);
@@ -119,7 +129,7 @@ class DeliveryMgmt extends \tao_actions_RdfController
             ? $ltiProviderService->findAll()
             : $ltiProviderService->searchByLabel($q);
 
-        $this->returnJson(['total' => count($providers), 'items' => $providers]);
+        return ['total' => count($providers), 'items' => $providers];
     }
 
     /**
