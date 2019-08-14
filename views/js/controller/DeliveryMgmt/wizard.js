@@ -27,7 +27,7 @@ define([
     'taoLtiConsumer/util/forms/deliveryFormHelper',
     'ui/tabs',
     'css!taoLtiConsumerCss/wizard.css'
-], function($, testsProvider, ltiProvider, rdfDeliveryFormHelper, ltiDeliveryFormHelper, tabsComponent) {
+], function($, testsProvider, ltiProvider, rdfDeliveryFormHelper, ltiDeliveryFormHelper, tabsFactory) {
     'use strict';
 
     // Extend data & behaviour providers:
@@ -51,12 +51,13 @@ define([
                     name: $(el).data('tab-content')
                 }));
 
-            if (tabsData.length > 1) {
-                tabsComponent({
-                    renderTo: $('.tab-selector', $multiForm),
-                    tabs: tabsData
-                });
-            }
+            const $tabContainer = $('.tab-selector', $multiForm);
+            const $tabsConstentContainer = $('.main-container');
+
+            tabsFactory($tabContainer, {
+                showHideTarget: $tabsConstentContainer,
+                tabs: tabsData
+            });
 
             const tabNames = tabsData.map(t => t.name);
 
