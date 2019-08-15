@@ -31,7 +31,7 @@ class CredentialsProviderFactory extends ConfigurableService
      * @param string $id
      * @return CredentialsProviderInterface
      */
-    public static function getProvider($providerName, $id)
+    public function getProvider($providerName, $id)
     {
         if (!is_subclass_of($providerName, CredentialsProviderInterface::class)) {
             throw new InvalidArgumentException(sprintf('%s is not proper credentials provider', $providerName));
