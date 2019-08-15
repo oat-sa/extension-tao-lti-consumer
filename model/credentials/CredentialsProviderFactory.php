@@ -22,8 +22,9 @@
 namespace oat\taoLtiConsumer\model\credentials;
 
 use InvalidArgumentException;
+use oat\oatbox\service\ConfigurableService;
 
-class CredentialsProviderFactory
+class CredentialsProviderFactory extends ConfigurableService
 {
     /**
      * @param $providerName

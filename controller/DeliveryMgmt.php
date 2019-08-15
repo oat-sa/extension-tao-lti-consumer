@@ -169,7 +169,7 @@ class DeliveryMgmt extends \tao_actions_RdfController
             throw new \tao_helpers_form_Exception(__('LTI based delivery cannot be created without LTI provider and LTI test url.'));
         }
 
-        $credentialsProvider = CredentialsProviderFactory::getProvider(RdfCredentialsProvider::class, $ltiDeliveryForm->getValue('ltiProvider'));
+        $credentialsProvider = $this->getServiceLocator()->get(CredentialsProviderFactory::class)->getProvider(RdfCredentialsProvider::class, $ltiDeliveryForm->getValue('ltiProvider'));
         $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
         $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
 

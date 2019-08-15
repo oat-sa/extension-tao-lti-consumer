@@ -60,7 +60,7 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
 
         $deliveryClass = $this->getDeliveryClass($params);
 
-        $ltiCredentialsProvider = CredentialsProviderFactory::getProvider($params['credentialsProviderClass'], $params['credentialsProviderId']);
+        $ltiCredentialsProvider = $this->getServiceLocator()->get(CredentialsProviderFactory::class)->getProvider($params['credentialsProviderClass'], $params['credentialsProviderId']);
         $ltiPath = $params['ltiPath'];
         $label = isset($params['label']) ? $params['label'] : '';
         $deliveryResource = isset($params['deliveryResource'])? $this->getResource($params['deliveryResource']) : null;

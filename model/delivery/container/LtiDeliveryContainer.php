@@ -94,6 +94,6 @@ class LtiDeliveryContainer extends AbstractContainer
             $providerId = $params['credentialsProviderId'];
         }
 
-        return CredentialsProviderFactory::getProvider($providerName, $providerId);
+        return $this->getServiceLocator()->get(CredentialsProviderFactory::class)->getProvider($providerName, $providerId);
     }
 }
