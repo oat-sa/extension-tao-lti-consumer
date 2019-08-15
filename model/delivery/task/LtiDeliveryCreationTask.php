@@ -25,6 +25,7 @@ use common_exception_InconsistentData as InconsistentDataException;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\extension\AbstractAction;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use oat\taoLtiConsumer\model\credentials\CredentialsProviderFactory;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use common_report_Report as Report;
 use common_exception_MissingParameter as MissingParameterException;
@@ -36,17 +37,21 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
     /**
      * Task to create LTI based delivery
      *
-     * The only responsability of this task is to parse parameters and forward request to LtiDeliveryFactory
+     * The only responsibility of this task is to parse parameters and forward request to LtiDeliveryFactory
      *
      * @param array $params
-     * @throws MissingParameterException
-     * @throws InconsistentDataException
      * @return Report
+     *@throws InconsistentDataException
+     * @throws MissingParameterException
      */
     public function __invoke($params)
     {
-        if (!isset($params['ltiProvider'])) {
-            throw new MissingParameterException('ltiProvider', self::class);
+        if (!isset($params['credentialsProviderClass'])) {
+            throw new MissingParameterException('credentialsProviderClass', self::class);
+        }
+
+        if (!isset($params['credentialsProviderId'])) {
+            throw new MissingParameterException('credentialsProviderId', self::class);
         }
 
         if (!isset($params['ltiPath'])) {
@@ -55,14 +60,14 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
 
         $deliveryClass = $this->getDeliveryClass($params);
 
-        $ltiProvider = $this->getResource($params['ltiProvider']);
+        $ltiCredentialsProvider = CredentialsProviderFactory::getProvider($params['credentialsProviderClass'], $params['credentialsProviderId']);
         $ltiPath = $params['ltiPath'];
         $label = isset($params['label']) ? $params['label'] : '';
         $deliveryResource = isset($params['deliveryResource'])? $this->getResource($params['deliveryResource']) : null;
 
         /** @var Report $report */
         $report = $this->getLtiDeliveryFactory()->create(
-            $deliveryClass, $ltiProvider, $ltiPath, $label, $deliveryResource
+            $deliveryClass, $ltiCredentialsProvider, $ltiPath, $label, $deliveryResource
         );
 
         if ($report->getType() === Report::TYPE_ERROR) {

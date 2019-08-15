@@ -21,6 +21,8 @@ namespace oat\taoLtiConsumer\controller;
 
 use oat\generis\model\OntologyAwareTrait;
 use oat\tao\model\taskQueue\Task\TaskInterface;
+use oat\taoLtiConsumer\model\credentials\CredentialsProviderFactory;
+use oat\taoLtiConsumer\model\credentials\RdfCredentialsProvider;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use oat\taoLtiConsumer\model\delivery\form\LtiWizardForm;
 use oat\tao\model\taskQueue\TaskLogActionTrait;
@@ -167,13 +169,13 @@ class DeliveryMgmt extends \tao_actions_RdfController
             throw new \tao_helpers_form_Exception(__('LTI based delivery cannot be created without LTI provider and LTI test url.'));
         }
 
-        $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
+        $credentialsProvider = CredentialsProviderFactory::getProvider(RdfCredentialsProvider::class, $ltiDeliveryForm->getValue('ltiProvider'));
         $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
         $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
 
         /** @var LtiDeliveryFactory $deliveryFactory */
         $deliveryFactory = $this->getServiceLocator()->get(LtiDeliveryFactory::class);
-        return $deliveryFactory->deferredCreate($deliveryClass, $ltiProvider, $ltiPath);
+        return $deliveryFactory->deferredCreate($deliveryClass, $credentialsProvider, $ltiPath);
     }
 
     protected function getRootClass()

@@ -26,6 +26,7 @@ use core_kernel_classes_Resource as RdfResource;
 use core_kernel_classes_Class as RdfClass;
 use oat\generis\model\OntologyRdfs;
 use oat\tao\model\taskQueue\Task\TaskInterface;
+use oat\taoLtiConsumer\model\credentials\CredentialsProviderInterface;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
@@ -49,7 +50,7 @@ class LtiDeliveryFactory extends ConfigurableService
      * Create a LTI based delivery under $delvieryClass with $provider & $ltiPath
      *
      * @param RdfClass $deliveryClass
-     * @param RdfResource $ltiProvider
+     * @param CredentialsProviderInterface $ltiCredentialsProvider
      * @param string $ltiPath
      * @param string $label
      * @param RdfResource|null $deliveryResource
@@ -59,17 +60,17 @@ class LtiDeliveryFactory extends ConfigurableService
      */
     public function create(
         RdfClass $deliveryClass,
-        RdfResource $ltiProvider,
+        CredentialsProviderInterface $ltiCredentialsProvider,
         $ltiPath,
         $label = '',
         RdfResource $deliveryResource = null
     ) {
         $this->logInfo(sprintf(
             'Creating LTI delivery with LTI provider "%s" '. 'with LTI test url "%s" under delivery class "%s"',
-            $ltiProvider->getLabel(), $ltiPath, $deliveryClass->getLabel()
+            $ltiCredentialsProvider->getLabel(), $ltiPath, $deliveryClass->getLabel()
         ));
 
-        $container = $this->getLtiDeliveryContainer($ltiProvider, $ltiPath);
+        $container = $this->getLtiDeliveryContainer($ltiCredentialsProvider, $ltiPath);
 
         if ($label == '') {
             $label = 'LTI delivery ' . ($deliveryClass->countInstances()+1);
@@ -101,7 +102,7 @@ class LtiDeliveryFactory extends ConfigurableService
      * Create a task for LTI delivery creation
      *
      * @param RdfClass $deliveryClass
-     * @param RdfResource $ltiProvider
+     * @param CredentialsProviderInterface $credentialsProvider
      * @param string $ltiPath
      * @param string $label
      * @param RdfResource|null $deliveryResource
@@ -110,7 +111,7 @@ class LtiDeliveryFactory extends ConfigurableService
      */
     public function deferredCreate(
         RdfClass $deliveryClass,
-        RdfResource $ltiProvider,
+        CredentialsProviderInterface $credentialsProvider,
         $ltiPath,
         $label = '',
         RdfResource $deliveryResource = null
@@ -118,7 +119,8 @@ class LtiDeliveryFactory extends ConfigurableService
         $action = new LtiDeliveryCreationTask();
         $parameters = [
             'deliveryClass' => $deliveryClass->getUri(),
-            'ltiProvider' => $ltiProvider->getUri(),
+            'credentialsProviderClass' => $credentialsProvider->getOwnClass(),
+            'credentialsProviderId' => $credentialsProvider->getId(),
             'ltiPath' => $ltiPath,
             'label' => $label,
             'deliveryResource' => is_null($deliveryResource) ? null : $deliveryResource->getUri()
@@ -126,23 +128,24 @@ class LtiDeliveryFactory extends ConfigurableService
 
         return $this->getServiceLocator()
             ->get(QueueDispatcher::SERVICE_ID)
-            ->createTask($action, $parameters, __('Publishing of LTI delivery : "%s"', $ltiProvider->getLabel()), null, true);
+            ->createTask($action, $parameters, __('Publishing of LTI delivery : "%s"', $credentialsProvider->getLabel()), null, true);
     }
 
     /**
      * Retrieve the delivery container associated to LTI
      *
-     * @param RdfResource $ltiProvider
+     * @param CredentialsProviderInterface $credentialsProvider
      * @param $ltiPath
      * @return string
      * @throws InconsistentDataException
      */
-    private function getLtiDeliveryContainer(RdfResource $ltiProvider, $ltiPath)
+    private function getLtiDeliveryContainer(CredentialsProviderInterface $credentialsProvider, $ltiPath)
     {
         /** @var DeliveryContainerRegistry $registry */
         $registry = $this->propagate(DeliveryContainerRegistry::getRegistry());
         return $registry->getDeliveryContainer('lti', [
-            'ltiProvider' => $ltiProvider->getUri(),
+            'credentialsProviderClass' => $credentialsProvider->getOwnClass(),
+            'credentialsProviderId' => $credentialsProvider->getId(),
             'ltiPath' => $ltiPath
         ]);
     }

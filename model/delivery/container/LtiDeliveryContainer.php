@@ -20,6 +20,8 @@
 
 namespace oat\taoLtiConsumer\model\delivery\container;
 
+use common_exception_InvalidArgumentType;
+use common_exception_NotFound;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
@@ -27,7 +29,9 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\oatbox\session\SessionService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\tao\model\oauth\DataStore;
+use oat\taoLtiConsumer\model\credentials\CredentialsProviderFactory;
+use oat\taoLtiConsumer\model\credentials\CredentialsProviderInterface;
+use oat\taoLtiConsumer\model\credentials\RdfCredentialsProvider;
 
 /**
  * Class LtiDeliveryContainer
@@ -44,20 +48,17 @@ class LtiDeliveryContainer extends AbstractContainer
      * @param DeliveryExecution $execution
      *
      * @return ExecutionClientContainer|ExecutionContainer
-     * @throws \common_exception_InvalidArgumentType
-     * @throws \common_exception_NotFound
+     * @throws common_exception_NotFound
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
         $params = $this->getRuntimeParams();
-        $providerResource = $this->getResource($params['ltiProvider']);
         $ltiUrl = $params['ltiPath'];
-        $ltiProvider = $providerResource->getPropertiesValues([
-            DataStore::PROPERTY_OAUTH_KEY,
-            DataStore::PROPERTY_OAUTH_SECRET,
-        ]);
-        $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
-        $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
+
+        $credentialsProvider = $this->getCredentialsProvider($params);
+        $consumerKey = $credentialsProvider->getConsumerKey();
+        $consumerSecret = $credentialsProvider->getConsumerSecret();
+
         $returnUrl = _url('index', 'DeliveryServer', 'taoDelivery');
 
         $data = [
@@ -76,5 +77,23 @@ class LtiDeliveryContainer extends AbstractContainer
         $container->setData('launchParams', $data);
 
         return $container;
+    }
+
+    /**
+     * Loads credentials provider based on container, have fallback to default one
+     * @param array $params
+     * @return CredentialsProviderInterface
+     */
+    private function getCredentialsProvider(array $params)
+    {
+        $providerName = RdfCredentialsProvider::class;
+        $providerId = isset($params['ltiProvider']) ? $params['ltiProvider'] : null;
+
+        if (isset($params['credentialsProviderClass'])) {
+            $providerName = $params['credentialsProviderClass'];
+            $providerId = $params['credentialsProviderId'];
+        }
+
+        return CredentialsProviderFactory::getProvider($providerName, $providerId);
     }
 }
