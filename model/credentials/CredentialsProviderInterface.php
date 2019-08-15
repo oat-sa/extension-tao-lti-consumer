@@ -33,5 +33,4 @@ interface CredentialsProviderInterface
     public function getId();
 
     public function getOwnClass();
-
 }
