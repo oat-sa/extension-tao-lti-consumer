@@ -25,7 +25,7 @@ return [
     'label' => 'TAO LTI Consumer',
     'description' => 'TAO LTI Consumer extension',
     'license' => 'GPL-2.0',
-    'version' => '0.4.1',
+    'version' => '0.4.2',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'taoLti' => '>=10.3.0',
