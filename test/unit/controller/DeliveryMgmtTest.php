@@ -27,7 +27,7 @@ use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
-class LtiDeliveryContainerTest extends TestCase
+class DeliveryMgmtTest extends TestCase
 {
     /**
      * @dataProvider queryStringsToTest
