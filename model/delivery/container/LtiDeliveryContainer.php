@@ -45,7 +45,6 @@ class LtiDeliveryContainer extends AbstractContainer
      *
      * @return ExecutionClientContainer|ExecutionContainer
      * @throws \common_exception_InvalidArgumentType
-     * @throws \common_exception_NotFound
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
@@ -63,7 +62,7 @@ class LtiDeliveryContainer extends AbstractContainer
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
             'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $execution->getDelivery()->getUri(),
+            'resource_link_id' => $execution->getIdentifier(),
             'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
             'roles' => 'Learner',
             'launch_presentation_return_url' => $returnUrl,
