@@ -27,7 +27,8 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\oatbox\session\SessionService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\tao\model\oauth\DataStore;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 
 /**
  * Class LtiDeliveryContainer
@@ -44,7 +45,6 @@ class LtiDeliveryContainer extends AbstractContainer
      * @param DeliveryExecution $execution
      *
      * @return ExecutionClientContainer|ExecutionContainer
-     * @throws \common_exception_InvalidArgumentType
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
@@ -52,8 +52,8 @@ class LtiDeliveryContainer extends AbstractContainer
         $ltiUrl = $params['ltiPath'];
 
         $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
-        $consumerKey = $this->getConsumerKey($ltiProvider);
-        $consumerSecret = $this->getConsumerSecret($ltiProvider);
+        $consumerKey = $ltiProvider->getKey();
+        $consumerSecret = $ltiProvider->getSecret();
 
         $returnUrl = _url('index', 'DeliveryServer', 'taoDelivery');
 
@@ -76,36 +76,11 @@ class LtiDeliveryContainer extends AbstractContainer
     }
 
     /**
-     * @param $ltiProvider
-     * @return string
+     * @param string $id
+     * @return LtiProvider
      */
-    private function getConsumerKey($ltiProvider)
+    private function getLtiProvider($id)
     {
-        return (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
-    }
-
-    /**
-     * @param $ltiProvider
-     * @return string
-     */
-    private function getConsumerSecret($ltiProvider)
-    {
-        return (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
-    }
-
-
-    /**
-     * @param $providerResource
-     * @return array
-     * @throws \common_exception_InvalidArgumentType
-     */
-    private function getLtiProvider($providerResource)
-    {
-        $providerResource = $this->getResource($providerResource);
-
-        return $providerResource->getPropertiesValues([
-            DataStore::PROPERTY_OAUTH_KEY,
-            DataStore::PROPERTY_OAUTH_SECRET,
-        ]);
+        return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
 }
