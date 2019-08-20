@@ -26,6 +26,7 @@ use core_kernel_classes_Resource as RdfResource;
 use core_kernel_classes_Class as RdfClass;
 use oat\generis\model\OntologyRdfs;
 use oat\tao\model\taskQueue\Task\TaskInterface;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
@@ -46,10 +47,10 @@ class LtiDeliveryFactory extends ConfigurableService
     use LoggerAwareTrait;
 
     /**
-     * Create a LTI based delivery under $delvieryClass with $provider & $ltiPath
+     * Create a LTI based delivery under $deliveryClass with $provider & $ltiPath
      *
      * @param RdfClass $deliveryClass
-     * @param RdfResource $ltiProvider
+     * @param LtiProvider $ltiProvider
      * @param string $ltiPath
      * @param string $label
      * @param RdfResource|null $deliveryResource
@@ -59,7 +60,7 @@ class LtiDeliveryFactory extends ConfigurableService
      */
     public function create(
         RdfClass $deliveryClass,
-        RdfResource $ltiProvider,
+        LtiProvider $ltiProvider,
         $ltiPath,
         $label = '',
         RdfResource $deliveryResource = null
@@ -101,7 +102,7 @@ class LtiDeliveryFactory extends ConfigurableService
      * Create a task for LTI delivery creation
      *
      * @param RdfClass $deliveryClass
-     * @param RdfResource $ltiProvider
+     * @param LtiProvider $ltiProvider
      * @param string $ltiPath
      * @param string $label
      * @param RdfResource|null $deliveryResource
@@ -110,7 +111,7 @@ class LtiDeliveryFactory extends ConfigurableService
      */
     public function deferredCreate(
         RdfClass $deliveryClass,
-        RdfResource $ltiProvider,
+        LtiProvider $ltiProvider,
         $ltiPath,
         $label = '',
         RdfResource $deliveryResource = null
@@ -118,7 +119,7 @@ class LtiDeliveryFactory extends ConfigurableService
         $action = new LtiDeliveryCreationTask();
         $parameters = [
             'deliveryClass' => $deliveryClass->getUri(),
-            'ltiProvider' => $ltiProvider->getUri(),
+            'ltiProvider' => $ltiProvider->getId(),
             'ltiPath' => $ltiPath,
             'label' => $label,
             'deliveryResource' => is_null($deliveryResource) ? null : $deliveryResource->getUri()
@@ -132,17 +133,17 @@ class LtiDeliveryFactory extends ConfigurableService
     /**
      * Retrieve the delivery container associated to LTI
      *
-     * @param RdfResource $ltiProvider
+     * @param LtiProvider $ltiProvider
      * @param $ltiPath
      * @return string
      * @throws InconsistentDataException
      */
-    private function getLtiDeliveryContainer(RdfResource $ltiProvider, $ltiPath)
+    private function getLtiDeliveryContainer(LtiProvider $ltiProvider, $ltiPath)
     {
         /** @var DeliveryContainerRegistry $registry */
         $registry = $this->propagate(DeliveryContainerRegistry::getRegistry());
         return $registry->getDeliveryContainer('lti', [
-            'ltiProvider' => $ltiProvider->getUri(),
+            'ltiProvider' => $ltiProvider->getId(),
             'ltiPath' => $ltiPath
         ]);
     }

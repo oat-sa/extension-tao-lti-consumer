@@ -49,14 +49,12 @@ class LtiDeliveryContainer extends AbstractContainer
     public function getExecutionContainer(DeliveryExecution $execution)
     {
         $params = $this->getRuntimeParams();
-        $providerResource = $this->getResource($params['ltiProvider']);
         $ltiUrl = $params['ltiPath'];
-        $ltiProvider = $providerResource->getPropertiesValues([
-            DataStore::PROPERTY_OAUTH_KEY,
-            DataStore::PROPERTY_OAUTH_SECRET,
-        ]);
-        $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
-        $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
+
+        $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
+        $consumerKey = $this->getConsumerKey($ltiProvider);
+        $consumerSecret = $this->getConsumerSecret($ltiProvider);
+
         $returnUrl = _url('index', 'DeliveryServer', 'taoDelivery');
 
         $data = [
@@ -75,5 +73,39 @@ class LtiDeliveryContainer extends AbstractContainer
         $container->setData('launchParams', $data);
 
         return $container;
+    }
+
+    /**
+     * @param $ltiProvider
+     * @return string
+     */
+    private function getConsumerKey($ltiProvider)
+    {
+        return (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
+    }
+
+    /**
+     * @param $ltiProvider
+     * @return string
+     */
+    private function getConsumerSecret($ltiProvider)
+    {
+        return (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
+    }
+
+
+    /**
+     * @param $providerResource
+     * @return array
+     * @throws \common_exception_InvalidArgumentType
+     */
+    private function getLtiProvider($providerResource)
+    {
+        $providerResource = $this->getResource($providerResource);
+
+        return $providerResource->getPropertiesValues([
+            DataStore::PROPERTY_OAUTH_KEY,
+            DataStore::PROPERTY_OAUTH_SECRET,
+        ]);
     }
 }
