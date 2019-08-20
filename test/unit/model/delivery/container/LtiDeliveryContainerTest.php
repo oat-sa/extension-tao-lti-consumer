@@ -38,7 +38,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
 {
     public function testGetExecutionContainer()
     {
-        $resourceLinkId = 'id of the resource';
         $identifier = 'delivery identifier';
         $ltiProviderId = 'lti provider id';
         $ltiUrl = 'path to lti';
@@ -62,7 +61,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             ->disableOriginalConstructor()
             ->setMethods(['getUri'])
             ->getMock();
-        $delivery->method('getUri')->willReturn($resourceLinkId);
 
         /** @var DeliveryExecution|MockObject $execution */
         $execution = $this->getMockBuilder(DeliveryExecution::class)
@@ -113,7 +111,7 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
             'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $resourceLinkId,
+            'resource_link_id' => $identifier,
             'user_id' => $userId,
             'roles' => 'Learner',
             'launch_presentation_return_url' => $returnUrl,
