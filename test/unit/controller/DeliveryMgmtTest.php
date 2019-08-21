@@ -51,7 +51,7 @@ class DeliveryMgmtTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['get'])
             ->getMockForAbstractClass();
-        $serviceLocator->method('get')->with(LtiProviderService::SERVICE_ID)->willReturn($ltiProviderService);
+        $serviceLocator->method('get')->with(LtiProviderService::class)->willReturn($ltiProviderService);
 
         /** @var ServerRequestInterface|MockObject $request */
         $request = $this->getMockBuilder(ServerRequestInterface::class)

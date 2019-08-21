@@ -33,6 +33,7 @@ use oat\tao\model\taskQueue\QueueDispatcher;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use phpmock\Mock;
@@ -78,7 +79,7 @@ class LtiDeliveryFactoryTest extends TestCase
      */
     public function launchGetLtiDeliveryContainerTest($initialLabel, $finalLabel, RdfResource $deliveryResource = null)
     {
-        $uri = 'providerUri';
+        $id = 'providerId';
         $ltiPath = 'some path';
         $classLabel = 'label of the class';
         $ltiProviderLabel = 'label of the lti provider';
@@ -91,12 +92,12 @@ class LtiDeliveryFactoryTest extends TestCase
         $deliveryClass->method('getLabel')->willReturn($classLabel);
         $deliveryClass->method('countInstances')->willReturn(0);
 
-        /** @var RdfResource|MockObject $ltiProvider */
-        $ltiProvider = $this->getMockBuilder(RdfResource::class)
+        /** @var LtiProvider|MockObject $ltiProvider */
+        $ltiProvider = $this->getMockBuilder(LtiProvider::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getUri', 'getLabel'])
+            ->setMethods(['getId', 'getLabel'])
             ->getMock();
-        $ltiProvider->method('getUri')->willReturn($uri);
+        $ltiProvider->method('getId')->willReturn($id);
         $ltiProvider->method('getLabel')->willReturn($ltiProviderLabel);
 
         $container = new LtiDeliveryContainer();
@@ -163,7 +164,7 @@ class LtiDeliveryFactoryTest extends TestCase
             ContainerRuntime::PROPERTY_CONTAINER => json_encode([
                 'container' => 'lti',
                 'params' => [
-                    'ltiProvider' => $uri,
+                    'ltiProvider' => $id,
                     'ltiPath' => $ltiPath,
                 ],
             ]),
@@ -229,7 +230,7 @@ class LtiDeliveryFactoryTest extends TestCase
         $deliveryClassUri = 'uri of delivery class';
         $ltiPath = 'some path';
         $ltiProviderLabel = 'label of the lti provider';
-        $ltiProviderUri = 'providerUri';
+        $ltiProviderId = 'providerId';
         $resourceUri = 'resource URI';
 
         /** @var RdfClass|MockObject $deliveryClass */
@@ -239,13 +240,13 @@ class LtiDeliveryFactoryTest extends TestCase
             ->getMock();
         $deliveryClass->method('getUri')->willReturn($deliveryClassUri);
 
-        /** @var RdfResource|MockObject $ltiProvider */
-        $ltiProvider = $this->getMockBuilder(RdfResource::class)
+        /** @var LtiProvider|MockObject $ltiProvider */
+        $ltiProvider = $this->getMockBuilder(LtiProvider::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getUri', 'getLabel'])
+            ->setMethods(['getId', 'getLabel'])
             ->getMock();
-        $ltiProvider->method('getUri')->willReturn($ltiProviderUri);
         $ltiProvider->method('getLabel')->willReturn($ltiProviderLabel);
+        $ltiProvider->method('getId')->willReturn($ltiProviderId);
 
         /** @var RdfResource|MockObject $deliveryResource */
         $deliveryResource = $this->getMockBuilder(RdfResource::class)
@@ -256,7 +257,7 @@ class LtiDeliveryFactoryTest extends TestCase
 
         $params = [
             'deliveryClass' => $deliveryClassUri,
-            'ltiProvider' => $ltiProviderUri,
+            'ltiProvider' => $ltiProviderId,
             'ltiPath' => $ltiPath,
             'label' => $label,
             'deliveryResource' => $resourceUri,

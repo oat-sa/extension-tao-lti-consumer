@@ -22,26 +22,28 @@ namespace oat\taoLtiConsumer\model\delivery\task;
 
 use core_kernel_classes_Class as RdfClass;
 use common_exception_InconsistentData as InconsistentDataException;
+use JsonSerializable;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\extension\AbstractAction;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use common_report_Report as Report;
 use common_exception_MissingParameter as MissingParameterException;
 
-class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializable
+class LtiDeliveryCreationTask extends AbstractAction implements JsonSerializable
 {
     use OntologyAwareTrait;
 
     /**
      * Task to create LTI based delivery
      *
-     * The only responsability of this task is to parse parameters and forward request to LtiDeliveryFactory
+     * The only responsibility of this task is to parse parameters and forward request to LtiDeliveryFactory
      *
      * @param array $params
-     * @throws MissingParameterException
-     * @throws InconsistentDataException
      * @return Report
+     * @throws InconsistentDataException
+     * @throws MissingParameterException
      */
     public function __invoke($params)
     {
@@ -55,10 +57,10 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
 
         $deliveryClass = $this->getDeliveryClass($params);
 
-        $ltiProvider = $this->getResource($params['ltiProvider']);
+        $ltiProvider = $this->getLtiProviderService()->searchById($params['ltiProvider']);
         $ltiPath = $params['ltiPath'];
         $label = isset($params['label']) ? $params['label'] : '';
-        $deliveryResource = isset($params['deliveryResource'])? $this->getResource($params['deliveryResource']) : null;
+        $deliveryResource = isset($params['deliveryResource']) ? $this->getResource($params['deliveryResource']) : null;
 
         /** @var Report $report */
         $report = $this->getLtiDeliveryFactory()->create(
@@ -86,6 +88,14 @@ class LtiDeliveryCreationTask extends AbstractAction implements \JsonSerializabl
     protected function getLtiDeliveryFactory()
     {
         return $this->getServiceLocator()->get(LtiDeliveryFactory::class);
+    }
+
+    /**
+     * @return LtiProviderService
+     */
+    protected function getLtiProviderService()
+    {
+        return $this->getServiceLocator()->get(LtiProviderService::class);
     }
 
     /**

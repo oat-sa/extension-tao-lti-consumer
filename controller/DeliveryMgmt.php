@@ -67,7 +67,7 @@ class DeliveryMgmt extends \tao_actions_RdfController
                 $compiledDeliveryForm = (new WizardForm($formOptions))->getForm();
                 if ($compiledDeliveryForm->isSubmited()) {
 
-                        return $this->returnTaskJson($this->validateCompiledDeliveryForm($compiledDeliveryForm));
+                    return $this->returnTaskJson($this->validateCompiledDeliveryForm($compiledDeliveryForm));
 
                 } else {
                     $this->setData('compiled-delivery-form', $compiledDeliveryForm->render());
@@ -123,7 +123,7 @@ class DeliveryMgmt extends \tao_actions_RdfController
     {
         $q = trim($this->getGetParameter('q'));
 
-        $ltiProviderService = $this->getServiceLocator()->get(LtiProviderService::SERVICE_ID);
+        $ltiProviderService = $this->getLtiProviderService();
 
         $providers = $q === ''
             ? $ltiProviderService->findAll()
@@ -167,7 +167,7 @@ class DeliveryMgmt extends \tao_actions_RdfController
             throw new \tao_helpers_form_Exception(__('LTI based delivery cannot be created without LTI provider and LTI test url.'));
         }
 
-        $ltiProvider = $this->getResource($ltiDeliveryForm->getValue('ltiProvider'));
+        $ltiProvider = $this->getLtiProviderService()->searchById($ltiDeliveryForm->getValue('ltiProvider'));
         $ltiPath = $ltiDeliveryForm->getValue('ltiPathElt');
         $deliveryClass = $this->getClass($ltiDeliveryForm->getValue('classUri'));
 
@@ -179,5 +179,13 @@ class DeliveryMgmt extends \tao_actions_RdfController
     protected function getRootClass()
     {
         // Should not be called
+    }
+
+    /**
+     * @return LtiProviderService
+     */
+    private function getLtiProviderService()
+    {
+        return $this->getServiceLocator()->get(LtiProviderService::class);
     }
 }
