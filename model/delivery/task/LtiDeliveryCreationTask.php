@@ -42,7 +42,7 @@ class LtiDeliveryCreationTask extends AbstractAction implements JsonSerializable
      *
      * @param array $params
      * @return Report
-     *@throws InconsistentDataException
+     * @throws InconsistentDataException
      * @throws MissingParameterException
      */
     public function __invoke($params)
@@ -60,7 +60,7 @@ class LtiDeliveryCreationTask extends AbstractAction implements JsonSerializable
         $ltiProvider = $this->getLtiProviderService()->searchById($params['ltiProvider']);
         $ltiPath = $params['ltiPath'];
         $label = isset($params['label']) ? $params['label'] : '';
-        $deliveryResource = isset($params['deliveryResource'])? $this->getResource($params['deliveryResource']) : null;
+        $deliveryResource = isset($params['deliveryResource']) ? $this->getResource($params['deliveryResource']) : null;
 
         /** @var Report $report */
         $report = $this->getLtiDeliveryFactory()->create(
