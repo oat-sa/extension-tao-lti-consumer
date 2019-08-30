@@ -25,9 +25,11 @@ use common_exception_InconsistentData as InconsistentDataException;
 use common_report_Report as Report;
 use core_kernel_classes_Class as RdfClass;
 use core_kernel_classes_Resource as RdfResource;
-use oat\generis\model\data\Model;
+use core_kernel_persistence_smoothsql_SmoothModel;
 use oat\generis\test\TestCase;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\delivery\factory\LtiDeliveryFactory;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
@@ -80,10 +82,10 @@ class LtiDeliveryCreationTaskTest extends TestCase
             ->getMock();
         $report->method('getType')->willReturn($deliveryResourceId !== null ? Report::TYPE_ERROR : Report::TYPE_SUCCESS);
 
-        /** @var RdfResource|MockObject $providerResource */
-        $ltiProvider = $this->getMockBuilder(RdfResource::class)
+        /** @var LtiProvider|MockObject $providerResource */
+        $ltiProvider = $this->getMockBuilder(LtiProvider::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getPropertiesValues'])
+            ->setMethods(['getId', 'getLabel'])
             ->getMock();
 
         /** @var RdfResource|MockObject $deliveryResource */
@@ -92,18 +94,15 @@ class LtiDeliveryCreationTaskTest extends TestCase
             ->setMethods(['delete'])
             ->getMock();
 
-        /** @var Model|MockObject $providerModel */
-        $providerModel = $this->getMockBuilder(Model::class)
+        /** @var core_kernel_persistence_smoothsql_SmoothModel|MockObject $providerModel */
+        $providerModel = $this->getMockBuilder(core_kernel_persistence_smoothsql_SmoothModel::class)
             ->disableOriginalConstructor()
             ->setMethods(['getResource', 'getClass'])
             ->getMockForAbstractClass();
         $providerModel->method('getResource')->willReturnCallback(
-            function ($id) use ($ltiProviderId, $ltiProvider, $deliveryResourceId, $deliveryResource) {
-                switch ($id) {
-                    case $ltiProviderId:
-                        return $ltiProvider;
-                    case $deliveryResourceId:
-                        return $deliveryResource;
+            function ($id) use ($deliveryResourceId, $deliveryResource) {
+                if ($id === $deliveryResourceId) {
+                    return $deliveryResource;
                 }
             }
         );
@@ -114,16 +113,36 @@ class LtiDeliveryCreationTaskTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['create'])
             ->getMock();
+
         $litDeliveryFactory->method('create')
             ->with($deliveryClass, $ltiProvider, $ltiPath, $label, $deliveryResourceId !== null ? $deliveryResource : null)
             ->willReturn($report);
+
+        /** @var LtiProviderService|MockObject $litDeliveryFactory */
+        $ltiProviderService = $this->getMockBuilder(LtiProviderService::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['searchById', 'searchByLabel'])
+            ->getMock();
+
+        $ltiProviderService->method('searchByLabel')->with($ltiProviderId)->willReturn($ltiProvider);
+        $ltiProviderService->method('searchById')->with($ltiProviderId)->willReturn($ltiProvider);
 
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */
         $serviceLocator = $this->getMockBuilder(ServiceLocatorInterface::class)
             ->disableOriginalConstructor()
             ->setMethods(['get'])
             ->getMockForAbstractClass();
-        $serviceLocator->method('get')->with(LtiDeliveryFactory::class)->willReturn($litDeliveryFactory);
+
+        $serviceLocator->method('get')->willReturnCallback(
+            function ($id) use ($litDeliveryFactory, $ltiProviderService) {
+                switch ($id) {
+                    case LtiDeliveryFactory::class:
+                        return $litDeliveryFactory;
+                    case LtiProviderService::class:
+                        return $ltiProviderService;
+                }
+            }
+        );
 
         $subject = new LtiDeliveryCreationTask();
         $subject->setModel($providerModel);

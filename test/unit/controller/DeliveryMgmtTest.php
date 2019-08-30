@@ -27,7 +27,7 @@ use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
-class LtiDeliveryContainerTest extends TestCase
+class DeliveryMgmtTest extends TestCase
 {
     /**
      * @dataProvider queryStringsToTest
@@ -51,7 +51,7 @@ class LtiDeliveryContainerTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['get'])
             ->getMockForAbstractClass();
-        $serviceLocator->method('get')->with(LtiProviderService::SERVICE_ID)->willReturn($ltiProviderService);
+        $serviceLocator->method('get')->with(LtiProviderService::class)->willReturn($ltiProviderService);
 
         /** @var ServerRequestInterface|MockObject $request */
         $request = $this->getMockBuilder(ServerRequestInterface::class)

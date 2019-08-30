@@ -27,7 +27,8 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\oatbox\session\SessionService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\tao\model\oauth\DataStore;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 
 /**
  * Class LtiDeliveryContainer
@@ -44,26 +45,22 @@ class LtiDeliveryContainer extends AbstractContainer
      * @param DeliveryExecution $execution
      *
      * @return ExecutionClientContainer|ExecutionContainer
-     * @throws \common_exception_InvalidArgumentType
-     * @throws \common_exception_NotFound
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
         $params = $this->getRuntimeParams();
-        $providerResource = $this->getResource($params['ltiProvider']);
         $ltiUrl = $params['ltiPath'];
-        $ltiProvider = $providerResource->getPropertiesValues([
-            DataStore::PROPERTY_OAUTH_KEY,
-            DataStore::PROPERTY_OAUTH_SECRET,
-        ]);
-        $consumerKey = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_KEY]);
-        $consumerSecret = (string)reset($ltiProvider[DataStore::PROPERTY_OAUTH_SECRET]);
+
+        $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
+        $consumerKey = $ltiProvider->getKey();
+        $consumerSecret = $ltiProvider->getSecret();
+
         $returnUrl = _url('index', 'DeliveryServer', 'taoDelivery');
 
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
             'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $execution->getDelivery()->getUri(),
+            'resource_link_id' => $execution->getIdentifier(),
             'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
             'roles' => 'Learner',
             'launch_presentation_return_url' => $returnUrl,
@@ -76,5 +73,14 @@ class LtiDeliveryContainer extends AbstractContainer
         $container->setData('launchParams', $data);
 
         return $container;
+    }
+
+    /**
+     * @param string $id
+     * @return LtiProvider
+     */
+    private function getLtiProvider($id)
+    {
+        return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
 }

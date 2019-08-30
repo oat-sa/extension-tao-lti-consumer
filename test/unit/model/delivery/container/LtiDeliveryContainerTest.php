@@ -22,12 +22,12 @@ namespace oat\taoLtiConsumer\test\unit\model\delivery\container;
 
 use core_kernel_classes_Resource as RdfResource;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
-use oat\generis\model\data\Model;
 use oat\generis\test\unit\OntologyMockTest;
 use oat\oatbox\session\SessionService;
 use oat\oatbox\user\User;
-use oat\tao\model\oauth\DataStore;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\delivery\container\LtiExecutionContainer;
 use phpmock\MockBuilder;
@@ -38,7 +38,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
 {
     public function testGetExecutionContainer()
     {
-        $resourceLinkId = 'id of the resource';
         $identifier = 'delivery identifier';
         $ltiProviderId = 'lti provider id';
         $ltiUrl = 'path to lti';
@@ -52,17 +51,12 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             'ltiProvider' => $ltiProviderId,
             'ltiPath' => $ltiUrl,
         ];
-        $ltiProvider = [
-            DataStore::PROPERTY_OAUTH_KEY => [$consumerKey],
-            DataStore::PROPERTY_OAUTH_SECRET => [$consumerSecret],
-        ];
 
         /** @var RdfResource|MockObject $delivery */
         $delivery = $this->getMockBuilder(RdfResource::class)
             ->disableOriginalConstructor()
             ->setMethods(['getUri'])
             ->getMock();
-        $delivery->method('getUri')->willReturn($resourceLinkId);
 
         /** @var DeliveryExecution|MockObject $execution */
         $execution = $this->getMockBuilder(DeliveryExecution::class)
@@ -77,17 +71,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             ->disableOriginalConstructor()
             ->setMethods(['getPropertiesValues'])
             ->getMock();
-        $providerResource->method('getPropertiesValues')->with([
-            DataStore::PROPERTY_OAUTH_KEY,
-            DataStore::PROPERTY_OAUTH_SECRET,
-        ])->willReturn($ltiProvider);
-
-        /** @var Model|MockObject $providerModel */
-        $providerModel = $this->getMockBuilder(Model::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getResource'])
-            ->getMockForAbstractClass();
-        $providerModel->method('getResource')->with($ltiProviderId)->willReturn($providerResource);
 
         /** @var User|MockObject $serviceLocator */
         $user = $this->getMockBuilder(User::class)
@@ -103,17 +86,41 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             ->getMock();
         $sessionService->method('getCurrentUser')->willReturn($user);
 
+        /** @var LtiProvider|MockObject $ltiProvider */
+        $ltiProvider = $this->getMockBuilder(LtiProvider::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getSecret', 'getKey'])
+            ->getMock();
+        $ltiProvider->method('getKey')->willReturn($consumerKey);
+        $ltiProvider->method('getSecret')->willReturn($consumerSecret);
+
+        /** @var LtiProviderService|MockObject $serviceLocator */
+        $ltiProviderService = $this->getMockBuilder(LtiProviderService::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['searchById'])
+            ->getMock();
+        $ltiProviderService->method('searchById')->willReturn($ltiProvider);
+
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */
         $serviceLocator = $this->getMockBuilder(ServiceLocatorInterface::class)
             ->disableOriginalConstructor()
             ->setMethods(['get'])
             ->getMockForAbstractClass();
-        $serviceLocator->method('get')->with(SessionService::SERVICE_ID)->willReturn($sessionService);
 
+        $serviceLocator->method('get')->willReturnCallback(
+            function ($id) use ($sessionService, $ltiProviderService) {
+                switch ($id) {
+                    case SessionService::SERVICE_ID:
+                        return $sessionService;
+                    case LtiProviderService::class:
+                        return $ltiProviderService;
+                }
+            }
+        );
         $data = [
             'lti_message_type' => 'basic-lti-launch-request',
             'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $resourceLinkId,
+            'resource_link_id' => $identifier,
             'user_id' => $userId,
             'roles' => 'Learner',
             'launch_presentation_return_url' => $returnUrl,
@@ -129,7 +136,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $subject = new LtiDeliveryContainer();
 
         $subject->setRuntimeParams($params);
-        $subject->setModel($providerModel);
         $subject->setServiceLocator($serviceLocator);
 
         $expected = new LtiExecutionContainer($execution);
