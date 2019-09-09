@@ -21,6 +21,7 @@ namespace oat\taoLtiConsumer\test\unit\controller;
 
 use GuzzleHttp\Psr7\Request;
 use oat\generis\test\TestCase;
+use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\controller\DeliveryMgmt;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
@@ -28,6 +29,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use oat\taoLtiConsumer\controller\ResultController;
 use GuzzleHttp\Psr7\Response;
+use oat\taoLtiConsumer\model\classes\ResultService;
 
 class ResultControllerTest extends TestCase
 {
@@ -61,7 +63,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = '';
 
-        $subject = new ResultController();
+        $subject = new ResultController(new ResultService());
         $result = $subject->manageResult($requestXml);
 
         $this->assertInstanceOf(Response::class, $result);
@@ -72,7 +74,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController();
+        $subject = new ResultController(new ResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
     }
@@ -81,7 +83,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '-1', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController();
+        $subject = new ResultController(new ResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -91,7 +93,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', 'string', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController();
+        $subject = new ResultController(new ResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -101,9 +103,18 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '2', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController();
+        $subject = new ResultController(new ResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
+    }
+
+    public function testDeliveryExecutionRetrieving()
+    {
+        $resultServiceMock = $this->getMockBuilder(ResultService::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getDeliveryExecutionById'])
+            ->getMockForAbstractClass();
+        $resultServiceMock->method('getDeliveryExecutionById')->willReturn(DeliveryExecution::class);
     }
 }
