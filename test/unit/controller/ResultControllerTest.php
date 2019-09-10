@@ -61,6 +61,8 @@ class ResultControllerTest extends TestCase
         </imsx_POXEnvelopeRequest>
     ';
 
+    private $serviceLocator;
+
     public function testManageResultWithIncorrectFilledPayload()
     {
         $requestXml = '<?xml version="1.0" encoding="UTF-8"?>
@@ -107,48 +109,57 @@ class ResultControllerTest extends TestCase
         $this->assertEquals(501, $result->getStatusCode());
     }
 
-    public function testManageResultWithCorrectPayload()
+    public function queryScoresToTest()
     {
-        $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
-
-        $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
-        $this->assertInstanceOf(Response::class, $result);
+        return [
+            ['{{score}}', '-1', 400],
+            ['{{score}}', 'string', 400],
+            ['{{score}}', '2', 400],
+            ['{{score}}', '0.92', 201],
+            [['{{score}}', '3124567'], ['0.92', '3124568'], 404],
+        ];
     }
 
-    public function testManageResultWithScoreLessThanZero()
+    /**
+     * @dataProvider queryScoresToTest
+     *
+     * @param $search
+     * @param $score
+     * @param $expectedStatus
+     */
+    public function testManageResultWithScores($search, $score, $expectedStatus)
     {
-        $requestXml = str_replace('{{score}}', '-1', self::PAYLOAD_TEMPLATE);
+        $requestXml = str_replace($search, $score, self::PAYLOAD_TEMPLATE);
 
         $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
-        $this->assertEquals(400, $result->getStatusCode());
-    }
-
-    public function testManageResultWithScoreIsString()
-    {
-        $requestXml = str_replace('{{score}}', 'string', self::PAYLOAD_TEMPLATE);
-
-        $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
-        $this->assertInstanceOf(Response::class, $result);
-        $this->assertEquals(400, $result->getStatusCode());
-    }
-
-    public function testManageResultWithScoreIsHigherThan1()
-    {
-        $requestXml = str_replace('{{score}}', '2', self::PAYLOAD_TEMPLATE);
-
-        $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
-        $this->assertInstanceOf(Response::class, $result);
-        $this->assertEquals(400, $result->getStatusCode());
+        $this->assertEquals($expectedStatus, $result->getStatusCode());
     }
 
     public function testDeliveryExecutionRetrieving()
     {
         $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
+
+        $subject = $this->getResultController();
+        $result = $subject->manageResult($requestXml);
+    }
+
+    private function getResultController()
+    {
+        $ltiResultService = new LtiResultService();
+        $ltiResultService->setServiceLocator($this->getServiceLocator());
+        $subject = new ResultController($ltiResultService);
+        $subject->setLogger(new TestLogger());
+        $subject->setServiceLocator($this->getServiceLocator());
+        return $subject;
+    }
+
+    private function getServiceLocator()
+    {
+        if (is_object($this->serviceLocator)) {
+            return $this->serviceLocator;
+        }
 
         $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
             ->disableOriginalConstructor()
@@ -180,15 +191,8 @@ class ResultControllerTest extends TestCase
             ->withConsecutive([ResultService::SERVICE_ID], [EventManager::SERVICE_ID])
             ->willReturnOnConsecutiveCalls($resultServiceMock, $eventManagerMock);
 
-        $subject = $this->getResultController();
-        $subject->setServiceLocator($serviceLocator);
-        $result = $subject->manageResult($requestXml);
-    }
+        $this->serviceLocator = $serviceLocator;
 
-    private function getResultController()
-    {
-        $subject = new ResultController(new LtiResultService());
-        $subject->setLogger(new TestLogger());
-        return $subject;
+        return $serviceLocator;
     }
 }

@@ -20,11 +20,6 @@
 namespace oat\taoLtiConsumer\model\classes;
 
 use oat\oatbox\service\ServiceManagerAwareTrait;
-use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
-use oat\taoDelivery\model\container\ExecutionContainer;
-use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\generis\model\OntologyAwareTrait;
-
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\taoResultServer\models\classes\ResultService as ServerResultService;
 
@@ -127,7 +122,7 @@ class ResultService
     }
 
     /**
-     * @param $result
+     * @param array $result
      * @return array [array|object $result, bool $status]
      */
     public function getDeliveryExecution($result)
@@ -148,7 +143,7 @@ class ResultService
     }
 
     /**
-     * @param $result
+     * @param array $result
      * @return array [array $result, bool $status]
      */
     public function getSuccessResult($result)
@@ -164,6 +159,10 @@ class ResultService
         ];
     }
 
+    /**
+     * @param mixed $score
+     * @return bool
+     */
     public function isScoreValid($score)
     {
         return (is_numeric($score) && $score >= 0 && $score <= 1);

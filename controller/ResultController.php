@@ -21,9 +21,6 @@ namespace oat\taoLtiConsumer\controller;
 
 use GuzzleHttp\Psr7\Response;
 use oat\oatbox\event\EventManager;
-use common_exception_BadRequest;
-use common_report_Report as Report;
-use oat\taoResultServer\models\classes\ResultService;
 use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 
@@ -85,12 +82,12 @@ class ResultController extends \tao_actions_CommonModule
         $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
             [self::DELIVERY_EXECUTION_ID => $deliveryExecution->getIdentifier()]);
 
-        $this->sendResponse($this->resultService->getSuccessResult($result), 201);
+        return $this->sendResponse($this->resultService->getSuccessResult($result), 201);
     }
 
     /**
-     * @param $params
-     * [paramName => value]
+     * @param $params [paramName => value]
+     * @param $statusCode int
      * @return Response
      */
     private function sendResponse($params, $statusCode)
