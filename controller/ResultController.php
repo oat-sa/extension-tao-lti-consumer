@@ -20,19 +20,23 @@
 namespace oat\taoLtiConsumer\controller;
 
 use GuzzleHttp\Psr7\Response;
-use oat\oatbox\action\Action;
+use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use common_exception_BadRequest;
 use common_report_Report as Report;
 use oat\taoResultServer\models\classes\ResultService;
 use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
+use oat\taoDelivery\model\execution\DeliveryExecution;
 
 class ResultController extends \tao_actions_CommonModule
 {
     use ServiceLocatorAwareTrait;
 
     private $resultService;
+
+    const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
+    const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
     public function __construct(LtiResultService $resultService)
     {
@@ -84,6 +88,15 @@ class ResultController extends \tao_actions_CommonModule
                 '{{messageId}}' => $result['messageIdentifier'],
             ], 404);
         }
+
+        /** @var DeliveryExecution $deliveryExecution*/
+//        public function storeTestVariable($deliveryResultIdentifier, $test, taoResultServer_models_classes_Variable $testVariable, $callIdTest)
+//        $deliveryExecution->
+
+        /** @var EventManager $eventManager*/
+        $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
+        $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
+            [self::DELIVERY_EXECUTION_ID => $deliveryExecution->getIdentifier()]);
     }
 
     /**

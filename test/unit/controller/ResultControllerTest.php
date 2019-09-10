@@ -21,15 +21,16 @@ namespace oat\taoLtiConsumer\test\unit\controller;
 
 use GuzzleHttp\Psr7\Request;
 use oat\generis\test\TestCase;
+use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
-use oat\taoLtiConsumer\controller\DeliveryMgmt;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use oat\taoLtiConsumer\controller\ResultController;
 use GuzzleHttp\Psr7\Response;
-use oat\taoLtiConsumer\model\classes\ResultService;
+use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
+use oat\taoResultServer\models\classes\ResultService;
+use oat\oatbox\event\EventManager;
 
 class ResultControllerTest extends TestCase
 {
@@ -59,11 +60,46 @@ class ResultControllerTest extends TestCase
         </imsx_POXEnvelopeRequest>
     ';
 
+    public function testManageResultWithIncorrectFilledPayload()
+    {
+        $requestXml = '<?xml version="1.0" encoding="UTF-8"?>
+            <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+                <imsx_POXHeader>
+                    <imsx_POXRequestHeaderInfo>
+                        <imsx_version>V1.0</imsx_version>
+                        <imsx_messageIdentifier>999999123</imsx_messageIdentifier>
+                    </imsx_POXRequestHeaderInfo>
+                </imsx_POXHeader>
+                <imsx_POXBody>
+                    <replaceResultRequestFake>
+                        <resultRecord>
+                            <sourcedGUID>
+                                <sourcedId>3124567</sourcedId>
+                            </sourcedGUID>
+                            <result>
+                                <resultScore>
+                                    <language>en</language>
+                                    <textString>{{score}}</textString>
+                                </resultScore>
+                            </result>
+                        </resultRecord>
+                    </replaceResultRequestFake>
+                </imsx_POXBody>
+            </imsx_POXEnvelopeRequest>
+        ';
+
+        $subject = new ResultController(new LtiResultService());
+        $result = $subject->manageResult($requestXml);
+
+        $this->assertInstanceOf(Response::class, $result);
+        $this->assertEquals(501, $result->getStatusCode());
+    }
+
     public function testManageResultWithIncorrectPayload()
     {
         $requestXml = '';
 
-        $subject = new ResultController(new ResultService());
+        $subject = new ResultController(new LtiResultService());
         $result = $subject->manageResult($requestXml);
 
         $this->assertInstanceOf(Response::class, $result);
@@ -74,7 +110,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new ResultService());
+        $subject = new ResultController(new LtiResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
     }
@@ -83,7 +119,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '-1', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new ResultService());
+        $subject = new ResultController(new LtiResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -93,7 +129,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', 'string', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new ResultService());
+        $subject = new ResultController(new LtiResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -103,7 +139,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '2', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new ResultService());
+        $subject = new ResultController(new LtiResultService());
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -111,10 +147,40 @@ class ResultControllerTest extends TestCase
 
     public function testDeliveryExecutionRetrieving()
     {
+        $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
+
+        $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getIdentifier'])
+            ->getMock();
+        $deliveryExecutionMock->method('getIdentifier')->willReturn('12345');
+
         $resultServiceMock = $this->getMockBuilder(ResultService::class)
             ->disableOriginalConstructor()
             ->setMethods(['getDeliveryExecutionById'])
             ->getMockForAbstractClass();
-        $resultServiceMock->method('getDeliveryExecutionById')->willReturn(DeliveryExecution::class);
+        $resultServiceMock->method('getDeliveryExecutionById')
+            ->with('3124567')
+            ->willReturn($deliveryExecutionMock);
+
+        $eventManagerMock = $this->getMockBuilder(EventManager::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['trigger'])
+            ->getMock();
+        $eventManagerMock->method('trigger')->with(ResultController::LIS_SCORE_RECEIVE_EVENT,
+            [ResultController::DELIVERY_EXECUTION_ID => '12345'])->willReturn('12345');
+
+        /** @var ServiceLocatorInterface|MockObject $serviceLocator */
+        $serviceLocator = $this->getMockBuilder(ServiceManager::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['get'])
+            ->getMockForAbstractClass();
+        $serviceLocator->method('get')
+            ->withConsecutive([ResultService::SERVICE_ID], [EventManager::SERVICE_ID])
+            ->willReturnOnConsecutiveCalls($resultServiceMock, $eventManagerMock);
+
+        $subject = new ResultController(new LtiResultService());
+        $subject->setServiceLocator($serviceLocator);
+        $result = $subject->manageResult($requestXml);
     }
 }

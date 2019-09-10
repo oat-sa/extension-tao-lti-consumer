@@ -32,9 +32,7 @@ use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 
 /**
- * Class LtiDeliveryContainer
- *
- * A delivery container to manage LTI based delivery
+ * ResultService class to manage XML result data
  */
 class ResultService
 {
@@ -70,8 +68,8 @@ class ResultService
     public static $statuses = array(
         400 => 'Invalid score',
         404 => 'DeliveryExecution not found',
-        501 => 'Method not implemented (for other requests than replaceResultRequest)',
-        500 => 'Other internal error => client should retry',
+        501 => 'Method not implemented',
+        500 => 'Internal server error, please retry',
     );
 
     /**
