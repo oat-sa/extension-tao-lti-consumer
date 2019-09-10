@@ -25,7 +25,9 @@ use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\generis\test\unit\OntologyMockTest;
 use oat\oatbox\session\SessionService;
 use oat\oatbox\user\User;
+use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
@@ -66,12 +68,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
         $execution->method('getDelivery')->willReturn($delivery);
         $execution->method('getIdentifier')->willReturn($identifier);
 
-        /** @var RdfResource|MockObject $providerResource */
-        $providerResource = $this->getMockBuilder(RdfResource::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getPropertiesValues'])
-            ->getMock();
-
         /** @var User|MockObject $serviceLocator */
         $user = $this->getMockBuilder(User::class)
             ->disableOriginalConstructor()
@@ -101,6 +97,16 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             ->getMock();
         $ltiProviderService->method('searchById')->willReturn($ltiProvider);
 
+        $urlHelper = $this->getMockBuilder(UrlHelper::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['buildUrl'])
+            ->getMock();
+        $urlHelper->method('buildUrl')->willReturnCallback(
+            function ($method, $class, $extension) {
+                return $extension . '/' . $class . '/' . $method;
+            }
+        );
+
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */
         $serviceLocator = $this->getMockBuilder(ServiceLocatorInterface::class)
             ->disableOriginalConstructor()
@@ -108,30 +114,31 @@ class LtiDeliveryContainerTest extends OntologyMockTest
             ->getMockForAbstractClass();
 
         $serviceLocator->method('get')->willReturnCallback(
-            function ($id) use ($sessionService, $ltiProviderService) {
+            function ($id) use ($sessionService, $ltiProviderService, $urlHelper) {
                 switch ($id) {
                     case SessionService::SERVICE_ID:
                         return $sessionService;
                     case LtiProviderService::class:
                         return $ltiProviderService;
+                    case UrlHelper::class:
+                        return $urlHelper;
                 }
             }
         );
         $data = [
-            'lti_message_type' => 'basic-lti-launch-request',
-            'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $identifier,
-            'user_id' => $userId,
-            'roles' => 'Learner',
-            'launch_presentation_return_url' => $returnUrl,
-            'lis_result_sourcedid' => $identifier,
+            LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
+            LtiLaunchData::LTI_VERSION => 'LTI-1p0',
+            LtiLaunchData::RESOURCE_LINK_ID => $identifier,
+            LtiLaunchData::USER_ID => $userId,
+            LtiLaunchData::ROLES => 'Learner',
+            LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => 'taoDelivery/DeliveryServer/index',
+            LtiLaunchData::LIS_RESULT_SOURCEDID => $identifier,
+            LtiLaunchData::LIS_OUTCOME_SERVICE_URL => 'taoLtiConsumer/ResultController/manageResults',
         ];
 
         // Mock general scope's md5 function to have a testable signature.
         $mockedMd5 = $this->mockGlobalFunction('IMSGlobal\LTI\OAuth', 'md5', $md5);
         $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
-
-        $mockedUrl = $this->mockGlobalFunction('oat\taoLtiConsumer\model\delivery\container', '_url', $returnUrl);
 
         $subject = new LtiDeliveryContainer();
 
@@ -144,7 +151,6 @@ class LtiDeliveryContainerTest extends OntologyMockTest
 
         $this->assertEquals($expected, $subject->getExecutionContainer($execution));
         $mockedMd5->disable();
-        $mockedUrl->disable();
     }
 
     public function mockGlobalFunction($namespace, $name, $value)
