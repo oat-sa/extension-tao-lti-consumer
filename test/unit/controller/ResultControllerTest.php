@@ -21,6 +21,7 @@ namespace oat\taoLtiConsumer\test\unit\controller;
 
 use GuzzleHttp\Psr7\Request;
 use oat\generis\test\TestCase;
+use oat\generis\test\unit\oatbox\log\TestLogger;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
@@ -88,7 +89,7 @@ class ResultControllerTest extends TestCase
             </imsx_POXEnvelopeRequest>
         ';
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
 
         $this->assertInstanceOf(Response::class, $result);
@@ -99,7 +100,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = '';
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
 
         $this->assertInstanceOf(Response::class, $result);
@@ -110,7 +111,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
     }
@@ -119,7 +120,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '-1', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -129,7 +130,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', 'string', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -139,7 +140,7 @@ class ResultControllerTest extends TestCase
     {
         $requestXml = str_replace('{{score}}', '2', self::PAYLOAD_TEMPLATE);
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(400, $result->getStatusCode());
@@ -179,8 +180,15 @@ class ResultControllerTest extends TestCase
             ->withConsecutive([ResultService::SERVICE_ID], [EventManager::SERVICE_ID])
             ->willReturnOnConsecutiveCalls($resultServiceMock, $eventManagerMock);
 
-        $subject = new ResultController(new LtiResultService());
+        $subject = $this->getResultController();
         $subject->setServiceLocator($serviceLocator);
         $result = $subject->manageResult($requestXml);
+    }
+
+    private function getResultController()
+    {
+        $subject = new ResultController(new LtiResultService());
+        $subject->setLogger(new TestLogger());
+        return $subject;
     }
 }

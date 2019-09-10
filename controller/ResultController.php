@@ -21,8 +21,6 @@ namespace oat\taoLtiConsumer\controller;
 
 use GuzzleHttp\Psr7\Response;
 use oat\oatbox\event\EventManager;
-use oat\oatbox\log\LoggerAwareTrait;
-use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use common_exception_BadRequest;
 use common_report_Report as Report;
 use oat\taoResultServer\models\classes\ResultService;
@@ -31,8 +29,6 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 
 class ResultController extends \tao_actions_CommonModule
 {
-    use ServiceLocatorAwareTrait;
-
     private $resultService;
 
     const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
@@ -50,9 +46,9 @@ class ResultController extends \tao_actions_CommonModule
     }
 
     /**
-     * Create a list or a list element
+     * Stores a score result in a delivery execution
+     * @param $payload Input XML string
      * @return Response
-     * @throws common_exception_BadRequest
      */
     public function manageResult($payload)
     {
@@ -66,37 +62,30 @@ class ResultController extends \tao_actions_CommonModule
             return $this->sendResponse($result, 501);
         }
 
-        $result = $this->resultService->getResult();
+        list($result, $status) = $this->resultService->getResult();
 
-        if (!$this->resultService->isScoreValid($result['score'])) {
-//            $this->logError('Score is not in the range [0..1]');
-            return $this->sendResponse([
-                '{{codeMajor}}' => LtiResultService::FAILURE_MESSAGE,
-                '{{description}}' => LtiResultService::$statuses[400],
-                '{{messageId}}' => $result['messageIdentifier'],
-            ], 400);
+        if (!$status) {
+            // $this->logError('Score is not in the range [0..1]');
+            return $this->sendResponse($result, 400);
         }
 
-        try {
-            $resultService = $this->getServiceManager()->get(ResultService::SERVICE_ID);
-            $deliveryExecution = $resultService->getDeliveryExecutionById($result['sourcedId']);
-        } catch (\Exception $e) {
-//            $this->logError('Delivery Execution with ID ' . $sourcedId);
-            return $this->sendResponse([
-                '{{codeMajor}}' => LtiResultService::FAILURE_MESSAGE,
-                '{{description}}' => LtiResultService::$statuses[404],
-                '{{messageId}}' => $result['messageIdentifier'],
-            ], 404);
+        list($deliveryExecution, $status) = $this->resultService->getDeliveryExecution($result);
+
+        if (!$status) {
+            // $this->logError('Score is not in the range [0..1]');
+            return $this->sendResponse($deliveryExecution, 404);
         }
 
         /** @var DeliveryExecution $deliveryExecution*/
-//        public function storeTestVariable($deliveryResultIdentifier, $test, taoResultServer_models_classes_Variable $testVariable, $callIdTest)
-//        $deliveryExecution->
+        // public function storeTestVariable($deliveryResultIdentifier, $test, taoResultServer_models_classes_Variable $testVariable, $callIdTest)
+        // $deliveryExecution->
 
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceManager()->get(EventManager::SERVICE_ID);
         $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
             [self::DELIVERY_EXECUTION_ID => $deliveryExecution->getIdentifier()]);
+
+        $this->sendResponse($this->resultService->getSuccessResult($result), 201);
     }
 
     /**

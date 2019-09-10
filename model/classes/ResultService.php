@@ -19,40 +19,42 @@
 
 namespace oat\taoLtiConsumer\model\classes;
 
-use oat\taoDelivery\model\container\delivery\AbstractContainer;
+use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
-use oat\oatbox\session\SessionService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
-use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 
-use Zend\ServiceManager\ServiceLocatorAwareTrait;
+use oat\oatbox\log\LoggerAwareTrait;
+use oat\taoResultServer\models\classes\ResultService as ServerResultService;
 
 /**
  * ResultService class to manage XML result data
  */
 class ResultService
 {
-    use ServiceLocatorAwareTrait;
-    //    use LoggerAwareTrait;
+    use ServiceManagerAwareTrait;
+    use LoggerAwareTrait;
 
     const SERVICE_ID = 'result_service';
     const FAILURE_MESSAGE = 'failure';
     const SUCCESS_MESSAGE = 'success';
+
+    const TEMPLATE_VAR_CODE_MAJOR = '{{codeMajor}}';
+    const TEMPLATE_VAR_DESCRIPTION = '{{description}}';
+    const TEMPLATE_VAR_MESSAGE_ID = '{{messageId}}';
+    const TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER = '{{messageIdentifier}}';
     const RESPONSE_TEMPLATE = '<?xml version="1.0" encoding="UTF-8"?>
         <imsx_POXEnvelopeResponse xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
             <imsx_POXHeader>
                 <imsx_POXResponseHeaderInfo>
                     <imsx_version>V1.0</imsx_version>
-                    <imsx_messageIdentifier>{{messageId}}</imsx_messageIdentifier>
+                    <imsx_messageIdentifier>' . self::TEMPLATE_VAR_MESSAGE_ID . '</imsx_messageIdentifier>
                     <imsx_statusInfo>
-                        <imsx_codeMajor>{{codeMajor}}</imsx_codeMajor>
+                        <imsx_codeMajor>' . self::TEMPLATE_VAR_CODE_MAJOR . '</imsx_codeMajor>
                         <imsx_severity>status</imsx_severity>
-                        <imsx_description>{{description}}</imsx_description>
-                        <imsx_messageRefIdentifier>{{messageIdentifier}}</imsx_messageRefIdentifier>
+                        <imsx_description>' . self::TEMPLATE_VAR_DESCRIPTION . '</imsx_description>
+                        <imsx_messageRefIdentifier>' . self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER . '</imsx_messageRefIdentifier>
                         <imsx_operationRefIdentifier>replaceResult</imsx_operationRefIdentifier>
                     </imsx_statusInfo>
                 </imsx_POXResponseHeaderInfo>
@@ -63,6 +65,7 @@ class ResultService
         </imsx_POXEnvelopeResponse>
     ';
     const SCORE_DESCRIPTION_TEMPLATE = 'Score for {{sourceId}} is now {{score}}';
+
 
     private $dom;
     public static $statuses = array(
@@ -83,15 +86,19 @@ class ResultService
             $this->dom->loadXML($payload);
             $this->validateResultRequest($payload);
         } catch (\Exception $e) {
-//            $this->logError('Request XML does not have replaceResultRequest element');
+            // $this->logError('Request XML does not have replaceResultRequest element');
             return [
-                '{{codeMajor}}' => self::FAILURE_MESSAGE,
-                '{{description}}' => self::$statuses[501],
-                '{{messageId}}' => '',
+                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[501],
+                self::TEMPLATE_VAR_MESSAGE_ID => '',
+                self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
             ];
         }
     }
 
+    /**
+     * @return array [array $result, bool $status]
+     */
     public function getResult()
     {
         $xpath = new \DOMXPath($this->dom);
@@ -104,10 +111,56 @@ class ResultService
         $sourcedId = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:sourcedGUID/lti:sourcedId')
             ->item(0)->nodeValue;
 
-        return [
+        if (!$this->isScoreValid($score)) {
+            return [[
+                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[400],
+                self::TEMPLATE_VAR_MESSAGE_ID => $messageIdentifier,
+            ], false];
+        }
+
+        return [[
             'messageIdentifier' => $messageIdentifier,
             'score' => $score,
             'sourcedId' => $sourcedId,
+        ], true];
+    }
+
+    /**
+     * @param $result
+     * @return array [array|object $result, bool $status]
+     */
+    public function getDeliveryExecution($result)
+    {
+        try {
+            $resultService = $this->getServiceManager()->get(ServerResultService::SERVICE_ID);
+            $deliveryExecution = $resultService->getDeliveryExecutionById($result['sourcedId']);
+        } catch (\Exception $e) {
+            // $this->logError('Delivery Execution with ID ' . $sourcedId);
+            return [[
+                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[404],
+                self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
+            ], false];
+        }
+
+        return [$deliveryExecution, true];
+    }
+
+    /**
+     * @param $result
+     * @return array [array $result, bool $status]
+     */
+    public function getSuccessResult($result)
+    {
+        return [
+            self::TEMPLATE_VAR_CODE_MAJOR => self::SUCCESS_MESSAGE,
+            self::TEMPLATE_VAR_DESCRIPTION => str_replace(
+                ['{{sourceId}}', '{{score}}'],
+                [$result['sourcedId'], $result['score']],
+                self::SCORE_DESCRIPTION_TEMPLATE),
+            self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
+            self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => $result['sourcedId'],
         ];
     }
 
