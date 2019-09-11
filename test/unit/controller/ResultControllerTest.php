@@ -24,14 +24,16 @@ use oat\generis\test\TestCase;
 use oat\generis\test\unit\oatbox\log\TestLogger;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoResultServer\models\classes\ResultServerService;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
-use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use oat\taoLtiConsumer\controller\ResultController;
 use GuzzleHttp\Psr7\Response;
 use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
-use oat\taoResultServer\models\classes\ResultService;
 use oat\oatbox\event\EventManager;
+use taoResultServer_models_classes_WritableResultStorage as WritableResultStorage;
+use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
+use oat\taoDelivery\model\execution\ServiceProxy;
 
 class ResultControllerTest extends TestCase
 {
@@ -145,6 +147,14 @@ class ResultControllerTest extends TestCase
         $result = $subject->manageResult($requestXml);
     }
 
+    public function testGetScoreVariable()
+    {
+        $subject = new LtiResultService();
+        $result = $subject->getScoreVariable(['score' => '0.92']);
+        $this->assertInstanceOf(OutcomeVariable::class, $result);
+        $this->assertEquals('0.92', $result->getValue());
+    }
+
     private function getResultController()
     {
         $ltiResultService = new LtiResultService();
@@ -155,24 +165,30 @@ class ResultControllerTest extends TestCase
         return $subject;
     }
 
+    /**
+     * @return MockObject|ServiceLocatorInterface
+     */
     private function getServiceLocator()
     {
         if (is_object($this->serviceLocator)) {
             return $this->serviceLocator;
         }
 
+        $deliveryExecutionId = '3124567';
+        $sourcedId = '3124567';
+
         $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
             ->disableOriginalConstructor()
             ->setMethods(['getIdentifier'])
             ->getMock();
-        $deliveryExecutionMock->method('getIdentifier')->willReturn('12345');
+        $deliveryExecutionMock->method('getIdentifier')->willReturn($deliveryExecutionId);
 
-        $resultServiceMock = $this->getMockBuilder(ResultService::class)
+        $serviceProxyMock = $this->getMockBuilder(ServiceProxy::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getDeliveryExecutionById'])
+            ->setMethods(['getDeliveryExecution'])
             ->getMockForAbstractClass();
-        $resultServiceMock->method('getDeliveryExecutionById')
-            ->with('3124567')
+        $serviceProxyMock->method('getDeliveryExecution')
+            ->with($sourcedId)
             ->willReturn($deliveryExecutionMock);
 
         $eventManagerMock = $this->getMockBuilder(EventManager::class)
@@ -180,7 +196,22 @@ class ResultControllerTest extends TestCase
             ->setMethods(['trigger'])
             ->getMock();
         $eventManagerMock->method('trigger')->with(ResultController::LIS_SCORE_RECEIVE_EVENT,
-            [ResultController::DELIVERY_EXECUTION_ID => '12345'])->willReturn('12345');
+            [ResultController::DELIVERY_EXECUTION_ID => $deliveryExecutionId])->willReturn($deliveryExecutionId);
+
+        $resultStorageServiceMock = $this->getMockBuilder(WritableResultStorage::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['storeTestVariable'])
+            ->getMockForAbstractClass();
+        $resultStorageServiceMock->method('storeTestVariable')
+            ->with($deliveryExecutionId, '', $this->anything(), '')
+            ->willReturn(true);
+
+        $resultServerServiceMock = $this->getMockBuilder(ResultServerService::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getResultStorage'])
+            ->getMockForAbstractClass();
+        $resultServerServiceMock->method('getResultStorage')
+            ->with($sourcedId)->willReturn($resultStorageServiceMock);
 
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */
         $serviceLocator = $this->getMockBuilder(ServiceManager::class)
@@ -188,8 +219,8 @@ class ResultControllerTest extends TestCase
             ->setMethods(['get'])
             ->getMockForAbstractClass();
         $serviceLocator->method('get')
-            ->withConsecutive([ResultService::SERVICE_ID], [EventManager::SERVICE_ID])
-            ->willReturnOnConsecutiveCalls($resultServiceMock, $eventManagerMock);
+            ->withConsecutive([ServiceProxy::SERVICE_ID], [ResultServerService::SERVICE_ID], [EventManager::SERVICE_ID])
+            ->willReturnOnConsecutiveCalls($serviceProxyMock, $resultServerServiceMock, $eventManagerMock);
 
         $this->serviceLocator = $serviceLocator;
 

@@ -46,6 +46,9 @@ class ResultController extends \tao_actions_CommonModule
      * Stores a score result in a delivery execution
      * @param $payload Input XML string
      * @return Response
+     * @throws \common_exception_Error
+     * @throws \common_exception_InvalidArgumentType
+     * @throws \oat\taoResultServer\models\Exceptions\DuplicateVariableException
      */
     public function manageResult($payload)
     {

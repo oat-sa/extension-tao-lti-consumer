@@ -170,7 +170,7 @@ class ResultService
     {
         $scoreVariable = new OutcomeVariable();
         $scoreVariable->setIdentifier('score');
-        $scoreVariable->setCardinality(ResponseVariable::CARDINALITY_SINGLE);
+        $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
         $scoreVariable->setBaseType('float');
         $scoreVariable->setEpoch(microtime());
         $scoreVariable->setValue($result['score']);
