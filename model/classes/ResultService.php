@@ -62,42 +62,48 @@ class ResultService
     ';
     const SCORE_DESCRIPTION_TEMPLATE = 'Score for {{sourceId}} is now {{score}}';
 
+    const STATUS_INVALID_SCORE = 400;
+    const STATUS_DELIVERY_EXECUTION_NOT_FOUND = 404;
+    const STATUS_METHOD_NOT_IMPLEMENTED = 501;
+    const STATUS_INTERNAL_SERVER_ERROR = 500;
+    const STATUS_SUCCESS = 201;
 
-    private $dom;
     public static $statuses = array(
-        400 => 'Invalid score',
-        404 => 'DeliveryExecution not found',
-        501 => 'Method not implemented',
-        500 => 'Internal server error, please retry',
+        self::STATUS_INVALID_SCORE => 'Invalid score',
+        self::STATUS_DELIVERY_EXECUTION_NOT_FOUND => 'DeliveryExecution not found',
+        self::STATUS_METHOD_NOT_IMPLEMENTED => 'Method not implemented',
+        self::STATUS_INTERNAL_SERVER_ERROR => 'Internal server error, please retry',
     );
 
     /**
      * @param $payload string
-     * @return array|null
+     * @return array [array $result, int $status]
      */
     public function loadPayload($payload)
     {
         try {
-            $this->dom = new \DOMDocument();
-            $this->dom->loadXML($payload);
-            $this->validateResultRequest($payload);
+            $dom = new \DOMDocument();
+            $dom->loadXML($payload);
+            $this->validateResultRequest($dom);
+            return $this->getResult($dom);
         } catch (\Exception $e) {
             // $this->logError('Request XML does not have replaceResultRequest element');
-            return [
+            return [[
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
                 self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[501],
                 self::TEMPLATE_VAR_MESSAGE_ID => '',
                 self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
-            ];
+            ], self::STATUS_METHOD_NOT_IMPLEMENTED];
         }
     }
 
     /**
-     * @return array [array $result, bool $status]
+     * @param \DOMDocument $dom
+     * @return array [array $result, int $status]
      */
-    public function getResult()
+    public function getResult($dom)
     {
-        $xpath = new \DOMXPath($this->dom);
+        $xpath = new \DOMXPath($dom);
         $xpath->registerNamespace('lti', "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0");
 
         $messageIdentifier = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXHeader/lti:imsx_POXRequestHeaderInfo/lti:imsx_messageIdentifier')
@@ -112,19 +118,19 @@ class ResultService
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
                 self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[400],
                 self::TEMPLATE_VAR_MESSAGE_ID => $messageIdentifier,
-            ], false];
+            ], self::STATUS_INVALID_SCORE];
         }
 
         return [[
             'messageIdentifier' => $messageIdentifier,
             'score' => $score,
             'sourcedId' => $sourcedId,
-        ], true];
+        ], self::STATUS_SUCCESS];
     }
 
     /**
      * @param array $result
-     * @return array [array|object $result, bool $status]
+     * @return array [array|object $result, int $status]
      */
     public function getDeliveryExecution($result)
     {
@@ -138,15 +144,15 @@ class ResultService
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
                 self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[404],
                 self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
-            ], false];
+            ], self::STATUS_DELIVERY_EXECUTION_NOT_FOUND];
         }
 
-        return [$deliveryExecution, true];
+        return [$deliveryExecution, self::STATUS_SUCCESS];
     }
 
     /**
      * @param array $result
-     * @return array [array $result, bool $status]
+     * @return array
      */
     public function getSuccessResult($result)
     {
@@ -187,9 +193,13 @@ class ResultService
         return (is_numeric($score) && $score >= 0 && $score <= 1);
     }
 
-    private function validateResultRequest()
+    /**
+     * @param \DOMDocument $dom
+     * @throws \Exception
+     */
+    private function validateResultRequest($dom)
     {
-        $xpath = new \DOMXPath($this->dom);
+        $xpath = new \DOMXPath($dom);
         $xpath->registerNamespace('lti', "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0");
         $elements = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest');
 

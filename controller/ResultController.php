@@ -56,24 +56,17 @@ class ResultController extends \tao_actions_CommonModule
             // throw new common_exception_BadRequest('wrong request mode');
         }
 
-        $result = $this->resultService->loadPayload($payload);
+        list($result, $status) = $this->resultService->loadPayload($payload);
 
-        if ($result !== null) {
-            return $this->sendResponse($result, 501);
-        }
-
-        list($result, $status) = $this->resultService->getResult();
-
-        if (!$status) {
-            // $this->logError('Score is not in the range [0..1]');
-            return $this->sendResponse($result, 400);
+        if ($status !== LtiResultService::STATUS_SUCCESS) {
+            return $this->sendResponse($result, $status);
         }
 
         list($deliveryExecution, $status) = $this->resultService->getDeliveryExecution($result);
 
-        if (!$status) {
+        if ($status !== LtiResultService::STATUS_SUCCESS) {
             // $this->logError('Score is not in the range [0..1]');
-            return $this->sendResponse($deliveryExecution, 404);
+            return $this->sendResponse($deliveryExecution, $status);
         }
 
         /** @var ResultServerService $resultServerService */
@@ -86,7 +79,7 @@ class ResultController extends \tao_actions_CommonModule
         $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
             [self::DELIVERY_EXECUTION_ID => $deliveryExecution->getIdentifier()]);
 
-        return $this->sendResponse($this->resultService->getSuccessResult($result), 201);
+        return $this->sendResponse($this->resultService->getSuccessResult($result), LtiResultService::STATUS_SUCCESS);
     }
 
     /**
