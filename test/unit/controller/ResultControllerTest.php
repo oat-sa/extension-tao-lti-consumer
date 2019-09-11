@@ -26,6 +26,7 @@ use oat\generis\test\TestCase;
 use oat\generis\test\unit\oatbox\log\TestLogger;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLtiConsumer\model\ResultException;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
@@ -134,6 +135,7 @@ class ResultControllerTest extends TestCase
      * @throws common_exception_Error
      * @throws common_exception_InvalidArgumentType
      * @throws DuplicateVariableException
+     * @throws ResultException
      */
     public function testManageResultWithScores($search, $score, $expectedStatus)
     {

@@ -19,9 +19,12 @@
 
 namespace oat\taoLtiConsumer\model\classes;
 
+use common_exception_InvalidArgumentType;
 use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\oatbox\log\LoggerAwareTrait;
+use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
+use oat\taoLtiConsumer\model\ResultException;
 use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
 
 /**
@@ -77,7 +80,8 @@ class ResultService
 
     /**
      * @param $payload string
-     * @return array [array $result, int $status]
+     * @return array
+     * @throws ResultException
      */
     public function loadPayload($payload)
     {
@@ -86,20 +90,22 @@ class ResultService
             $dom->loadXML($payload);
             $this->validateResultRequest($dom);
             return $this->getResult($dom);
+        } catch (ResultException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            // $this->logError('Request XML does not have replaceResultRequest element');
-            return [[
+            throw new ResultException(self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED], self::STATUS_METHOD_NOT_IMPLEMENTED, null, [
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[501],
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED],
                 self::TEMPLATE_VAR_MESSAGE_ID => '',
                 self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
-            ], self::STATUS_METHOD_NOT_IMPLEMENTED];
+            ]);
         }
     }
 
     /**
      * @param \DOMDocument $dom
-     * @return array [array $result, int $status]
+     * @return array
+     * @throws ResultException
      */
     public function getResult($dom)
     {
@@ -114,23 +120,24 @@ class ResultService
             ->item(0)->nodeValue;
 
         if (!$this->isScoreValid($score)) {
-            return [[
+            throw new ResultException(self::$statuses[self::STATUS_INVALID_SCORE], self::STATUS_INVALID_SCORE, null, [
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
                 self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[400],
                 self::TEMPLATE_VAR_MESSAGE_ID => $messageIdentifier,
-            ], self::STATUS_INVALID_SCORE];
+            ]);
         }
 
-        return [[
+        return [
             'messageIdentifier' => $messageIdentifier,
             'score' => $score,
             'sourcedId' => $sourcedId,
-        ], self::STATUS_SUCCESS];
+        ];
     }
 
     /**
      * @param array $result
-     * @return array [array|object $result, int $status]
+     * @return DeliveryExecution
+     * @throws ResultException
      */
     public function getDeliveryExecution($result)
     {
@@ -140,14 +147,14 @@ class ResultService
             $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
         } catch (\Exception $e) {
             // $this->logError('Delivery Execution with ID ' . $sourcedId);
-            return [[
+            throw new ResultException($e->getMessage(), self::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null, [
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
                 self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[404],
                 self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
-            ], self::STATUS_DELIVERY_EXECUTION_NOT_FOUND];
+            ]);
         }
 
-        return [$deliveryExecution, self::STATUS_SUCCESS];
+        return $deliveryExecution;
     }
 
     /**
@@ -170,7 +177,7 @@ class ResultService
     /**
      * @param array $result
      * @return OutcomeVariable
-     * @throws \common_exception_InvalidArgumentType
+     * @throws common_exception_InvalidArgumentType
      */
     public function getScoreVariable($result)
     {
@@ -195,7 +202,7 @@ class ResultService
 
     /**
      * @param \DOMDocument $dom
-     * @throws \Exception
+     * @throws ResultException
      */
     private function validateResultRequest($dom)
     {
@@ -204,7 +211,12 @@ class ResultService
         $elements = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest');
 
         if ($elements->length === 0) {
-            throw new \Exception('Request XML does not have replaceResultRequest element');
+            throw new ResultException(self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED], self::STATUS_METHOD_NOT_IMPLEMENTED, null, [
+                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[501],
+                self::TEMPLATE_VAR_MESSAGE_ID => '',
+                self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
+            ]);
         }
     }
 }
