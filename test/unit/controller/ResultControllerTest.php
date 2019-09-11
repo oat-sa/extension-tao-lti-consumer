@@ -19,12 +19,15 @@
 
 namespace oat\taoLtiConsumer\test\unit\controller;
 
+use common_exception_Error;
+use common_exception_InvalidArgumentType;
 use GuzzleHttp\Psr7\Request;
 use oat\generis\test\TestCase;
 use oat\generis\test\unit\oatbox\log\TestLogger;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoResultServer\models\classes\ResultServerService;
+use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use oat\taoLtiConsumer\controller\ResultController;
@@ -128,6 +131,9 @@ class ResultControllerTest extends TestCase
      * @param $search
      * @param $score
      * @param $expectedStatus
+     * @throws common_exception_Error
+     * @throws common_exception_InvalidArgumentType
+     * @throws DuplicateVariableException
      */
     public function testManageResultWithScores($search, $score, $expectedStatus)
     {
@@ -137,14 +143,6 @@ class ResultControllerTest extends TestCase
         $result = $subject->manageResult($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals($expectedStatus, $result->getStatusCode());
-    }
-
-    public function testDeliveryExecutionRetrieving()
-    {
-        $requestXml = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
-
-        $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
     }
 
     public function testGetScoreVariable()
