@@ -21,7 +21,8 @@ namespace oat\taoLtiConsumer\model\classes;
 
 use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\oatbox\log\LoggerAwareTrait;
-use oat\taoResultServer\models\classes\ResultService as ServerResultService;
+use oat\taoDelivery\model\execution\ServiceProxy;
+use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
 
 /**
  * ResultService class to manage XML result data
@@ -128,8 +129,9 @@ class ResultService
     public function getDeliveryExecution($result)
     {
         try {
-            $resultService = $this->getServiceManager()->get(ServerResultService::SERVICE_ID);
-            $deliveryExecution = $resultService->getDeliveryExecutionById($result['sourcedId']);
+            /** @var ServiceProxy $resultService */
+            $resultService = $this->getServiceManager()->get(ServiceProxy::SERVICE_ID);
+            $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
         } catch (\Exception $e) {
             // $this->logError('Delivery Execution with ID ' . $sourcedId);
             return [[
@@ -157,6 +159,23 @@ class ResultService
             self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
             self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => $result['sourcedId'],
         ];
+    }
+
+    /**
+     * @param array $result
+     * @return OutcomeVariable
+     * @throws \common_exception_InvalidArgumentType
+     */
+    public function getScoreVariable($result)
+    {
+        $scoreVariable = new OutcomeVariable();
+        $scoreVariable->setIdentifier('score');
+        $scoreVariable->setCardinality(ResponseVariable::CARDINALITY_SINGLE);
+        $scoreVariable->setBaseType('float');
+        $scoreVariable->setEpoch(microtime());
+        $scoreVariable->setValue($result['score']);
+
+        return $scoreVariable;
     }
 
     /**
