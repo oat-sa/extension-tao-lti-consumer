@@ -207,20 +207,6 @@ class ResultControllerTest extends TestCase
      * @throws common_exception_Error
      * @throws common_exception_InvalidArgumentType
      */
-    public function testWrongRequestType()
-    {
-        $subject = $this->getResultController();
-
-        $this->expectException(common_exception_BadRequest::class);
-        $subject->manageResult();
-    }
-
-    /**
-     * @throws DuplicateVariableException
-     * @throws common_exception_BadRequest
-     * @throws common_exception_Error
-     * @throws common_exception_InvalidArgumentType
-     */
     public function testRequestResult()
     {
         $serverRequestMock = $this->getRequestMock();

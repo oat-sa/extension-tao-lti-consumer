@@ -51,10 +51,6 @@ class ResultController extends \tao_actions_CommonModule
      */
     public function manageResult()
     {
-        if (!$this->isXmlHttpRequest()) {
-             throw new common_exception_BadRequest('wrong request mode');
-        }
-
         $payload = $this->getPsrRequest()->getBody();
 
         return $this->storeScore($payload);
