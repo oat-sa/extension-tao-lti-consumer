@@ -19,17 +19,17 @@
 
 namespace oat\taoLtiConsumer\test\unit\controller;
 
+use common_exception_BadRequest;
 use common_exception_Error;
 use common_exception_InvalidArgumentType;
-use GuzzleHttp\Psr7\Request;
 use oat\generis\test\TestCase;
 use oat\generis\test\unit\oatbox\log\TestLogger;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLtiConsumer\model\ResultException;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use oat\taoLtiConsumer\controller\ResultController;
 use GuzzleHttp\Psr7\Response;
@@ -41,6 +41,9 @@ use oat\taoDelivery\model\execution\ServiceProxy;
 
 class ResultControllerTest extends TestCase
 {
+    /**
+     * Payload template for set of the tests
+     */
     const PAYLOAD_TEMPLATE = '<?xml version="1.0" encoding="UTF-8"?>
         <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
             <imsx_POXHeader>
@@ -67,8 +70,40 @@ class ResultControllerTest extends TestCase
         </imsx_POXEnvelopeRequest>
     ';
 
+    /**
+     * Expected result for Request mode with success payload template
+     */
+    const EXPECTED_RESPONSE = '<?xml version="1.0" encoding="UTF-8"?>
+        <imsx_POXEnvelopeResponse xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+            <imsx_POXHeader>
+                <imsx_POXResponseHeaderInfo>
+                    <imsx_version>V1.0</imsx_version>
+                    <imsx_messageIdentifier>999999123</imsx_messageIdentifier>
+                    <imsx_statusInfo>
+                        <imsx_codeMajor>success</imsx_codeMajor>
+                        <imsx_severity>status</imsx_severity>
+                        <imsx_description>Score for 3124567 is now 0.92</imsx_description>
+                        <imsx_messageRefIdentifier>3124567</imsx_messageRefIdentifier>
+                        <imsx_operationRefIdentifier>replaceResult</imsx_operationRefIdentifier>
+                    </imsx_statusInfo>
+                </imsx_POXResponseHeaderInfo>
+            </imsx_POXHeader>
+            <imsx_POXBody>
+                <replaceResultResponse />
+            </imsx_POXBody>
+        </imsx_POXEnvelopeResponse>
+    ';
+
+    /**
+     * @var MockObject for ServiceLocator
+     */
     private $serviceLocator;
 
+    /**
+     * @throws DuplicateVariableException
+     * @throws common_exception_Error
+     * @throws common_exception_InvalidArgumentType
+     */
     public function testManageResultWithIncorrectFilledPayload()
     {
         $requestXml = '<?xml version="1.0" encoding="UTF-8"?>
@@ -98,23 +133,32 @@ class ResultControllerTest extends TestCase
         ';
 
         $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
+        $result = $subject->storeScore($requestXml);
 
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(501, $result->getStatusCode());
     }
 
+    /**
+     * @throws DuplicateVariableException
+     * @throws common_exception_Error
+     * @throws common_exception_InvalidArgumentType
+     */
     public function testManageResultWithIncorrectPayload()
     {
         $requestXml = '';
 
         $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
+        $result = $subject->storeScore($requestXml);
 
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals(501, $result->getStatusCode());
     }
 
+    /**
+     * Set of input args for tests
+     * @return array
+     */
     public function queryScoresToTest()
     {
         return [
@@ -135,18 +179,20 @@ class ResultControllerTest extends TestCase
      * @throws common_exception_Error
      * @throws common_exception_InvalidArgumentType
      * @throws DuplicateVariableException
-     * @throws ResultException
      */
     public function testManageResultWithScores($search, $score, $expectedStatus)
     {
         $requestXml = str_replace($search, $score, self::PAYLOAD_TEMPLATE);
 
         $subject = $this->getResultController();
-        $result = $subject->manageResult($requestXml);
+        $result = $subject->storeScore($requestXml);
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals($expectedStatus, $result->getStatusCode());
     }
 
+    /**
+     * @throws common_exception_InvalidArgumentType
+     */
     public function testGetScoreVariable()
     {
         $subject = new LtiResultService();
@@ -155,6 +201,58 @@ class ResultControllerTest extends TestCase
         $this->assertEquals('0.92', $result->getValue());
     }
 
+    /**
+     * @throws DuplicateVariableException
+     * @throws common_exception_BadRequest
+     * @throws common_exception_Error
+     * @throws common_exception_InvalidArgumentType
+     */
+    public function testWrongRequestType()
+    {
+        $subject = $this->getResultController();
+
+        $this->expectException(common_exception_BadRequest::class);
+        $subject->manageResult();
+    }
+
+    /**
+     * @throws DuplicateVariableException
+     * @throws common_exception_BadRequest
+     * @throws common_exception_Error
+     * @throws common_exception_InvalidArgumentType
+     */
+    public function testRequestResult()
+    {
+        $serverRequestMock = $this->getRequestMock();
+        $subject = $this->getResultController();
+        $subject->setRequest($serverRequestMock);
+        $result = $subject->manageResult();
+        $this->assertInstanceOf(Response::class, $result);
+        $this->assertEquals(201, $result->getStatusCode());
+        $this->assertEquals(self::EXPECTED_RESPONSE, $result->getBody()->getContents());
+    }
+
+    /**
+     * @return MockObject
+     */
+    private function getRequestMock()
+    {
+        $payload = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
+        $serverRequestMock = $this->getMockBuilder(ServerRequestInterface::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getBody', 'getServerParams'])
+            ->getMockForAbstractClass();
+        $serverRequestMock->method('getBody')->willReturn($payload);
+        $serverRequestMock->method('getServerParams')->willReturn([
+            'HTTP_X_REQUESTED_WITH' => 'xmlhttprequest',
+        ]);
+
+        return $serverRequestMock;
+    }
+
+    /**
+     * @return ResultController
+     */
     private function getResultController()
     {
         $ltiResultService = new LtiResultService();

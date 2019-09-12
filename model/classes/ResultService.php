@@ -28,12 +28,13 @@ use oat\taoLtiConsumer\model\ResultException;
 use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
 
 /**
- * ResultService class to manage XML result data
+ * Class ResultService
+ * Class to manage XML result data with score and to store it in DeliveryExecution
+ * @package oat\taoLtiConsumer\model\classes
  */
 class ResultService
 {
     use ServiceManagerAwareTrait;
-    use LoggerAwareTrait;
 
     const SERVICE_ID = 'result_service';
     const FAILURE_MESSAGE = 'failure';
@@ -122,7 +123,7 @@ class ResultService
         if (!$this->isScoreValid($score)) {
             throw new ResultException(self::$statuses[self::STATUS_INVALID_SCORE], self::STATUS_INVALID_SCORE, null, [
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[400],
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_INVALID_SCORE],
                 self::TEMPLATE_VAR_MESSAGE_ID => $messageIdentifier,
             ]);
         }
@@ -146,10 +147,9 @@ class ResultService
             $resultService = $this->getServiceManager()->get(ServiceProxy::SERVICE_ID);
             $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
         } catch (\Exception $e) {
-            // $this->logError('Delivery Execution with ID ' . $sourcedId);
             throw new ResultException($e->getMessage(), self::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null, [
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[404],
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
                 self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
             ]);
         }
@@ -213,7 +213,7 @@ class ResultService
         if ($elements->length === 0) {
             throw new ResultException(self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED], self::STATUS_METHOD_NOT_IMPLEMENTED, null, [
                 self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[501],
+                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED],
                 self::TEMPLATE_VAR_MESSAGE_ID => '',
                 self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
             ]);

@@ -21,14 +21,21 @@ namespace oat\taoLtiConsumer\model;
 
 use Exception;
 
+/**
+ * Class ResultException
+ * Stores optional data for further usage
+ * @package oat\taoLtiConsumer\model
+ */
 class ResultException extends Exception
 {
-    private $messageToLog;
+    /**
+     * Optional data for further usage
+     * @var mixed
+     */
     private $optionalData;
 
     public function __construct($message = null, $code = 0, Exception $previous = null, $optionalData = array())
     {
-        $this->messageToLog = $message;
         $this->optionalData = $optionalData;
 
         parent::__construct('', $code, $previous);
@@ -41,17 +48,5 @@ class ResultException extends Exception
     public function getOptionalData()
     {
         return $this->optionalData;
-    }
-
-    public function __toString()
-    {
-        return sprintf(
-            "%s %s in %s(%s)\n\t\t\t%s",
-            get_class($this),
-            $this->messageToLog,
-            $this->file,
-            $this->line,
-            $this->getTraceAsString()
-        );
     }
 }

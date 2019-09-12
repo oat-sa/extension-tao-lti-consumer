@@ -19,6 +19,7 @@
 
 namespace oat\taoLtiConsumer\controller;
 
+use common_exception_BadRequest;
 use common_exception_Error;
 use common_exception_InvalidArgumentType;
 use GuzzleHttp\Psr7\Response;
@@ -27,6 +28,7 @@ use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoLtiConsumer\model\ResultException;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
+use Psr\Http\Message\ServerRequestInterface;
 
 class ResultController extends \tao_actions_CommonModule
 {
@@ -40,26 +42,33 @@ class ResultController extends \tao_actions_CommonModule
         $this->resultService = $resultService;
     }
 
-    public function actionResultScore()
+    /**
+     * @return Response
+     * @throws DuplicateVariableException
+     * @throws common_exception_Error
+     * @throws common_exception_InvalidArgumentType
+     * @throws common_exception_BadRequest
+     */
+    public function manageResult()
     {
         if (!$this->isXmlHttpRequest()) {
-            // throw new common_exception_BadRequest('wrong request mode');
+             throw new common_exception_BadRequest('wrong request mode');
         }
 
-        $payload = $this->getRequestParameter('payload');
-        $this->manageResult($payload);
+        $payload = $this->getPsrRequest()->getBody();
+
+        return $this->storeScore($payload);
     }
 
     /**
      * Stores a score result in a delivery execution
      * @param $payload Input XML string
      * @return Response
-     * @throws ResultException
      * @throws common_exception_Error
      * @throws common_exception_InvalidArgumentType
      * @throws DuplicateVariableException
      */
-    public function manageResult($payload)
+    public function storeScore($payload)
     {
         try {
             $result = $this->resultService->loadPayload($payload);
@@ -70,7 +79,6 @@ class ResultController extends \tao_actions_CommonModule
         try {
             $deliveryExecution = $this->resultService->getDeliveryExecution($result);
         } catch (ResultException $e) {
-            // $this->logError('Score is not in the range [0..1]');
             return $this->sendResponse($e->getOptionalData(), $e->getCode());
         }
 
