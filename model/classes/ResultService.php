@@ -182,7 +182,7 @@ class ResultService
     public function getScoreVariable($result)
     {
         $scoreVariable = new OutcomeVariable();
-        $scoreVariable->setIdentifier('CORE');
+        $scoreVariable->setIdentifier('SCORE');
         $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
         $scoreVariable->setBaseType('float');
         $scoreVariable->setEpoch(microtime());
