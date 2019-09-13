@@ -28,9 +28,10 @@ use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoLtiConsumer\model\ResultException;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
-use Psr\Http\Message\ServerRequestInterface;
+use tao_actions_RestController as RestController;
 
-class ResultController extends \tao_actions_CommonModule
+
+class ResultController extends RestController
 {
     private $resultService;
 

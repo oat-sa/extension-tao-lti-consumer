@@ -38,6 +38,7 @@ use oat\oatbox\event\EventManager;
 use taoResultServer_models_classes_WritableResultStorage as WritableResultStorage;
 use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
 use oat\taoDelivery\model\execution\ServiceProxy;
+use Psr\Http\Message\StreamInterface;
 
 class ResultControllerTest extends TestCase
 {
@@ -224,14 +225,26 @@ class ResultControllerTest extends TestCase
     private function getRequestMock()
     {
         $payload = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
+        $streamInterfaceMock = $this->getMockBuilder(StreamInterface::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getContents'])
+            ->getMockForAbstractClass();
+        $streamInterfaceMock->method('getContents')->willReturn($payload);
+
         $serverRequestMock = $this->getMockBuilder(ServerRequestInterface::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getBody', 'getServerParams'])
+            ->setMethods(['getBody', 'getServerParams', 'getHeader', 'hasHeader'])
             ->getMockForAbstractClass();
-        $serverRequestMock->method('getBody')->willReturn($payload);
+        $serverRequestMock->method('getBody')->willReturn($streamInterfaceMock);
         $serverRequestMock->method('getServerParams')->willReturn([
             'HTTP_X_REQUESTED_WITH' => 'xmlhttprequest',
         ]);
+        $serverRequestMock->method('getHeader')
+            ->withConsecutive(['Accept'])
+            ->willReturnOnConsecutiveCalls('*');
+        $serverRequestMock->method('hasHeader')
+            ->withConsecutive(['Accept'], ['REQUEST_METHOD'])
+            ->willReturnOnConsecutiveCalls(true, true);
 
         return $serverRequestMock;
     }
@@ -241,9 +254,7 @@ class ResultControllerTest extends TestCase
      */
     private function getResultController()
     {
-        $ltiResultService = new LtiResultService();
-        $ltiResultService->setServiceLocator($this->getServiceLocator());
-        $subject = new ResultController($ltiResultService);
+        $subject = new ResultController();
         $subject->setLogger(new TestLogger());
         $subject->setServiceLocator($this->getServiceLocator());
         return $subject;
@@ -260,6 +271,8 @@ class ResultControllerTest extends TestCase
 
         $deliveryExecutionId = '3124567';
         $sourcedId = '3124567';
+
+        $ltiResultService = new LtiResultService();
 
         $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
             ->disableOriginalConstructor()
@@ -303,8 +316,8 @@ class ResultControllerTest extends TestCase
             ->setMethods(['get'])
             ->getMockForAbstractClass();
         $serviceLocator->method('get')
-            ->withConsecutive([ServiceProxy::SERVICE_ID], [ResultServerService::SERVICE_ID], [EventManager::SERVICE_ID])
-            ->willReturnOnConsecutiveCalls($serviceProxyMock, $resultServerServiceMock, $eventManagerMock);
+            ->withConsecutive([LtiResultService::class], [ServiceProxy::SERVICE_ID], [ResultServerService::SERVICE_ID], [EventManager::SERVICE_ID])
+            ->willReturnOnConsecutiveCalls($ltiResultService, $serviceProxyMock, $resultServerServiceMock, $eventManagerMock);
 
         $this->serviceLocator = $serviceLocator;
 
