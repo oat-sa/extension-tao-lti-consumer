@@ -37,11 +37,6 @@ class ResultController extends \tao_actions_CommonModule
     const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
     const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
-    public function __construct(LtiResultService $resultService)
-    {
-        $this->resultService = $resultService;
-    }
-
     /**
      * @return Response
      * @throws DuplicateVariableException
@@ -51,7 +46,7 @@ class ResultController extends \tao_actions_CommonModule
      */
     public function manageResult()
     {
-        $payload = $this->getPsrRequest()->getBody();
+        $payload = $this->getPsrRequest()->getBody()->getContents();
 
         return $this->storeScore($payload);
     }
@@ -66,6 +61,8 @@ class ResultController extends \tao_actions_CommonModule
      */
     public function storeScore($payload)
     {
+        $this->resultService = $this->getServiceLocator()->get(LtiResultService::class);
+
         try {
             $result = $this->resultService->loadPayload($payload);
         } catch (ResultException $e) {
@@ -100,6 +97,7 @@ class ResultController extends \tao_actions_CommonModule
     {
         $responseXml = str_replace(array_keys($params), array_values($params), LtiResultService::RESPONSE_TEMPLATE);
         $response = new Response($statusCode, [], $responseXml);
+        $this->setResponse($response);
         return $response;
     }
 }

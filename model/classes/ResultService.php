@@ -20,6 +20,7 @@
 namespace oat\taoLtiConsumer\model\classes;
 
 use common_exception_InvalidArgumentType;
+use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\taoDelivery\model\execution\DeliveryExecution;
@@ -32,7 +33,7 @@ use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
  * Class to manage XML result data with score and to store it in DeliveryExecution
  * @package oat\taoLtiConsumer\model\classes
  */
-class ResultService
+class ResultService extends ConfigurableService
 {
     use ServiceManagerAwareTrait;
 
