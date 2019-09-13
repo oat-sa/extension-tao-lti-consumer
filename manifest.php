@@ -29,7 +29,7 @@ return [
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'tao' => '>=38.13.0',
-        'taoLti' => '>=10.4.0',
+        'taoLti' => '>=10.5.1',
         'taoDeliveryRdf' => '>=8.3.3',
     ],
     'acl' => [
