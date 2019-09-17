@@ -16,11 +16,13 @@
 namespace oat\taoLtiConsumer\model\result;
 
 use oat\oatbox\service\ConfigurableService;
+use oat\oatbox\service\exception\InvalidServiceManagerException;
+use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
-use oat\taoLtiConsumer\model\result\ResultException;
-use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoResultServer\models\classes\ResultServerService;
+use qtism\runtime\common\OutcomeVariable;
 
 /**
  * Class LtiXmlFormatterService
@@ -29,34 +31,73 @@ use oat\taoLtiConsumer\model\result\MessagesService;
  */
 class ScoreWriterService extends ConfigurableService
 {
+    use ServiceManagerAwareTrait;
+
     public function store($result)
     {
-        $this->isDeliveryExecutionExists($result);
+        if (!$this->isScoreValid($result['score'])) {
+            throw new ResultException(
+                MessagesService::$statuses[MessagesService::STATUS_INVALID_SCORE], MessagesService::STATUS_INVALID_SCORE, null,
+                MessagesService::buildMessageData(MessagesService::STATUS_INVALID_SCORE, $result)
+            );
+        }
+
+        try {
+            $deliveryExecution = $this->getDeliveryExecution($result);
+        } catch (ResultException $e) {
+            throw $e;
+        }
 
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceManager()->get(ResultServerService::SERVICE_ID);
         $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->resultService->getScoreVariable($result), '');
+        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($result['score']), '');
+
+        return $deliveryExecution->getIdentifier();
     }
 
     /**
      * @param array $result
-     * @return bool
      * @throws ResultException
+     * @return DeliveryExecution
      */
-    public function isDeliveryExecutionExists($result)
+    private function getDeliveryExecution($result)
     {
         try {
             /** @var ServiceProxy $resultService */
             $resultService = $this->getServiceManager()->get(ServiceProxy::SERVICE_ID);
-            $resultService->getDeliveryExecution($result['sourcedId']);
+            $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
         } catch (\Exception $e) {
             throw new ResultException($e->getMessage(), MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
                 MessagesService::buildMessageData(MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
 
-        return true;
+        return $deliveryExecution;
     }
 
+    /**
+     * @param string $score
+     * @return OutcomeVariable
+     */
+    private function getScoreVariable($score)
+    {
+        $scoreVariable = new OutcomeVariable();
+        $scoreVariable->setIdentifier('SCORE');
+        $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
+        $scoreVariable->setBaseType('float');
+        $scoreVariable->setEpoch(microtime());
+        $scoreVariable->setValue($score);
+
+        return $scoreVariable;
+    }
+
+    /**
+     * @param mixed $score
+     * @return bool
+     */
+    private function isScoreValid($score)
+    {
+        return (is_numeric($score) && $score >= 0 && $score <= 1);
+    }
 }
