@@ -26,8 +26,8 @@ class MessagesService
     {
         $message = self::FAILURE_MESSAGE;
         $description = self::$statuses[self::STATUS_DELIVERY_EXECUTION_NOT_FOUND];
-        $sourcedId = $result['sourcedId'] ? $result['sourcedId'] : '';
-        $messageIdentifier = $result['messageIdentifier'] ? $result['messageIdentifier'] : '';
+        $sourcedId = isset($result['sourcedId']) ? $result['sourcedId'] : '';
+        $messageIdentifier = isset($result['messageIdentifier']) ? $result['messageIdentifier'] : '';
 
         if ($code === self::STATUS_SUCCESS) {
             $sourcedId = $result['sourcedId'];

@@ -15,6 +15,7 @@
 
 namespace oat\taoLtiConsumer\model\result;
 
+use common_exception_Error;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\service\exception\InvalidServiceManagerException;
 use oat\oatbox\service\ServiceManagerAwareTrait;
@@ -22,6 +23,7 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoLtiConsumer\model\result\MessagesService;
 use oat\taoResultServer\models\classes\ResultServerService;
+use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use qtism\runtime\common\OutcomeVariable;
 
 /**
@@ -33,6 +35,15 @@ class ScoreWriterService extends ConfigurableService
 {
     use ServiceManagerAwareTrait;
 
+    /**
+     * Store the score result into a delivery execution
+     * @param $result
+     * @return string
+     * @throws InvalidServiceManagerException
+     * @throws ResultException
+     * @throws common_exception_Error
+     * @throws DuplicateVariableException
+     */
     public function store($result)
     {
         if (!$this->isScoreValid($result['score'])) {
@@ -42,11 +53,8 @@ class ScoreWriterService extends ConfigurableService
             );
         }
 
-        try {
-            $deliveryExecution = $this->getDeliveryExecution($result);
-        } catch (ResultException $e) {
-            throw $e;
-        }
+        $deliveryExecution = $this->getDeliveryExecution($result);
+
 
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceManager()->get(ResultServerService::SERVICE_ID);
@@ -57,6 +65,7 @@ class ScoreWriterService extends ConfigurableService
     }
 
     /**
+     * Look for a DeliveryExecution and return it or throw an Exception
      * @param array $result
      * @throws ResultException
      * @return DeliveryExecution
