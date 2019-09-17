@@ -25,6 +25,7 @@ use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\test\unit\model\result\parser\ParserException;
+use oat\taoLtiConsumer\model\result\MessagesService;
 
 /**
  * Class ResultService
@@ -87,15 +88,10 @@ class XmlResultParser
         }
 
         throw new ResultException(
-//            self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED],
-//            self::STATUS_METHOD_NOT_IMPLEMENTED,
-//            null,
-//            [
-//                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-//                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_METHOD_NOT_IMPLEMENTED],
-//                self::TEMPLATE_VAR_MESSAGE_ID => '',
-//                self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
-//            ]
+            MessagesService::$statuses[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
+            MessagesService::STATUS_METHOD_NOT_IMPLEMENTED,
+            null,
+            MessagesService::buildMessageData(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, [])
         );
     }
 

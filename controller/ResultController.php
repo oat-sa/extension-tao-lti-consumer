@@ -25,6 +25,7 @@ use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
 use tao_actions_RestController as RestController;
 use function GuzzleHttp\Psr7\stream_for;
+use oat\taoLtiConsumer\model\result\MessagesService;
 
 class ResultController extends RestController
 {
@@ -39,14 +40,14 @@ class ResultController extends RestController
         try {
             $payload = $this->getPsrRequest()->getBody()->getContents();
             $data = $this->getLtiResultService()->processPayload($payload);
-            $code = 200;
+            $code = MessagesService::STATUS_SUCCESS;
         } catch (Exception $e) {
             if ($e instanceof ResultException) {
                 $data = $e->getOptionalData();
                 $code = $e->getCode();
             } else {
                 $data = 'failure';
-                $code = 500;
+                $code = MessagesService::STATUS_INTERNAL_SERVER_ERROR;
             }
         }
 
@@ -72,5 +73,4 @@ class ResultController extends RestController
     {
         return $this->getServiceLocator()->get(XmlFormatterService::class);
     }
-
 }

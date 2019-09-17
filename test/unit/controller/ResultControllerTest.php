@@ -224,6 +224,7 @@ class ResultControllerTest extends TestCase
      */
     private function getRequestMock()
     {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
         $payload = str_replace('{{score}}', '0.92', self::PAYLOAD_TEMPLATE);
         $streamInterfaceMock = $this->getMockBuilder(StreamInterface::class)
             ->disableOriginalConstructor()
