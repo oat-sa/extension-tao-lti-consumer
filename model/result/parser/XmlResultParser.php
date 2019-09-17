@@ -21,6 +21,7 @@ namespace oat\taoLtiConsumer\model\result\parser;
 
 use DOMDocument;
 use DOMXPath;
+use oat\oatbox\service\ConfigurableService;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\ResultException;
@@ -31,8 +32,11 @@ use oat\taoLtiConsumer\model\result\MessagesService;
  * Class to manage XML result data with score and to store it in DeliveryExecution
  * @package oat\taoLtiConsumer\model\classes
  */
-class XmlResultParser
+class XmlResultParser extends ConfigurableService
 {
+    const SERVICE_ID = 'taoLtiConsumer/xmlResultParser';
+    const OPTION_DATA_EXTRACTORS = 'extractors';
+
     protected $requestType;
     protected $data;
 
