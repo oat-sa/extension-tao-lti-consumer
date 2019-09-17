@@ -50,7 +50,7 @@ class ResultService extends ConfigurableService
             return call_user_func_array([$this, $action], $data);
 
         } catch (\Exception $e) {
-            throw new ResultException('An error has occured', MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, $e);
+            throw new ResultException('An error has occurred', MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, $e);
         }
     }
 
