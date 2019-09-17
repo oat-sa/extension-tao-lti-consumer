@@ -20,7 +20,8 @@
 namespace oat\taoLtiConsumer\model\result\parser\dataExtractor;
 
 use DOMXPath;
-use oat\taoLtiConsumer\model\result\parser\ParserException;
+use oat\oatbox\Configurable;
+use oat\taoLtiConsumer\model\result\ResultException;
 
 /**
  * Class ReplaceResultDataExtractor
@@ -29,7 +30,7 @@ use oat\taoLtiConsumer\model\result\parser\ParserException;
  * @package oat\taoLtiConsumer\model\result\parser\dataExtractor
  *
  */
-class ReplaceResultDataExtractor implements DataExtractor
+class ReplaceResultDataExtractor extends Configurable implements DataExtractor
 {
     const REQUEST_TYPE = 'replaceResult';
 
@@ -58,25 +59,32 @@ class ReplaceResultDataExtractor implements DataExtractor
         return self::REQUEST_TYPE;
     }
 
+    /**
+     * Extract data from $xpath
+     *
+     * @param DOMXPath $xpath
+     * @return array
+     * @throws ResultException If value cannot be queried
+     */
     public function getData(DOMXPath $xpath)
     {
         if (!$this->accepted) {
-            throw new ParserException();
+            throw ResultException::fromCode();
         }
 
         $messageIdentifierNode = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXHeader/lti:imsx_POXRequestHeaderInfo/lti:imsx_messageIdentifier');
         if ($messageIdentifierNode->length != 1) {
-            throw new ParserException('Xml payload do not contain valid "messageIdentifier".');
+            throw ResultException::fromCode();
         }
 
         $scoreNode = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:result/lti:resultScore/lti:textString');
         if ($scoreNode->length != 1) {
-            throw new ParserException('Xml payload do not contain valid "resultScore".');
+            throw ResultException::fromCode();
         }
 
         $sourcedIdNode = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:sourcedGUID/lti:sourcedId');
         if ($sourcedIdNode->length != 1) {
-            throw new ParserException('Xml payload do not contain valid "sourcedId".');
+            throw ResultException::fromCode();
         }
 
         return [

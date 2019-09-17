@@ -22,6 +22,7 @@ namespace oat\taoLtiConsumer\test\unit\model\result\parser;
 use oat\generis\test\TestCase;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
+use oat\taoLtiConsumer\model\result\ResultException;
 
 class XmlResultParserTest extends TestCase
 {
@@ -52,10 +53,126 @@ class XmlResultParserTest extends TestCase
                     </imsx_POXBody>
                 </imsx_POXEnvelopeRequest>';
 
-        $parser = new XmlResultParser();
+        $parser = new XmlResultParser([
+            'extractors' => [
+                new ReplaceResultDataExtractor()
+            ]
+        ]);
         $parser->parse($xml);
         $this->assertEquals(ReplaceResultDataExtractor::REQUEST_TYPE, $parser->getRequestType());
-        var_dump($parser->getData());
+
+        $data = $parser->getData();
+        $this->assertArrayHasKey('messageIdentifier', $data);
+        $this->assertEquals("999999123", $data['messageIdentifier']);
+        $this->assertArrayHasKey('sourcedId', $data);
+        $this->assertEquals("3124567", $data['sourcedId']);
+        $this->assertArrayHasKey('score', $data);
+        $this->assertEquals("0.69", $data['score']);
     }
 
+    public function testParseWithInvalidDataExtractors()
+    {
+        $this->expectException(ResultException::class);
+        $this->expectExceptionCode(401);
+        $this->expectExceptionMessage('Method not implemented');
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+                    <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+                    <imsx_POXHeader>
+                        <imsx_POXRequestHeaderInfo>
+                            <imsx_version>V1.0</imsx_version>
+                            <imsx_messageIdentifier>999999123</imsx_messageIdentifier>
+                        </imsx_POXRequestHeaderInfo>
+                    </imsx_POXHeader>
+                    <imsx_POXBody>
+                        <replaceResultRequest>
+                            <resultRecord>
+                                <sourcedGUID>
+                                    <sourcedId>3124567</sourcedId>
+                                </sourcedGUID>
+                                <result>
+                                    <resultScore>
+                                        <language>en</language>
+                                        <textString>0.69</textString>
+                                    </resultScore>
+                                </result>
+                            </resultRecord>
+                        </replaceResultRequest>
+                    </imsx_POXBody>
+                </imsx_POXEnvelopeRequest>';
+
+        $parser = new XmlResultParser([]);
+        $parser->parse($xml);
+    }
+
+    public function testParseWithInvalidMultiBody()
+    {
+        $this->expectException(ResultException::class);
+        $this->expectExceptionCode(500);
+        $this->expectExceptionMessage('Internal server error, please retry');
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+                    <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+                    <imsx_POXHeader>
+                        <imsx_POXRequestHeaderInfo>
+                            <imsx_version>V1.0</imsx_version>
+                            <imsx_messageIdentifier>999999123</imsx_messageIdentifier>
+                        </imsx_POXRequestHeaderInfo>
+                    </imsx_POXHeader>
+                    <imsx_POXBody>
+                        <replaceResultRequest>
+                            <resultRecord>
+                                <sourcedGUID>
+                                    <sourcedId>3124567</sourcedId>
+                                </sourcedGUID>
+                                <result>
+                                    <resultScore>
+                                        <language>en</language>
+                                        <textString>0.69</textString>
+                                    </resultScore>
+                                </result>
+                            </resultRecord>
+                        </replaceResultRequest>
+                    </imsx_POXBody>
+                    <imsx_POXBody>
+                        <replaceResultRequest>
+                            <resultRecord>
+                                <sourcedGUID>
+                                    <sourcedId>3124567</sourcedId>
+                                </sourcedGUID>
+                                <result>
+                                    <resultScore>
+                                        <language>en</language>
+                                        <textString>0.69</textString>
+                                    </resultScore>
+                                </result>
+                            </resultRecord>
+                        </replaceResultRequest>
+                    </imsx_POXBody>
+                </imsx_POXEnvelopeRequest>';
+
+        $parser = new XmlResultParser([
+            'extractors' => [
+                new ReplaceResultDataExtractor()
+            ]
+        ]);
+        $parser->parse($xml);
+    }
+
+    public function testParseWithInvalidXmlFormat()
+    {
+        $this->expectException(ResultException::class);
+        $this->expectExceptionCode(500);
+        $this->expectExceptionMessage('Internal server error, please retry');
+
+        $dom = new \DOMDocument();
+        $dom->loadXml('<?xml version="1.0" encoding="UTF-8"?><hello>world</hello>');
+
+        $parser = new XmlResultParser([
+            'extractors' => [
+                new ReplaceResultDataExtractor()
+            ]
+        ]);
+        $parser->parse($dom);
+    }
 }

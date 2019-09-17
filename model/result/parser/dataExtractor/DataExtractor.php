@@ -20,12 +20,31 @@
 namespace oat\taoLtiConsumer\model\result\parser\dataExtractor;
 
 use DOMXPath;
+use oat\taoLtiConsumer\model\result\ResultException;
 
 interface DataExtractor
 {
+    /**
+     * Check if the given xpath is acceptable for current DataExtractor
+     *
+     * @param DOMXPath $xpath
+     * @return boolean
+     */
     public function accepts(DOMXPath $xpath);
 
+    /**
+     * Get the request type of current DataExtractor
+     *
+     * @return string
+     */
     public function getRequestType();
 
+    /**
+     * Get array of data extracted by DataExtractor
+     *
+     * @param DOMXPath $xpath
+     * @return array
+     * @throws ResultException If an error has occurred during parsing
+     */
     public function getData(DOMXPath $xpath);
 }

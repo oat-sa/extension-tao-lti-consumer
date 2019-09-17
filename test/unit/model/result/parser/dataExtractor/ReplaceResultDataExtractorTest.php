@@ -23,7 +23,7 @@ use DOMDocument;
 use DOMXPath;
 use oat\generis\test\TestCase;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
-use oat\taoLtiConsumer\model\result\parser\ParserException;
+use oat\taoLtiConsumer\model\result\ResultException;
 
 class ReplaceResultDataExtractorTest extends TestCase
 {
@@ -146,7 +146,7 @@ class ReplaceResultDataExtractorTest extends TestCase
     /**
      * @depends testAccept
      * @param ReplaceResultDataExtractor $service
-     * @throws ParserException
+     * @throws ResultException
      */
     public function testGetData(ReplaceResultDataExtractor $service)
     {
@@ -185,16 +185,27 @@ class ReplaceResultDataExtractorTest extends TestCase
     }
 
     /**
-     * @depends testAccept
-     * @param ReplaceResultDataExtractor $service
-     * @throws ParserException
+     * @dataProvider getDataWithInvalidDataProvider
+     * @param DOMXPath $xpath
+     * @throws ResultException
      */
-    public function testGetDataWithoutMessageIdentifier(ReplaceResultDataExtractor $service)
+    public function testGetDataWithInvalidData(DOMXPath $xpath)
     {
-        $this->expectException(ParserException::class);
-        $this->expectExceptionMessage('Xml payload do not contain valid "messageIdentifier".');
+        $service = $this->testAccept();
 
-        $xpath =  $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
+        $this->expectException(ResultException::class);
+        $this->expectExceptionCode(500);
+        $this->expectExceptionMessage('Internal server error, please retry');
+
+        $service->getData($xpath);
+    }
+
+    public function getDataWithInvalidDataProvider()
+    {
+        return [
+            // Invalid message identifier
+            [
+                $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
                 <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
                     <imsx_POXBody>
                         <replaceResultRequest>
@@ -211,22 +222,12 @@ class ReplaceResultDataExtractorTest extends TestCase
                             </resultRecord>
                         </replaceResultRequest>
                     </imsx_POXBody>
-                </imsx_POXEnvelopeRequest>');
+                </imsx_POXEnvelopeRequest>')
+            ],
 
-        $service->getData($xpath);
-    }
-
-    /**
-     * @depends testAccept
-     * @param ReplaceResultDataExtractor $service
-     * @throws ParserException
-     */
-    public function testGetDataWithoutSourcedId(ReplaceResultDataExtractor $service)
-    {
-        $this->expectException(ParserException::class);
-        $this->expectExceptionMessage('Xml payload do not contain valid "sourcedId".');
-
-        $xpath =  $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
+            // Invalid sourcedId
+            [
+                $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
                 <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
                     <imsx_POXHeader>
                         <imsx_POXRequestHeaderInfo>
@@ -246,22 +247,12 @@ class ReplaceResultDataExtractorTest extends TestCase
                             </resultRecord>
                         </replaceResultRequest>
                     </imsx_POXBody>
-                </imsx_POXEnvelopeRequest>');
+                </imsx_POXEnvelopeRequest>')
+            ],
 
-        $service->getData($xpath);
-    }
-
-    /**
-     * @depends testAccept
-     * @param ReplaceResultDataExtractor $service
-     * @throws ParserException
-     */
-    public function testGetDataWithoutScore(ReplaceResultDataExtractor $service)
-    {
-        $this->expectException(ParserException::class);
-        $this->expectExceptionMessage('Xml payload do not contain valid "resultScore".');
-
-        $xpath =  $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
+            // Invalid score
+            [
+                $xpath =  $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
                 <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
                     <imsx_POXHeader>
                         <imsx_POXRequestHeaderInfo>
@@ -278,9 +269,9 @@ class ReplaceResultDataExtractorTest extends TestCase
                             </resultRecord>
                         </replaceResultRequest>
                     </imsx_POXBody>
-                </imsx_POXEnvelopeRequest>');
-
-        $service->getData($xpath);
+                </imsx_POXEnvelopeRequest>')
+            ]
+        ];
     }
 
     /**

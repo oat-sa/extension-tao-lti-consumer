@@ -35,7 +35,11 @@ class ResultService extends ConfigurableService
     const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
     const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
-
+    /**
+     * @param $payload
+     * @return array
+     * @throws ResultException
+     */
     public function processPayload($payload)
     {
         try {
@@ -50,7 +54,10 @@ class ResultService extends ConfigurableService
             return call_user_func_array([$this, $action], $data);
 
         } catch (\Exception $e) {
-            throw new ResultException('An error has occurred', MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, $e);
+            if (!$e instanceof ResultException) {
+                $e = ResultException::fromCode(MessagesService::STATUS_INTERNAL_SERVER_ERROR, $e);
+            }
+            throw $e;
         }
     }
 

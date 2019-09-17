@@ -23,14 +23,15 @@ use DOMDocument;
 use DOMXPath;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\MessagesService;
 
 /**
  * Class ResultService
  * Class to manage XML result data with score and to store it in DeliveryExecution
+ *
  * @package oat\taoLtiConsumer\model\classes
+ * @author Moyon Camille
  */
 class XmlResultParser extends ConfigurableService
 {
@@ -40,6 +41,13 @@ class XmlResultParser extends ConfigurableService
     protected $requestType;
     protected $data;
 
+    /**
+     * Parse $xml to extract data based on configured extractors
+     *
+     * @param $xml
+     * @return $this
+     * @throws ResultException
+     */
     public function parse($xml)
     {
         $xpath = $this->load($xml);
@@ -52,20 +60,37 @@ class XmlResultParser extends ConfigurableService
         return $this;
     }
 
+    /**
+     * Get the request type associated to xml
+     *
+     * @return string
+     */
     public function getRequestType()
     {
         return $this->requestType;
     }
 
+    /**
+     * Get data extracted from xml
+     *
+     * @return array
+     */
     public function getData()
     {
         return $this->data;
     }
 
+    /**
+     * Load xml to xpath object, register lti result namespace
+     *
+     * @param $xml
+     * @return DOMXPath
+     * @throws ResultException
+     */
     protected function load($xml)
     {
         if (!is_string($xml)) {
-            throw new \InvalidArgumentException();
+            throw ResultException::fromCode();
         }
 
         $dom = new DOMDocument();
@@ -77,11 +102,18 @@ class XmlResultParser extends ConfigurableService
         return $xpath;
     }
 
+    /**
+     * Give an applicable dataExtractor that accept incoming $xpath
+     *
+     * @param $xpath
+     * @return DataExtractor
+     * @throws ResultException
+     */
     protected function getDataExtractor($xpath)
     {
         $elements = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/*');
         if (count($elements) !== 1) {
-            throw new ParserException('Xml payload is not valid', 500);
+            throw ResultException::fromCode();
         }
 
         foreach ($this->getDataExtractors() as $extractor) {
@@ -90,24 +122,33 @@ class XmlResultParser extends ConfigurableService
             }
         }
 
-        throw new ResultException(
-            MessagesService::$statuses[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
-            MessagesService::STATUS_METHOD_NOT_IMPLEMENTED,
-            null,
-            MessagesService::buildMessageData(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, [])
-        );
+        throw ResultException::fromCode(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED);
     }
 
     /**
+     * Get configured dataExtractor
+     *
      * @return DataExtractor[]
      */
     protected function getDataExtractors()
     {
-        return [
-            new ReplaceResultDataExtractor()
-        ];
+        $extractors = [];
+        $configuredExtractors = $this->getOption(self::OPTION_DATA_EXTRACTORS);
+        if (is_array($configuredExtractors)) {
+            foreach ($configuredExtractors as $configuredExtractor) {
+                if ($configuredExtractor instanceof DataExtractor) {
+                    $extractors[] = $configuredExtractor;
+                }
+            }
+        }
+        return $extractors;
     }
 
+    /**
+     * Destroy xpath instance
+     *
+     * @param $xpath
+     */
     protected function close($xpath)
     {
         unset($xpath);
