@@ -17,7 +17,7 @@
  * Copyright (c) 2019 (update and modification) Open Assessment Technologies SA
  */
 
-namespace oat\taoLtiConsumer\model;
+namespace oat\taoLtiConsumer\model\result;
 
 use Exception;
 
@@ -34,12 +34,10 @@ class ResultException extends Exception
      */
     private $optionalData;
 
-    public function __construct($message = null, $code = 0, Exception $previous = null, $optionalData = array())
+    public function __construct($message = null, $code = 0, Exception $previous = null, $optionalData = [])
     {
+        parent::__construct($message, $code, $previous);
         $this->optionalData = $optionalData;
-
-        parent::__construct('', $code, $previous);
-
     }
 
     /**
