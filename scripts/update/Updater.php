@@ -22,6 +22,8 @@ namespace oat\taoLtiConsumer\scripts\update;
 
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
+use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
 
 /**
  * taoLtiConsumer Updater.
@@ -46,5 +48,17 @@ class Updater extends \common_ext_ExtensionUpdater
         }
 
         $this->skip('0.1.0', '0.5.1');
+
+        if ($this->isVersion('0.5.1')) {
+            $this->getServiceManager()->register(
+                XmlResultParser::SERVICE_ID,
+                new XmlResultParser([
+                    XmlResultParser::OPTION_DATA_EXTRACTORS => [
+                        new ReplaceResultDataExtractor()
+                    ]
+                ])
+            );
+            $this->setVersion('0.6.0');
+        }
     }
 }
