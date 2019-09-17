@@ -24,7 +24,6 @@ use DOMXPath;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\ResultException;
-use oat\taoLtiConsumer\test\unit\model\result\parser\ParserException;
 use oat\taoLtiConsumer\model\result\MessagesService;
 
 /**

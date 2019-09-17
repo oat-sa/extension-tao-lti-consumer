@@ -17,7 +17,7 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
 
-namespace oat\taoLtiConsumer\test\unit\model\result\parser;
+namespace oat\taoLtiConsumer\model\result\parser;
 
 use oat\taoLtiConsumer\model\result\ResultException;
 

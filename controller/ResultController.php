@@ -29,9 +29,6 @@ use oat\taoLtiConsumer\model\result\MessagesService;
 
 class ResultController extends RestController
 {
-    const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
-    const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
-
     /**
      * Endpoint to manage result
      */
@@ -46,7 +43,7 @@ class ResultController extends RestController
                 $data = $e->getOptionalData();
                 $code = $e->getCode();
             } else {
-                $data = 'failure';
+                $data = ['fail' => 'failure'];
                 $code = MessagesService::STATUS_INTERNAL_SERVER_ERROR;
             }
         }

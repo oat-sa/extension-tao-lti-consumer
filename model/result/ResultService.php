@@ -36,9 +36,9 @@ use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
  */
 class ResultService extends ConfigurableService
 {
-    use ServiceManagerAwareTrait;
-
     const SERVICE_ID = 'taoLtiConsumer/resultService';
+//    const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
+//    const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
 
     public function processPayload($payload)
@@ -55,13 +55,13 @@ class ResultService extends ConfigurableService
             return call_user_func_array([$this, $action], $data);
 
         } catch (\Exception $e) {
-            throw new ResultException('An error has occured', 500, $e);
+            throw new ResultException('An error has occured', MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, $e);
         }
     }
 
     protected function replaceResult(array $data)
     {
-        return 'ok';
+//        return 'ok';
         $score = $data;
         $messageIdentifier = '';
 
@@ -74,7 +74,7 @@ class ResultService extends ConfigurableService
             );
         }
 
-        $deliveryExecution = $this->getDeliveryExecution($result);
+//        $deliveryExecution = $this->getDeliveryExecution($result);
 
         /** @var EventManager $eventManager*/
 //        $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
@@ -83,9 +83,9 @@ class ResultService extends ConfigurableService
 
 
         /** @var ResultServerService $resultServerService */
-        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
-        $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->resultService->getScoreVariable($result), '');
+//        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
+//        $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
+//        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->resultService->getScoreVariable($result), '');
 
 //        ['{{sourceId}}', '{{score}}'],
 //                [$result['sourcedId'], $result['score']],
@@ -105,7 +105,7 @@ class ResultService extends ConfigurableService
     }
 
     /**
-     * @param $payload
+     * @param string $payload The xml to parse
      * @return XmlResultParser
      */
     protected function getXmlResultParser($payload)

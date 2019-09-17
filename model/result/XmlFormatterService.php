@@ -59,7 +59,7 @@ class XmlFormatterService extends ConfigurableService
      * @param $params [paramName => value]
      * @return string
      **/
-    public function getXmlResponse($params)
+    public function getXmlResponse(array $params)
     {
         $responseXml = str_replace(array_keys($params), array_values($params), self::RESPONSE_TEMPLATE);
 
