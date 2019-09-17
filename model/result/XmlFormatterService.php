@@ -20,7 +20,6 @@
 namespace oat\taoLtiConsumer\model\result;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\taoLtiConsumer\model\classes\ResultService as LtiResultService;
 
 /**
  * Class LtiXmlFormatterService

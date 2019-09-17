@@ -28,6 +28,7 @@ use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
 use oat\taoResultServer\models\classes\ResultServerService;
 use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
+use oat\taoLtiConsumer\model\result\ScoreWriterService;
 
 /**
  * Class ResultService
@@ -61,47 +62,14 @@ class ResultService extends ConfigurableService
 
     protected function replaceResult(array $data)
     {
-        return 'ok';
-        $score = $data;
-        $messageIdentifier = '';
-
-        if (!$this->isScoreValid($score)) {
-            throw new ResultException(
-//                self::$statuses[self::STATUS_INVALID_SCORE], self::STATUS_INVALID_SCORE, null, [
-//                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-//                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_INVALID_SCORE],
-//                self::TEMPLATE_VAR_MESSAGE_ID => $messageIdentifier,]
-            );
-        }
-
-        $deliveryExecution = $this->getDeliveryExecution($result);
+        $deliveryExecutionIdentifier = $this->getScoreWriter()->store($data);
 
         /** @var EventManager $eventManager*/
-//        $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-//        $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
-//            [self::DELIVERY_EXECUTION_ID => $deliveryExecution->getIdentifier()]);
+        $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
+        $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
+            [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]);
 
-
-        /** @var ResultServerService $resultServerService */
-        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
-        $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->resultService->getScoreVariable($result), '');
-
-//        ['{{sourceId}}', '{{score}}'],
-//                [$result['sourcedId'], $result['score']],
-//                self::SCORE_DESCRIPTION_TEMPLATE),
-//            self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
-//            self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => $result['sourcedId'],
-
-        return [
-//            self::TEMPLATE_VAR_CODE_MAJOR => self::SUCCESS_MESSAGE,
-//            self::TEMPLATE_VAR_DESCRIPTION => str_replace(
-//                ['{{sourceId}}', '{{score}}'],
-//                [$result['sourcedId'], $result['score']],
-//                self::SCORE_DESCRIPTION_TEMPLATE),
-//            self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],
-//            self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => $result['sourcedId'],
-        ];
+        return MessagesService::buildMessageData(MessagesService::STATUS_SUCCESS, $data);
     }
 
     /**
@@ -114,51 +82,10 @@ class ResultService extends ConfigurableService
     }
 
     /**
-     * @param array $result
-     * @return DeliveryExecution
-     * @throws ResultException
+     * @return ScoreWriterService
      */
-    public function getDeliveryExecution($result)
+    protected function getScoreWriter()
     {
-        try {
-            /** @var ServiceProxy $resultService */
-            $resultService = $this->getServiceManager()->get(ServiceProxy::SERVICE_ID);
-            $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
-        } catch (\Exception $e) {
-            throw new ResultException(
-//                $e->getMessage(), self::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null, [
-//                self::TEMPLATE_VAR_CODE_MAJOR => self::FAILURE_MESSAGE,
-//                self::TEMPLATE_VAR_DESCRIPTION => self::$statuses[self::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
-//                self::TEMPLATE_VAR_MESSAGE_ID => $result['messageIdentifier'],]
-            );
-        }
-
-        return $deliveryExecution;
-    }
-
-    /**
-     * @param array $result
-     * @return OutcomeVariable
-     * @throws common_exception_InvalidArgumentType
-     */
-    public function getScoreVariable($result)
-    {
-        $scoreVariable = new OutcomeVariable();
-        $scoreVariable->setIdentifier('SCORE');
-        $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
-        $scoreVariable->setBaseType('float');
-        $scoreVariable->setEpoch(microtime());
-        $scoreVariable->setValue($result['score']);
-
-        return $scoreVariable;
-    }
-
-    /**
-     * @param mixed $score
-     * @return bool
-     */
-    protected function isScoreValid($score)
-    {
-        return (is_numeric($score) && $score >= 0 && $score <= 1);
+        return $this->getServiceLocator()->get(ScoreWriterService::class);
     }
 }
