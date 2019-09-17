@@ -36,6 +36,11 @@ class ResultService extends ConfigurableService
     const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
     /**
+     * Process the incoming payload
+     *
+     * - Parse xml payload and extract data
+     * - Forward to specific action to handle the payload request type
+     *
      * @param $payload
      * @return array
      * @throws ResultException
@@ -45,15 +50,15 @@ class ResultService extends ConfigurableService
         try {
             $parser = $this->getXmlResultParser($payload);
             $action = $parser->getRequestType();
-            $data = $parser->getData();
 
             if (!method_exists($this, $action)) {
-                throw new \InvalidArgumentException();
+                throw ResultException::fromCode(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED);
             }
 
-            return call_user_func_array([$this, $action], $data);
+            return call_user_func_array([$this, $action], $parser->getData());
 
         } catch (\Exception $e) {
+            print_r($e->getMessage());
             if (!$e instanceof ResultException) {
                 $e = ResultException::fromCode(MessagesService::STATUS_INTERNAL_SERVER_ERROR, $e);
             }
@@ -79,7 +84,7 @@ class ResultService extends ConfigurableService
      */
     protected function getXmlResultParser($payload)
     {
-        return $this->getServiceLocator()->get(XmlResultParser::class)->parse($payload);
+        return $this->getServiceLocator()->get(XmlResultParser::SERVICE_ID)->parse($payload);
     }
 
     /**
