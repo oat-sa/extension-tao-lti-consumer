@@ -19,13 +19,17 @@
 
 namespace oat\taoLtiConsumer\controller;
 
-use Exception;
+use oat\taoLtiConsumer\model\result\MessagesService;
 use oat\taoLtiConsumer\model\result\ResultService as LtiResultService;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
 use tao_actions_RestController as RestController;
+use function GuzzleHttp\Psr7\stream_for;
 
-
+/**
+ * Class ResultController
+ * @package oat\taoLtiConsumer\controller
+ */
 class ResultController extends RestController
 {
     /**
