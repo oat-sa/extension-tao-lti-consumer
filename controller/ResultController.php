@@ -24,8 +24,7 @@ use oat\taoLtiConsumer\model\result\ResultService as LtiResultService;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
 use tao_actions_RestController as RestController;
-use function GuzzleHttp\Psr7\stream_for;
-use oat\taoLtiConsumer\model\result\MessagesService;
+
 
 class ResultController extends RestController
 {
