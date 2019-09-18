@@ -19,7 +19,6 @@
 
 namespace oat\taoLtiConsumer\scripts\update;
 
-
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;

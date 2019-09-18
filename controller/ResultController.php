@@ -19,13 +19,17 @@
 
 namespace oat\taoLtiConsumer\controller;
 
-use Exception;
+use oat\taoLtiConsumer\model\result\MessagesService;
 use oat\taoLtiConsumer\model\result\ResultService as LtiResultService;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
 use tao_actions_RestController as RestController;
+use function GuzzleHttp\Psr7\stream_for;
 
-
+/**
+ * Class ResultController
+ * @package oat\taoLtiConsumer\controller
+ */
 class ResultController extends RestController
 {
     /**
@@ -37,14 +41,9 @@ class ResultController extends RestController
             $payload = $this->getPsrRequest()->getBody()->getContents();
             $data = $this->getLtiResultService()->processPayload($payload);
             $code = MessagesService::STATUS_SUCCESS;
-        } catch (Exception $e) {
-            if ($e instanceof ResultException) {
-                $data = $e->getOptionalData();
-                $code = $e->getCode();
-            } else {
-                $data = ['fail' => 'failure'];
-                $code = MessagesService::STATUS_INTERNAL_SERVER_ERROR;
-            }
+        } catch (ResultException $e) {
+            $data = $e->getOptionalData();
+            $code = $e->getCode();
         }
 
         $this->response = $this->getPsrResponse()

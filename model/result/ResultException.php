@@ -48,6 +48,14 @@ class ResultException extends Exception
         return $this->optionalData;
     }
 
+    /**
+     * Helper to create a ResultException from http code
+     * - use MessageService to provide exception message & description
+     *
+     * @param int $code
+     * @param Exception|null $previous
+     * @return ResultException
+     */
     static public function fromCode($code = MessagesService::STATUS_INTERNAL_SERVER_ERROR, Exception $previous = null)
     {
         if ($code == MessagesService::STATUS_METHOD_NOT_IMPLEMENTED) {

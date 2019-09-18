@@ -30,7 +30,7 @@ use oat\taoLtiConsumer\model\result\MessagesService;
  * Class ResultService
  * Class to manage XML result data with score and to store it in DeliveryExecution
  *
- * @package oat\taoLtiConsumer\model\classes
+ * @package oat\taoLtiConsumer\model\result\parser
  * @author Moyon Camille
  */
 class XmlResultParser extends ConfigurableService
