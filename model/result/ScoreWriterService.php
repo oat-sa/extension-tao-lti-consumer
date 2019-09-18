@@ -21,14 +21,9 @@ use oat\oatbox\service\exception\InvalidServiceManagerException;
 use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
-use oat\taoLtiConsumer\model\result\MessagesService;
-use oat\taoQtiItem\model\qti\datatype\QtiFloat;
-use oat\taoQtiItem\model\qti\datatype\QtiString;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
-use qtism\common\enums\BaseType;
-use qtism\common\enums\Cardinality;
-use qtism\runtime\common\OutcomeVariable;
+use taoResultServer_models_classes_OutcomeVariable as ResultServerOutcomeVariable;
 
 /**
  * Class LtiXmlFormatterService
@@ -92,16 +87,17 @@ class ScoreWriterService extends ConfigurableService
     /**
      * @param $identifier
      * @param string $score
-     * @return OutcomeVariable
+     * @return ResultServerOutcomeVariable
+     * @throws \common_exception_InvalidArgumentType
      */
     private function getScoreVariable($identifier, $score)
     {
-        $scoreVariable = new OutcomeVariable($identifier, Cardinality::SINGLE, BaseType::FLOAT, new QtiFloat((float)$score));
-//        $scoreVariable->setIdentifier('SCORE');
-//        $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
-//        $scoreVariable->setBaseType('float');
-//        $scoreVariable->setEpoch(microtime());
-//        $scoreVariable->setValue($score);
+        $scoreVariable = new ResultServerOutcomeVariable();
+        $scoreVariable->setIdentifier('SCORE');
+        $scoreVariable->setCardinality(ResultServerOutcomeVariable::CARDINALITY_SINGLE);
+        $scoreVariable->setBaseType('float');
+        $scoreVariable->setEpoch(microtime());
+        $scoreVariable->setValue($score);
 
         return $scoreVariable;
     }

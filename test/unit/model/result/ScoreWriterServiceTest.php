@@ -38,6 +38,9 @@ use \taoResultServer_models_classes_WritableResultStorage as WritableResultStora
 
 class ScoreWriterServiceTest extends TestCase
 {
+    private $deliveryExecutionId = '3124567';
+    private $sourcedId = '3124567';
+
     /**
      * Set of input args for tests
      * @return array
@@ -71,8 +74,16 @@ class ScoreWriterServiceTest extends TestCase
     {
         $subject = new ScoreWriterService();
         $subject->setServiceLocator($this->getServiceLocator());
-        $subject->store(['score' => '0.92', 'deliveryExecutionId' => '3124567', 'sourcedId' => '3124567']);
+        $result = $subject->store(['score' => '0.92', 'deliveryExecutionId' => $this->deliveryExecutionId, 'sourcedId' => $this->sourcedId]);
+        $this->assertEquals($this->deliveryExecutionId, $result);
+    }
 
+    public function testWrongDeliveryId()
+    {
+        $subject = new ScoreWriterService();
+        $this->expectException(ResultException::class);
+        $subject->setServiceLocator($this->getServiceLocator());
+        $result = $subject->store(['score' => '0.92', 'deliveryExecutionId' => '0', 'sourcedId' => '0']);
     }
 
     /**
@@ -80,21 +91,18 @@ class ScoreWriterServiceTest extends TestCase
      */
     private function getServiceLocator()
     {
-        $deliveryExecutionId = '3124567';
-        $sourcedId = '3124567';
-
         $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
             ->disableOriginalConstructor()
             ->setMethods(['getIdentifier'])
             ->getMock();
-        $deliveryExecutionMock->method('getIdentifier')->willReturn($deliveryExecutionId);
+        $deliveryExecutionMock->method('getIdentifier')->willReturn($this->deliveryExecutionId);
 
         $serviceProxyMock = $this->getMockBuilder(ServiceProxy::class)
             ->disableOriginalConstructor()
             ->setMethods(['getDeliveryExecution'])
             ->getMockForAbstractClass();
         $serviceProxyMock->method('getDeliveryExecution')
-            ->with($sourcedId)
+            ->with($this->sourcedId)
             ->willReturn($deliveryExecutionMock);
 
         $resultStorageServiceMock = $this->getMockBuilder(WritableResultStorage::class)
@@ -102,7 +110,7 @@ class ScoreWriterServiceTest extends TestCase
             ->setMethods(['storeTestVariable'])
             ->getMockForAbstractClass();
         $resultStorageServiceMock->method('storeTestVariable')
-            ->with($deliveryExecutionId, '', $this->anything(), '')
+            ->with($this->deliveryExecutionId, '', $this->anything(), '')
             ->willReturn(true);
 
         $resultServerServiceMock = $this->getMockBuilder(ResultServerService::class)
@@ -110,7 +118,7 @@ class ScoreWriterServiceTest extends TestCase
             ->setMethods(['getResultStorage'])
             ->getMockForAbstractClass();
         $resultServerServiceMock->method('getResultStorage')
-            ->with($sourcedId)->willReturn($resultStorageServiceMock);
+            ->with($this->sourcedId)->willReturn($resultStorageServiceMock);
 
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */
         $serviceLocator = $this->getMockBuilder(ServiceManager::class)
