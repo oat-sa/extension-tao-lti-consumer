@@ -25,7 +25,7 @@ class MessagesService
     public static function buildMessageData($code, $result)
     {
         $message = self::FAILURE_MESSAGE;
-        $description = self::$statuses[self::STATUS_DELIVERY_EXECUTION_NOT_FOUND];
+        $description = isset(self::$statuses[$code]) ? self::$statuses[$code] : '';
         $sourcedId = isset($result['sourcedId']) ? $result['sourcedId'] : '';
         $messageIdentifier = isset($result['messageIdentifier']) ? $result['messageIdentifier'] : '';
 

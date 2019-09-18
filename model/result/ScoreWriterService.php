@@ -22,8 +22,12 @@ use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoQtiItem\model\qti\datatype\QtiFloat;
+use oat\taoQtiItem\model\qti\datatype\QtiString;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
+use qtism\common\enums\BaseType;
+use qtism\common\enums\Cardinality;
 use qtism\runtime\common\OutcomeVariable;
 
 /**
@@ -59,7 +63,7 @@ class ScoreWriterService extends ConfigurableService
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceManager()->get(ResultServerService::SERVICE_ID);
         $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($result['score']), '');
+        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($deliveryExecution->getIdentifier(), $result['score']), '');
 
         return $deliveryExecution->getIdentifier();
     }
@@ -86,17 +90,18 @@ class ScoreWriterService extends ConfigurableService
     }
 
     /**
+     * @param $identifier
      * @param string $score
      * @return OutcomeVariable
      */
-    private function getScoreVariable($score)
+    private function getScoreVariable($identifier, $score)
     {
-        $scoreVariable = new OutcomeVariable();
-        $scoreVariable->setIdentifier('SCORE');
-        $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
-        $scoreVariable->setBaseType('float');
-        $scoreVariable->setEpoch(microtime());
-        $scoreVariable->setValue($score);
+        $scoreVariable = new OutcomeVariable($identifier, Cardinality::SINGLE, BaseType::FLOAT, new QtiFloat((float)$score));
+//        $scoreVariable->setIdentifier('SCORE');
+//        $scoreVariable->setCardinality(OutcomeVariable::CARDINALITY_SINGLE);
+//        $scoreVariable->setBaseType('float');
+//        $scoreVariable->setEpoch(microtime());
+//        $scoreVariable->setValue($score);
 
         return $scoreVariable;
     }
