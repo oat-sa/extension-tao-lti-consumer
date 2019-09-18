@@ -26,6 +26,7 @@ use oat\oatbox\service\exception\InvalidServiceManagerException;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
+use oat\taoLtiConsumer\model\result\InvalidScoreException;
 use oat\taoLtiConsumer\model\result\MessagesService;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\ScoreWriterService;
@@ -51,6 +52,7 @@ class ScoreWriterServiceTest extends TestCase
             ['-1'],
             ['string'],
             ['2'],
+            [null],
         ];
     }
 
@@ -66,7 +68,7 @@ class ScoreWriterServiceTest extends TestCase
     public function testManageResultWithScores($score)
     {
         $subject = new ScoreWriterService();
-        $this->expectException(ResultException::class);
+        $this->expectException(InvalidScoreException::class);
         $subject->store(['score' => $score]);
     }
 
@@ -78,31 +80,45 @@ class ScoreWriterServiceTest extends TestCase
         $this->assertEquals($this->deliveryExecutionId, $result);
     }
 
-    public function testWrongDeliveryId()
+    public function testStoreWithDeliveryExecutionException()
     {
         $subject = new ScoreWriterService();
         $this->expectException(ResultException::class);
-        $subject->setServiceLocator($this->getServiceLocator());
-        $result = $subject->store(['score' => '0.92', 'deliveryExecutionId' => '0', 'sourcedId' => '0']);
+        $subject->setServiceLocator($this->getServiceLocator(true));
+        $result = $subject->store(['score' => '0.92', 'deliveryExecutionId' => $this->deliveryExecutionId, 'sourcedId' => $this->sourcedId]);
+        $this->assertEquals($this->deliveryExecutionId, $result);
     }
 
-    /**
-     * @return MockObject|ServiceLocatorInterface
-     */
-    private function getServiceLocator()
+    private function getDeliveryExecutionMock($withThrow = false)
     {
         $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getIdentifier'])
+            ->setMethods(['getIdentifier', 'getDelivery'])
             ->getMock();
         $deliveryExecutionMock->method('getIdentifier')->willReturn($this->deliveryExecutionId);
+
+        if ($withThrow) {
+            $deliveryExecutionMock->method('getDelivery')->willThrowException(new \Exception('Msg', 700));
+        } else {
+            $deliveryExecutionMock->method('getDelivery')->willReturn(true);
+        }
+
+        return $deliveryExecutionMock;
+    }
+
+    /**
+     * @param bool $withDeliveryExecutionThrowException
+     * @return MockObject|ServiceLocatorInterface
+     */
+    private function getServiceLocator($withDeliveryExecutionThrowException = false)
+    {
+        $deliveryExecutionMock = $this->getDeliveryExecutionMock($withDeliveryExecutionThrowException);
 
         $serviceProxyMock = $this->getMockBuilder(ServiceProxy::class)
             ->disableOriginalConstructor()
             ->setMethods(['getDeliveryExecution'])
             ->getMockForAbstractClass();
         $serviceProxyMock->method('getDeliveryExecution')
-            ->with($this->sourcedId)
             ->willReturn($deliveryExecutionMock);
 
         $resultStorageServiceMock = $this->getMockBuilder(WritableResultStorage::class)

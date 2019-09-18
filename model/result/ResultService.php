@@ -57,7 +57,7 @@ class ResultService extends ConfigurableService
                 throw ResultException::fromCode(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED);
             }
 
-            return call_user_func_array([$this, $action], $parser->getData());
+            return call_user_func_array([$this, $action], array($parser->getData()));
 
         } catch (\Exception $e) {
             print_r($e->getMessage());

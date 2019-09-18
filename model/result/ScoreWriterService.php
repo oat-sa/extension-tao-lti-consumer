@@ -45,8 +45,8 @@ class ScoreWriterService extends ConfigurableService
      */
     public function store($result)
     {
-        if (!$this->isScoreValid($result['score'])) {
-            throw new ResultException(
+        if (!(isset($result['score']) && $this->isScoreValid($result['score']))) {
+            throw new InvalidScoreException(
                 MessagesService::$statuses[MessagesService::STATUS_INVALID_SCORE], MessagesService::STATUS_INVALID_SCORE, null,
                 MessagesService::buildMessageData(MessagesService::STATUS_INVALID_SCORE, $result)
             );
@@ -75,6 +75,7 @@ class ScoreWriterService extends ConfigurableService
             /** @var ServiceProxy $resultService */
             $resultService = $this->getServiceManager()->get(ServiceProxy::SERVICE_ID);
             $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
+            $deliveryExecution->getDelivery();
         } catch (\Exception $e) {
             throw new ResultException($e->getMessage(), MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
                 MessagesService::buildMessageData(MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
