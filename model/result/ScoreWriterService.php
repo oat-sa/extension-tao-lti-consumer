@@ -1,5 +1,9 @@
 <?php
 /**
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; under version 2
+ * of the License (non-upgradable).
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,9 +20,8 @@
 namespace oat\taoLtiConsumer\model\result;
 
 use common_exception_Error;
+use common_exception_InvalidArgumentType;
 use oat\oatbox\service\ConfigurableService;
-use oat\oatbox\service\exception\InvalidServiceManagerException;
-use oat\oatbox\service\ServiceManagerAwareTrait;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoResultServer\models\classes\ResultServerService;
@@ -32,13 +35,10 @@ use taoResultServer_models_classes_OutcomeVariable as ResultServerOutcomeVariabl
  */
 class ScoreWriterService extends ConfigurableService
 {
-    use ServiceManagerAwareTrait;
-
     /**
      * Store the score result into a delivery execution
      * @param $result
      * @return string
-     * @throws InvalidServiceManagerException
      * @throws ResultException
      * @throws common_exception_Error
      * @throws DuplicateVariableException
@@ -52,11 +52,18 @@ class ScoreWriterService extends ConfigurableService
             );
         }
 
+        if (!isset($result['sourcedId'])) {
+            throw new ResultException(MessagesService::$statuses[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
+                MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
+                MessagesService::buildMessageData(MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
+            );
+        }
+
         $deliveryExecution = $this->getDeliveryExecution($result);
 
 
         /** @var ResultServerService $resultServerService */
-        $resultServerService = $this->getServiceManager()->get(ResultServerService::SERVICE_ID);
+        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
         $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
         $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($deliveryExecution->getIdentifier(), $result['score']), '');
 
@@ -73,7 +80,7 @@ class ScoreWriterService extends ConfigurableService
     {
         try {
             /** @var ServiceProxy $resultService */
-            $resultService = $this->getServiceManager()->get(ServiceProxy::SERVICE_ID);
+            $resultService = $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);
             $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
             $deliveryExecution->getDelivery();
         } catch (\Exception $e) {
@@ -89,7 +96,7 @@ class ScoreWriterService extends ConfigurableService
      * @param $identifier
      * @param string $score
      * @return ResultServerOutcomeVariable
-     * @throws \common_exception_InvalidArgumentType
+     * @throws common_exception_InvalidArgumentType
      */
     private function getScoreVariable($identifier, $score)
     {

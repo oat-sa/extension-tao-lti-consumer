@@ -23,16 +23,22 @@ use common_exception_BadRequest;
 use common_exception_Error;
 use common_exception_InvalidArgumentType;
 use GuzzleHttp\Psr7\ServerRequest;
+use oat\generis\persistence\PersistenceManager;
+use oat\generis\test\GenerisTestCase;
 use oat\generis\test\TestCase;
 use oat\generis\test\unit\oatbox\log\TestLogger;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\Service;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
-use oat\taoLtiConsumer\model\result\ResultService;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
+use oat\taoOutcomeRds\model\RdsResultStorage;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
+use oat\taoSync\model\Mapper\OfflineResultToOnlineResultMapper;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use oat\taoLtiConsumer\controller\ResultController;
@@ -43,8 +49,10 @@ use taoResultServer_models_classes_WritableResultStorage as WritableResultStorag
 use taoResultServer_models_classes_OutcomeVariable as OutcomeVariable;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use Psr\Http\Message\StreamInterface;
+use oat\taoOutcomeRds\scripts\install\createTables;
 
-class ResultControllerTest extends TestCase
+
+class ResultControllerTest extends GenerisTestCase
 {
     /**
      * Payload template for set of the tests
@@ -173,7 +181,7 @@ class ResultControllerTest extends TestCase
                     </imsx_POXEnvelopeRequest>';
 
         $controller = new ResultControllerMock();
-        $controller->setServiceLocator(ServiceManager::getServiceManager());
+        $controller->setServiceLocator($this->getServiceLocator());
         $controller->setRequest(new ServerRequest('GET', 'tao.test', [], $payload));
         $controller->setResponse(new Response());
         $controller->manageResult();
@@ -182,6 +190,57 @@ class ResultControllerTest extends TestCase
 
         print_r($result);
         die();
+    }
+
+    const DELIVERY_EXECUTION_ID = 'del1';
+
+    /**
+     * @return MockObject|ServiceLocatorInterface
+     */
+    private function getServiceLocator()
+    {
+        if (is_object($this->serviceLocator)) {
+            return $this->serviceLocator;
+        }
+
+        $de = $this->prophesize(DeliveryExecutionInterface::class);
+
+        $deImpl = $this->prophesize(DeliveryExecution::class);
+        $deImpl->getImplementation()->willReturn($de->reveal());
+        $deImpl->getIdentifier()->willReturn(self::DELIVERY_EXECUTION_ID);
+        $deImpl->getDelivery()->willReturn($this->prophesize(\core_kernel_classes_Resource::class)->reveal());
+
+        $resultServer = $this->prophesize(ResultServerService::class);
+        $storage = new RdsResultStorage([RdsResultStorage::OPTION_PERSISTENCE => 'result']);
+        $resultServer->getResultStorage(Argument::any())->willReturn($storage);
+
+        $proxyService = $this->prophesize(ServiceProxy::class);
+        $proxyService->getDeliveryExecution(Argument::any())->willReturn($deImpl->reveal());
+
+        $this->serviceLocator = $this->getServiceLocatorMock([
+            ServiceProxy::SERVICE_ID => $proxyService->reveal(),
+//            EventManager::SERVICE_ID => new EventManager(),
+//            ResultServerService::SERVICE_ID => $resultServer->reveal(),
+//            PersistenceManager::SERVICE_ID => $this->getSqlMock('result'),
+//            RdsResultStorage::SERVICE_ID => $storage,
+        ]);
+
+        return $this->serviceLocator;
+    }
+
+    private function getResultService()
+    {
+
+        $storage->setServiceLocator($this->serviceLocator);
+        $installer = new createTables();
+        $installer->setServiceLocator($this->serviceLocator);
+        $installer([]);
+
+
+        $service = new LtiResultService();
+        $service->setServiceLocator($serviceLocator);
+        $service->setModel($onto);
+        return $service;
     }
 
     /**
@@ -236,34 +295,6 @@ class ResultControllerTest extends TestCase
     }
 
     /**
-     * @throws common_exception_InvalidArgumentType
-     */
-    public function testGetScoreVariable()
-    {
-        $subject = new LtiResultService();
-        $result = $subject->getScoreVariable(['score' => '0.92']);
-        $this->assertInstanceOf(OutcomeVariable::class, $result);
-        $this->assertEquals('0.92', $result->getValue());
-    }
-
-    /**
-     * @throws DuplicateVariableException
-     * @throws common_exception_BadRequest
-     * @throws common_exception_Error
-     * @throws common_exception_InvalidArgumentType
-     */
-    public function ignore_testRequestResult()
-    {
-        $serverRequestMock = $this->getRequestMock();
-        $subject = $this->getResultController();
-        $subject->setRequest($serverRequestMock);
-        $result = $subject->manageResult();
-        $this->assertInstanceOf(Response::class, $result);
-        $this->assertEquals(201, $result->getStatusCode());
-        $this->assertEquals(self::EXPECTED_RESPONSE, $result->getBody()->getContents());
-    }
-
-    /**
      * @return MockObject
      */
     private function getRequestMock()
@@ -292,77 +323,12 @@ class ResultControllerTest extends TestCase
 
         return $serverRequestMock;
     }
-//
-//    /**
-//     * @return ResultController
-//     */
-//    private function getResultController()
-//    {
-//        $subject = new ResultControllerMock();
-//        $subject->setLogger(new TestLogger());
-//        $subject->setServiceLocator($this->getServiceLocator());
-//        return $subject;
-//    }
 
     /**
      * @return MockObject|ServiceLocatorInterface
      */
     private function getResultController($payload = null)
     {
-//        if (is_object($this->serviceLocator)) {
-//            return $this->serviceLocator;
-//        }
-
-        $deliveryExecutionId = '3124567';
-        $sourcedId = '3124567';
-
-//        $ltiResultService = new LtiResultService();
-
-//        $deliveryExecutionMock = $this->getMockBuilder(DeliveryExecution::class)
-//            ->disableOriginalConstructor()
-//            ->setMethods(['getIdentifier'])
-//            ->getMock();
-//        $deliveryExecutionMock->method('getIdentifier')->willReturn($deliveryExecutionId);
-//
-//        $serviceProxyMock = $this->getMockBuilder(ServiceProxy::class)
-//            ->disableOriginalConstructor()
-//            ->setMethods(['getDeliveryExecution'])
-//            ->getMockForAbstractClass();
-//        $serviceProxyMock->method('getDeliveryExecution')
-//            ->with($sourcedId)
-//            ->willReturn($deliveryExecutionMock);
-//
-//        $eventManagerMock = $this->getMockBuilder(EventManager::class)
-//            ->disableOriginalConstructor()
-//            ->setMethods(['trigger'])
-//            ->getMock();
-////        $eventManagerMock->method('trigger')->with(ResultController::LIS_SCORE_RECEIVE_EVENT,
-////            [ResultController::DELIVERY_EXECUTION_ID => $deliveryExecutionId])->willReturn($deliveryExecutionId);
-//
-//        $resultStorageServiceMock = $this->getMockBuilder(WritableResultStorage::class)
-//            ->disableOriginalConstructor()
-//            ->setMethods(['storeTestVariable'])
-//            ->getMockForAbstractClass();
-//        $resultStorageServiceMock->method('storeTestVariable')
-//            ->with($deliveryExecutionId, '', $this->anything(), '')
-//            ->willReturn(true);
-//
-//        $resultServerServiceMock = $this->getMockBuilder(ResultServerService::class)
-//            ->disableOriginalConstructor()
-//            ->setMethods(['getResultStorage'])
-//            ->getMockForAbstractClass();
-//        $resultServerServiceMock->method('getResultStorage')
-//            ->with($sourcedId)->willReturn($resultStorageServiceMock);
-//
-//        /** @var ServiceLocatorInterface|MockObject $serviceLocator */
-//        $serviceLocator = $this->getMockBuilder(ServiceManager::class)
-//            ->disableOriginalConstructor()
-//            ->setMethods(['get'])
-//            ->getMockForAbstractClass();
-//        $serviceLocator->method('get')
-//            ->withConsecutive([LtiResultService::class], [ServiceProxy::SERVICE_ID], [ResultServerService::SERVICE_ID], [EventManager::SERVICE_ID])
-//            ->willReturnOnConsecutiveCalls($this->getResultService(), $serviceProxyMock, $resultServerServiceMock, $eventManagerMock);
-
         $controller = new ResultControllerMock();
         $controller->setRequest(new ServerRequest('GET', 'tao.test', [], $payload));
         $controller->setResponse(new Response());
@@ -374,15 +340,15 @@ class ResultControllerTest extends TestCase
         return $controller;
     }
 
-    public function getResultService()
-    {
-        $service = new ResultService();
-        $service->setServiceLocator($this->getServiceLocatorMock([
-            XmlResultParser::class => new XmlResultParser()
-        ]));
-
-        return $service;
-    }
+//    public function getResultService()
+//    {
+//        $service = new ResultService();
+//        $service->setServiceLocator($this->getServiceLocatorMock([
+//            XmlResultParser::class => new XmlResultParser()
+//        ]));
+//
+//        return $service;
+//    }
 
 }
 
