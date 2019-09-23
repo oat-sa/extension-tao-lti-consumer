@@ -60,10 +60,12 @@ class ResultService extends ConfigurableService
             return call_user_func_array([$this, $action], array($parser->getData()));
 
         } catch (\Exception $e) {
-            print_r($e->getMessage());
+            $this->logError($e->getMessage());
+
             if (!$e instanceof ResultException) {
                 $e = ResultException::fromCode(MessagesService::STATUS_INTERNAL_SERVER_ERROR, $e);
             }
+
             throw $e;
         }
     }

@@ -46,9 +46,9 @@ class Updater extends \common_ext_ExtensionUpdater
             $this->setVersion('0.1.0');
         }
 
-        $this->skip('0.1.0', '0.5.1');
+        $this->skip('0.1.0', '0.6.0');
 
-        if ($this->isVersion('0.5.1')) {
+        if ($this->isVersion('0.6.0')) {
             $this->getServiceManager()->register(
                 XmlResultParser::SERVICE_ID,
                 new XmlResultParser([
@@ -57,7 +57,6 @@ class Updater extends \common_ext_ExtensionUpdater
                     ]
                 ])
             );
-            $this->setVersion('0.6.0');
         }
     }
 }
