@@ -30,7 +30,7 @@ use oat\taoLtiConsumer\model\result\ResultException;
  * @package oat\taoLtiConsumer\model\result\parser\dataExtractor
  *
  */
-class ReplaceResultDataExtractor extends Configurable implements DataExtractor
+class ReplaceResultDataExtractorInterface extends Configurable implements DataExtractorInterface
 {
     const REQUEST_TYPE = 'replaceResult';
 

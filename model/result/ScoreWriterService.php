@@ -47,25 +47,28 @@ class ScoreWriterService extends ConfigurableService
     {
         if (!(isset($result['score']) && $this->isScoreValid($result['score']))) {
             throw new InvalidScoreException(
-                MessagesService::$statuses[MessagesService::STATUS_INVALID_SCORE], MessagesService::STATUS_INVALID_SCORE, null,
+                MessagesService::STATUSES[MessagesService::STATUS_INVALID_SCORE],
+                MessagesService::STATUS_INVALID_SCORE,
+                null,
                 MessagesService::buildMessageData(MessagesService::STATUS_INVALID_SCORE, $result)
             );
         }
 
         if (!isset($result['sourcedId'])) {
-            throw new ResultException(MessagesService::$statuses[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
-                MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
+            throw new ResultException(
+                MessagesService::STATUSES[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
+                MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
+                null,
                 MessagesService::buildMessageData(MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
 
         $deliveryExecution = $this->getDeliveryExecution($result);
 
-
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
         $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($deliveryExecution->getIdentifier(), $result['score']), '');
+        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($result['score']), '');
 
         return $deliveryExecution->getIdentifier();
     }
@@ -93,12 +96,12 @@ class ScoreWriterService extends ConfigurableService
     }
 
     /**
-     * @param $identifier
+     * TODO: Move ResultServerOutcomeVariable creation into a factory
      * @param string $score
      * @return ResultServerOutcomeVariable
      * @throws common_exception_InvalidArgumentType
      */
-    private function getScoreVariable($identifier, $score)
+    private function getScoreVariable($score)
     {
         $scoreVariable = new ResultServerOutcomeVariable();
         $scoreVariable->setIdentifier('SCORE');

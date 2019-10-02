@@ -24,7 +24,6 @@ use oat\oatbox\service\ConfigurableService;
 /**
  * Class LtiXmlFormatterService
  * Class to manage XML result data with score and to store it in DeliveryExecution
- * @package oat\taoLtiConsumer\model\result
  */
 class XmlFormatterService extends ConfigurableService
 {
@@ -60,13 +59,14 @@ class XmlFormatterService extends ConfigurableService
      **/
     public function getXmlResponse(array $params)
     {
-        $vars = [self::TEMPLATE_VAR_CODE_MAJOR, self::TEMPLATE_VAR_DESCRIPTION,
-            self::TEMPLATE_VAR_MESSAGE_ID, self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER
+        $vars = [
+            self::TEMPLATE_VAR_CODE_MAJOR => '',
+            self::TEMPLATE_VAR_DESCRIPTION => '',
+            self::TEMPLATE_VAR_MESSAGE_ID => '',
+            self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
         ];
 
-        foreach ($vars as $var) {
-            isset($params[$var]) or $params[$var] = '';
-        }
+        $params += $vars;
 
         $responseXml = str_replace(array_keys($params), array_values($params), self::RESPONSE_TEMPLATE);
 

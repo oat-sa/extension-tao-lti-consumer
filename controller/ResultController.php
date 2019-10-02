@@ -35,8 +35,10 @@ class ResultController extends RestController
     /**
      * Endpoint to manage result
      */
-    public function manageResult()
+    public function manageResults()
     {
+        $this->logDebug('Entered into manageResult +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=');
+
         try {
             $payload = $this->getPsrRequest()->getBody()->getContents();
             $data = $this->getLtiResultService()->processPayload($payload);

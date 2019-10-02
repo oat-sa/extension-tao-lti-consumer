@@ -55,7 +55,7 @@ class MessagesServiceTest extends TestCase
                 [],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::$statuses[MessagesService::STATUS_INTERNAL_SERVER_ERROR],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_INTERNAL_SERVER_ERROR],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],
@@ -65,7 +65,7 @@ class MessagesServiceTest extends TestCase
                 ['score' => 'Wrong Score'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::$statuses[MessagesService::STATUS_INVALID_SCORE],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_INVALID_SCORE],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],
@@ -75,7 +75,7 @@ class MessagesServiceTest extends TestCase
                 ['score' => 'Wrong Score'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::$statuses[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],
@@ -85,7 +85,7 @@ class MessagesServiceTest extends TestCase
                 ['score' => 'Wrong Score'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::$statuses[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],

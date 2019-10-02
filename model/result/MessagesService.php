@@ -31,14 +31,15 @@ class MessagesService
     const STATUS_INTERNAL_SERVER_ERROR = 500;
     const STATUS_SUCCESS = 201;
 
-    public static $statuses = array(
+    const STATUSES = [
         self::STATUS_INVALID_SCORE => 'Invalid score',
         self::STATUS_DELIVERY_EXECUTION_NOT_FOUND => 'DeliveryExecution not found',
         self::STATUS_METHOD_NOT_IMPLEMENTED => 'Method not implemented',
         self::STATUS_INTERNAL_SERVER_ERROR => 'Internal server error, please retry',
-    );
+    ];
 
     /**
+     * TODO: change to non-static
      * @param $code int self::STATUS_* code
      * @param $result array an array with Delivery Execution ID, score, message ID
      * @return array
@@ -46,7 +47,7 @@ class MessagesService
     public static function buildMessageData($code, $result)
     {
         $message = self::FAILURE_MESSAGE;
-        $description = isset(self::$statuses[$code]) ? self::$statuses[$code] : '';
+        $description = isset(self::STATUSES[$code]) ? self::STATUSES[$code] : '';
         $sourcedId = isset($result['sourcedId']) ? $result['sourcedId'] : '';
         $messageIdentifier = isset($result['messageIdentifier']) ? $result['messageIdentifier'] : '';
 

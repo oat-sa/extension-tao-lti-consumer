@@ -46,7 +46,7 @@ class ResultControllerTest extends TestCase
             XmlFormatterService::class => $formatterService,
         ]));
 
-        $controller->manageResult();
+        $controller->manageResults();
         $result = $controller->getPsrResponse();
 
         $this->assertInstanceOf(Response::class, $result);
@@ -71,7 +71,7 @@ class ResultControllerTest extends TestCase
             XmlFormatterService::class => $formatterService,
         ]));
 
-        $controller->manageResult();
+        $controller->manageResults();
         $result = $controller->getPsrResponse();
 
         $this->assertInstanceOf(Response::class, $result);

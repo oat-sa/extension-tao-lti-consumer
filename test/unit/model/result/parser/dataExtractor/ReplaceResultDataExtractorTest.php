@@ -22,13 +22,13 @@ namespace oat\taoLtiConsumer\test\unit\model\result\parser\dataExtractor;
 use DOMDocument;
 use DOMXPath;
 use oat\generis\test\TestCase;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
+use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractorInterface;
 use oat\taoLtiConsumer\model\result\ResultException;
 
 class ReplaceResultDataExtractorTest extends TestCase
 {
     /**
-     * @return ReplaceResultDataExtractor
+     * @return ReplaceResultDataExtractorInterface
      */
     public function testAccept()
     {
@@ -57,7 +57,7 @@ class ReplaceResultDataExtractorTest extends TestCase
                     </imsx_POXBody>
                 </imsx_POXEnvelopeRequest>');
 
-        $service = new ReplaceResultDataExtractor();
+        $service = new ReplaceResultDataExtractorInterface();
         $this->assertTrue($service->accepts($xpath));
 
         return $service;
@@ -90,7 +90,7 @@ class ReplaceResultDataExtractorTest extends TestCase
                     </imsx_POXBody>
                 </imsx_POXEnvelopeRequest>');
 
-        $service = new ReplaceResultDataExtractor();
+        $service = new ReplaceResultDataExtractorInterface();
         $this->assertFalse($service->accepts($xpath));
     }
 
@@ -134,21 +134,21 @@ class ReplaceResultDataExtractorTest extends TestCase
                     </imsx_POXBody>
                 </imsx_POXEnvelopeRequest>');
 
-        $service = new ReplaceResultDataExtractor();
+        $service = new ReplaceResultDataExtractorInterface();
         $this->assertFalse($service->accepts($xpath));
     }
 
     public function testGetRequestType()
     {
-        $this->assertSame(ReplaceResultDataExtractor::REQUEST_TYPE, (new ReplaceResultDataExtractor())->getRequestType());
+        $this->assertSame(ReplaceResultDataExtractorInterface::REQUEST_TYPE, (new ReplaceResultDataExtractorInterface())->getRequestType());
     }
 
     /**
      * @depends testAccept
-     * @param ReplaceResultDataExtractor $service
+     * @param ReplaceResultDataExtractorInterface $service
      * @throws ResultException
      */
-    public function testGetData(ReplaceResultDataExtractor $service)
+    public function testGetData(ReplaceResultDataExtractorInterface $service)
     {
         $xpath =  $this->getXpath('<?xml version="1.0" encoding="UTF-8"?>
                 <imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">

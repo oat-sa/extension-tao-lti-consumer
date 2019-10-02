@@ -339,17 +339,6 @@ class ResultControllerTest extends GenerisTestCase
 
         return $controller;
     }
-
-//    public function getResultService()
-//    {
-//        $service = new ResultService();
-//        $service->setServiceLocator($this->getServiceLocatorMock([
-//            XmlResultParser::class => new XmlResultParser()
-//        ]));
-//
-//        return $service;
-//    }
-
 }
 
 class ResultControllerMock extends ResultController

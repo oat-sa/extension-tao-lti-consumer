@@ -60,7 +60,8 @@ class LtiDeliveryContainer extends AbstractContainer
         $urlHelper = $this->getUrlHelper();
 
         $returnUrl = $urlHelper->buildUrl('index', 'DeliveryServer', 'taoDelivery');
-        $outcomeServiceUrl = $urlHelper->buildUrl('manageResults', 'ResultController', 'taoLtiConsumer');
+//        $outcomeServiceUrl = $urlHelper->buildUrl('manageResults', 'ResultController', 'taoLtiConsumer');
+        $outcomeServiceUrl = 'http://currentgen.docker.localhost/taoLtiConsumer/ResultController/manageResults';
 
         $data = [
             LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',

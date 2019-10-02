@@ -60,14 +60,14 @@ class ResultException extends Exception
     {
         if ($code == MessagesService::STATUS_METHOD_NOT_IMPLEMENTED) {
             return new self(
-                MessagesService::$statuses[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
+                MessagesService::STATUSES[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
                 MessagesService::STATUS_METHOD_NOT_IMPLEMENTED,
                 $previous,
                 MessagesService::buildMessageData(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, [])
             );
         } else {
             return new self(
-                MessagesService::$statuses[MessagesService::STATUS_INTERNAL_SERVER_ERROR],
+                MessagesService::STATUSES[MessagesService::STATUS_INTERNAL_SERVER_ERROR],
                 MessagesService::STATUS_INTERNAL_SERVER_ERROR,
                 $previous,
                 MessagesService::buildMessageData(MessagesService::STATUS_INTERNAL_SERVER_ERROR, [])

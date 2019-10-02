@@ -22,7 +22,7 @@ namespace oat\taoLtiConsumer\model\result\parser\dataExtractor;
 use DOMXPath;
 use oat\taoLtiConsumer\model\result\ResultException;
 
-interface DataExtractor
+interface DataExtractorInterface
 {
     /**
      * Check if the given xpath is acceptable for current DataExtractor
