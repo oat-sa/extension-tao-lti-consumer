@@ -43,7 +43,7 @@ class ResultService extends ConfigurableService
      * - Parse xml payload and extract data
      * - Forward to specific action to handle the payload request type
      *
-     * @param $payload
+     * @param $payload string
      * @return array
      * @throws ResultException
      */
@@ -54,7 +54,7 @@ class ResultService extends ConfigurableService
             $action = $parser->getRequestType();
 
             if (!method_exists($this, $action)) {
-                throw ResultException::fromCode(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED);
+                throw ResultException::fromCode(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED);
             }
 
             return $this->$action($parser->getData());
@@ -63,7 +63,7 @@ class ResultService extends ConfigurableService
             $this->logError($e->getMessage());
 
             if (!$e instanceof ResultException) {
-                $e = ResultException::fromCode(MessagesService::STATUS_INTERNAL_SERVER_ERROR, $e);
+                $e = ResultException::fromCode(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, $e);
             }
 
             throw $e;
@@ -79,7 +79,7 @@ class ResultService extends ConfigurableService
         $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
             [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]);
 
-        return MessagesService::buildMessageData(MessagesService::STATUS_SUCCESS, $data);
+        return MessageBuilder::buildMessageData(MessageBuilder::STATUS_SUCCESS, $data);
     }
 
     /**

@@ -21,7 +21,7 @@ namespace oat\taoLtiConsumer\test\unit\controller;
 
 use GuzzleHttp\Psr7\ServerRequest;
 use oat\generis\test\TestCase;
-use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoLtiConsumer\model\result\MessageBuilder;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\ResultService;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
@@ -51,7 +51,7 @@ class ResultControllerTest extends TestCase
 
         $this->assertInstanceOf(Response::class, $result);
         $this->assertEquals($returnFormatted, $result->getBody()->getContents());
-        $this->assertEquals(MessagesService::STATUS_SUCCESS, $result->getStatusCode());
+        $this->assertEquals(MessageBuilder::STATUS_SUCCESS, $result->getStatusCode());
     }
 
     public function testManageResultWithServiceException()

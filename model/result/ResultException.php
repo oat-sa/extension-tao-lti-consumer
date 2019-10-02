@@ -24,7 +24,6 @@ use Exception;
 /**
  * Class ResultException
  * Stores optional data for further usage
- * @package oat\taoLtiConsumer\model
  */
 class ResultException extends Exception
 {
@@ -56,21 +55,21 @@ class ResultException extends Exception
      * @param Exception|null $previous
      * @return ResultException
      */
-    static public function fromCode($code = MessagesService::STATUS_INTERNAL_SERVER_ERROR, Exception $previous = null)
+    static public function fromCode($code = MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, Exception $previous = null)
     {
-        if ($code == MessagesService::STATUS_METHOD_NOT_IMPLEMENTED) {
+        if ($code == MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED) {
             return new self(
-                MessagesService::STATUSES[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
-                MessagesService::STATUS_METHOD_NOT_IMPLEMENTED,
+                MessageBuilder::STATUSES[MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED],
+                MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED,
                 $previous,
-                MessagesService::buildMessageData(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED, [])
+                MessageBuilder::buildMessageData(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED, [])
             );
         } else {
             return new self(
-                MessagesService::STATUSES[MessagesService::STATUS_INTERNAL_SERVER_ERROR],
-                MessagesService::STATUS_INTERNAL_SERVER_ERROR,
+                MessageBuilder::STATUSES[MessageBuilder::STATUS_INTERNAL_SERVER_ERROR],
+                MessageBuilder::STATUS_INTERNAL_SERVER_ERROR,
                 $previous,
-                MessagesService::buildMessageData(MessagesService::STATUS_INTERNAL_SERVER_ERROR, [])
+                MessageBuilder::buildMessageData(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
             );
         }
     }

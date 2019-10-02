@@ -47,19 +47,19 @@ class ScoreWriterService extends ConfigurableService
     {
         if (!(isset($result['score']) && $this->isScoreValid($result['score']))) {
             throw new InvalidScoreException(
-                MessagesService::STATUSES[MessagesService::STATUS_INVALID_SCORE],
-                MessagesService::STATUS_INVALID_SCORE,
+                MessageBuilder::STATUSES[MessageBuilder::STATUS_INVALID_SCORE],
+                MessageBuilder::STATUS_INVALID_SCORE,
                 null,
-                MessagesService::buildMessageData(MessagesService::STATUS_INVALID_SCORE, $result)
+                MessageBuilder::buildMessageData(MessageBuilder::STATUS_INVALID_SCORE, $result)
             );
         }
 
         if (!isset($result['sourcedId'])) {
             throw new ResultException(
-                MessagesService::STATUSES[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
-                MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
+                MessageBuilder::STATUSES[MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
+                MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
                 null,
-                MessagesService::buildMessageData(MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
+                MessageBuilder::buildMessageData(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
 
@@ -87,8 +87,8 @@ class ScoreWriterService extends ConfigurableService
             $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
             $deliveryExecution->getDelivery();
         } catch (\Exception $e) {
-            throw new ResultException($e->getMessage(), MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
-                MessagesService::buildMessageData(MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
+            throw new ResultException($e->getMessage(), MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
+                MessageBuilder::buildMessageData(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
 

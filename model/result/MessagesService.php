@@ -19,9 +19,8 @@
 
 namespace oat\taoLtiConsumer\model\result;
 
-class MessagesService
+class MessageBuilder
 {
-    const SERVICE_ID = 'result_service';
     const FAILURE_MESSAGE = 'failure';
     const SUCCESS_MESSAGE = 'success';
 

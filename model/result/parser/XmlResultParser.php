@@ -24,7 +24,7 @@ use DOMXPath;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
 use oat\taoLtiConsumer\model\result\ResultException;
-use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoLtiConsumer\model\result\MessageBuilder;
 
 /**
  * Class XmlResultParser
@@ -121,7 +121,7 @@ class XmlResultParser extends ConfigurableService
             }
         }
 
-        throw ResultException::fromCode(MessagesService::STATUS_METHOD_NOT_IMPLEMENTED);
+        throw ResultException::fromCode(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED);
     }
 
     /**

@@ -20,10 +20,10 @@
 namespace oat\taoLtiConsumer\test\unit\model\result\parser;
 
 use oat\generis\test\TestCase;
-use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoLtiConsumer\model\result\MessageBuilder;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
 
-class MessagesServiceTest extends TestCase
+class MessageBuilderTest extends TestCase
 {
     /**
      * @dataProvider templateInputData
@@ -33,7 +33,7 @@ class MessagesServiceTest extends TestCase
      */
     public function testBuildMessage($code, $data, $response)
     {
-        $result = MessagesService::buildMessageData($code, $data);
+        $result = MessageBuilder::buildMessageData($code, $data);
         $this->assertEquals($response, $result);
     }
 
@@ -41,7 +41,7 @@ class MessagesServiceTest extends TestCase
     {
         return [
             [
-                MessagesService::STATUS_SUCCESS,
+                MessageBuilder::STATUS_SUCCESS,
                 ['sourcedId' => '1', 'messageIdentifier' => '1', 'score' => '0.92'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'success',
@@ -51,41 +51,41 @@ class MessagesServiceTest extends TestCase
                 ],
             ],
             [
-                MessagesService::STATUS_INTERNAL_SERVER_ERROR,
+                MessageBuilder::STATUS_INTERNAL_SERVER_ERROR,
                 [],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_INTERNAL_SERVER_ERROR],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessageBuilder::STATUSES[MessageBuilder::STATUS_INTERNAL_SERVER_ERROR],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],
             ],
             [
-                MessagesService::STATUS_INVALID_SCORE,
+                MessageBuilder::STATUS_INVALID_SCORE,
                 ['score' => 'Wrong Score'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_INVALID_SCORE],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessageBuilder::STATUSES[MessageBuilder::STATUS_INVALID_SCORE],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],
             ],
             [
-                MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
+                MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
                 ['score' => 'Wrong Score'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessageBuilder::STATUSES[MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],
             ],
             [
-                MessagesService::STATUS_METHOD_NOT_IMPLEMENTED,
+                MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED,
                 ['score' => 'Wrong Score'],
                 [
                     XmlFormatterService::TEMPLATE_VAR_CODE_MAJOR => 'failure',
-                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessagesService::STATUSES[MessagesService::STATUS_METHOD_NOT_IMPLEMENTED],
+                    XmlFormatterService::TEMPLATE_VAR_DESCRIPTION => MessageBuilder::STATUSES[MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED],
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_ID => '',
                     XmlFormatterService::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
                 ],

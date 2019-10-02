@@ -19,7 +19,7 @@
 
 namespace oat\taoLtiConsumer\controller;
 
-use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoLtiConsumer\model\result\MessageBuilder;
 use oat\taoLtiConsumer\model\result\ResultService as LtiResultService;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
@@ -32,9 +32,6 @@ use function GuzzleHttp\Psr7\stream_for;
  */
 class ResultController extends RestController
 {
-    /**
-     * Endpoint to manage result
-     */
     public function manageResults()
     {
         $this->logDebug('Entered into manageResult +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=');
@@ -42,10 +39,10 @@ class ResultController extends RestController
         try {
             $payload = $this->getPsrRequest()->getBody()->getContents();
             $data = $this->getLtiResultService()->processPayload($payload);
-            $code = MessagesService::STATUS_SUCCESS;
-        } catch (ResultException $e) {
-            $data = $e->getOptionalData();
-            $code = $e->getCode();
+            $code = MessageBuilder::STATUS_SUCCESS;
+        } catch (ResultException $exception) {
+            $data = $exception->getOptionalData();
+            $code = $exception->getCode();
         }
 
         $this->response = $this->getPsrResponse()

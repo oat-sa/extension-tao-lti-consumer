@@ -27,7 +27,7 @@ use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoLtiConsumer\model\result\InvalidScoreException;
-use oat\taoLtiConsumer\model\result\MessagesService;
+use oat\taoLtiConsumer\model\result\MessageBuilder;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\ScoreWriterService;
 use oat\taoLtiConsumer\model\result\XmlFormatterService;
