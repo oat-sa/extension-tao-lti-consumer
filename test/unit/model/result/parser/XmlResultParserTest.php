@@ -20,7 +20,7 @@
 namespace oat\taoLtiConsumer\test\unit\model\result\parser;
 
 use oat\generis\test\TestCase;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractorInterface;
+use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
 use oat\taoLtiConsumer\model\result\ResultException;
 
@@ -55,11 +55,11 @@ class XmlResultParserTest extends TestCase
 
         $parser = new XmlResultParser([
             'extractors' => [
-                new ReplaceResultDataExtractorInterface()
+                new ReplaceResultDataExtractor()
             ]
         ]);
         $parser->parse($xml);
-        $this->assertEquals(ReplaceResultDataExtractorInterface::REQUEST_TYPE, $parser->getRequestType());
+        $this->assertEquals(ReplaceResultDataExtractor::REQUEST_TYPE, $parser->getRequestType());
 
         $data = $parser->getData();
         $this->assertArrayHasKey('messageIdentifier', $data);
@@ -153,7 +153,7 @@ class XmlResultParserTest extends TestCase
 
         $parser = new XmlResultParser([
             'extractors' => [
-                new ReplaceResultDataExtractorInterface()
+                new ReplaceResultDataExtractor()
             ]
         ]);
         $parser->parse($xml);
@@ -170,7 +170,7 @@ class XmlResultParserTest extends TestCase
 
         $parser = new XmlResultParser([
             'extractors' => [
-                new ReplaceResultDataExtractorInterface()
+                new ReplaceResultDataExtractor()
             ]
         ]);
         $parser->parse($dom);

@@ -22,7 +22,7 @@ namespace oat\taoLtiConsumer\model\result\parser;
 use DOMDocument;
 use DOMXPath;
 use oat\oatbox\service\ConfigurableService;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractorInterface;
+use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\MessagesService;
 
@@ -105,7 +105,7 @@ class XmlResultParser extends ConfigurableService
      * Give an applicable dataExtractor that accept incoming $xpath
      *
      * @param $xpath
-     * @return DataExtractorInterface
+     * @return DataExtractor
      * @throws ResultException
      */
     protected function getDataExtractor($xpath)
@@ -127,7 +127,7 @@ class XmlResultParser extends ConfigurableService
     /**
      * Get configured dataExtractor
      *
-     * @return DataExtractorInterface[]
+     * @return DataExtractor[]
      */
     protected function getDataExtractors()
     {
@@ -135,7 +135,7 @@ class XmlResultParser extends ConfigurableService
         $configuredExtractors = $this->getOption(self::OPTION_DATA_EXTRACTORS);
         if (is_array($configuredExtractors)) {
             foreach ($configuredExtractors as $configuredExtractor) {
-                if ($configuredExtractor instanceof DataExtractorInterface) {
+                if ($configuredExtractor instanceof DataExtractor) {
                     $extractors[] = $configuredExtractor;
                 }
             }

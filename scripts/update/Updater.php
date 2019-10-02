@@ -21,7 +21,7 @@ namespace oat\taoLtiConsumer\scripts\update;
 
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractorInterface;
+use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
 
 /**
@@ -53,7 +53,7 @@ class Updater extends \common_ext_ExtensionUpdater
                 XmlResultParser::SERVICE_ID,
                 new XmlResultParser([
                     XmlResultParser::OPTION_DATA_EXTRACTORS => [
-                        new ReplaceResultDataExtractorInterface()
+                        new ReplaceResultDataExtractor()
                     ]
                 ])
             );
