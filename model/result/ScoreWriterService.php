@@ -68,7 +68,13 @@ class ScoreWriterService extends ConfigurableService
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
         $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-        $resultStorageService->storeTestVariable($result['sourcedId'], '', $this->getScoreVariable($result['score']), '');
+        $resultStorageService->storeTestVariable(
+            $result['sourcedId'],
+            $deliveryExecution->getDelivery()->getUri(),
+            $this->getScoreVariable($result['score']
+            ),
+            $deliveryExecution->getIdentifier()
+        );
 
         return $deliveryExecution->getIdentifier();
     }

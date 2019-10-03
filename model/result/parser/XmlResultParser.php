@@ -16,15 +16,14 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
-
 namespace oat\taoLtiConsumer\model\result\parser;
 
 use DOMDocument;
 use DOMXPath;
 use oat\oatbox\service\ConfigurableService;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractor;
-use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\MessageBuilder;
+use oat\taoLtiConsumer\model\result\parser\dataExtractor\DataExtractorInterface;
+use oat\taoLtiConsumer\model\result\ResultException;
 
 /**
  * Class XmlResultParser
@@ -37,46 +36,24 @@ class XmlResultParser extends ConfigurableService
     const SERVICE_ID = 'taoLtiConsumer/xmlResultParser';
     const OPTION_DATA_EXTRACTORS = 'extractors';
 
-    protected $requestType;
-    protected $data;
-
     /**
      * Parse $xml to extract data based on configured extractors
      *
-     * @param $xml
-     * @return $this
+     * @param string $xml
+     *
+     * @return LisOutcomeRequest
      * @throws ResultException
      */
     public function parse($xml)
     {
         $xpath = $this->load($xml);
         $dataExtractor = $this->getDataExtractor($xpath);
-
-        $this->requestType = $dataExtractor->getRequestType();
-        $this->data = $dataExtractor->getData($xpath);
+        $requestType = $dataExtractor->getRequestType();
+        $data = $dataExtractor->getData($xpath);
 
         $this->close($xpath);
-        return $this;
-    }
 
-    /**
-     * Get the request type associated to xml
-     *
-     * @return string
-     */
-    public function getRequestType()
-    {
-        return $this->requestType;
-    }
-
-    /**
-     * Get data extracted from xml
-     *
-     * @return array
-     */
-    public function getData()
-    {
-        return $this->data;
+        return new LisOutcomeRequest($requestType, $data);
     }
 
     /**
@@ -104,8 +81,8 @@ class XmlResultParser extends ConfigurableService
     /**
      * Give an applicable dataExtractor that accept incoming $xpath
      *
-     * @param $xpath
-     * @return DataExtractor
+     * @param DOMXPath $xpath
+     * @return DataExtractorInterface
      * @throws ResultException
      */
     protected function getDataExtractor($xpath)
@@ -127,7 +104,7 @@ class XmlResultParser extends ConfigurableService
     /**
      * Get configured dataExtractor
      *
-     * @return DataExtractor[]
+     * @return DataExtractorInterface[]
      */
     protected function getDataExtractors()
     {
@@ -135,7 +112,7 @@ class XmlResultParser extends ConfigurableService
         $configuredExtractors = $this->getOption(self::OPTION_DATA_EXTRACTORS);
         if (is_array($configuredExtractors)) {
             foreach ($configuredExtractors as $configuredExtractor) {
-                if ($configuredExtractor instanceof DataExtractor) {
+                if ($configuredExtractor instanceof DataExtractorInterface) {
                     $extractors[] = $configuredExtractor;
                 }
             }

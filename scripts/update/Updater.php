@@ -19,7 +19,11 @@
 
 namespace oat\taoLtiConsumer\scripts\update;
 
+use oat\tao\model\accessControl\func\AccessRule;
+use oat\tao\model\accessControl\func\AclProxy;
+use oat\tao\model\user\TaoRoles;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
+use oat\taoLtiConsumer\controller\ResultController;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
@@ -46,9 +50,9 @@ class Updater extends \common_ext_ExtensionUpdater
             $this->setVersion('0.1.0');
         }
 
-        $this->skip('0.1.0', '0.6.0');
+        $this->skip('0.1.0', '0.5.0');
 
-        if ($this->isVersion('0.6.0')) {
+        if ($this->isVersion('0.5.0')) {
             $this->getServiceManager()->register(
                 XmlResultParser::SERVICE_ID,
                 new XmlResultParser([
@@ -57,6 +61,10 @@ class Updater extends \common_ext_ExtensionUpdater
                     ]
                 ])
             );
+            AclProxy::applyRule(
+                new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
+            );
+            $this->setVersion('0.6.0');
         }
     }
 }

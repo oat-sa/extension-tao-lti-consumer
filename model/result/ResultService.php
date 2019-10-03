@@ -50,14 +50,14 @@ class ResultService extends ConfigurableService
     public function processPayload($payload)
     {
         try {
-            $parser = $this->getXmlResultParser($payload);
-            $action = $parser->getRequestType();
+            $request = $this->getXmlResultParser($payload);
+            $action = $request->getRequestType();
 
             if (!method_exists($this, $action)) {
                 throw ResultException::fromCode(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED);
             }
 
-            return $this->$action($parser->getData());
+            return $this->$action($request->getData());
 
         } catch (\Exception $e) {
             $this->logError($e->getMessage());

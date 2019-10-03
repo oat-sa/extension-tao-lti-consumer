@@ -17,6 +17,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+use oat\tao\model\user\TaoRoles;
+use oat\taoLtiConsumer\controller\ResultController;
 use oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer;
 use oat\taoLtiConsumer\scripts\update\Updater;
 
@@ -34,6 +36,7 @@ return [
     ],
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
+        ['grant', TaoRoles::ANONYMOUS, ResultController::class],
     ],
     'install' => [
         'rdf' => [],

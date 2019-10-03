@@ -33,8 +33,7 @@ use oat\taoLtiConsumer\model\result\ResultException;
 class ReplaceResultDataExtractor extends Configurable implements DataExtractorInterface
 {
     const REQUEST_TYPE = 'replaceResult';
-
-    protected $accepted = false;
+    const LTI_REPLACE_RESULT_REQUEST = '/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest';
 
     /**
      * Evaluate incoming $xpath to accept it for extraction
@@ -46,7 +45,7 @@ class ReplaceResultDataExtractor extends Configurable implements DataExtractorIn
      */
     public function accepts(DOMXPath $xpath)
     {
-        return $this->accepted = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest')->length === 1;
+        return $xpath->evaluate(self::LTI_REPLACE_RESULT_REQUEST)->length === 1;
     }
 
     /**
@@ -68,7 +67,7 @@ class ReplaceResultDataExtractor extends Configurable implements DataExtractorIn
      */
     public function getData(DOMXPath $xpath)
     {
-        if (!$this->accepted) {
+        if (!$this->accepts($xpath)) {
             throw ResultException::fromCode();
         }
 

@@ -16,7 +16,6 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
-
 namespace oat\taoLtiConsumer\model\result;
 
 class MessageBuilder
@@ -38,12 +37,12 @@ class MessageBuilder
     ];
 
     /**
-     * TODO: change to non-static
-     * @param $code int self::STATUS_* code
+     * @param $code   int self::STATUS_* code
      * @param $result array an array with Delivery Execution ID, score, message ID
+     *
      * @return array
      */
-    public static function buildMessageData($code, $result)
+    public function buildMessageData($code, $result)
     {
         $message = self::FAILURE_MESSAGE;
         $description = isset(self::STATUSES[$code]) ? self::STATUSES[$code] : '';
