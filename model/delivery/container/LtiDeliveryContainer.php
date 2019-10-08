@@ -29,6 +29,7 @@ use oat\oatbox\session\SessionService;
 use oat\generis\model\OntologyAwareTrait;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLtiConsumer\model\FilteringHelper;
 
 /**
  * Class LtiDeliveryContainer
@@ -72,6 +73,7 @@ class LtiDeliveryContainer extends AbstractContainer
         $container->setData('launchUrl', $ltiUrl);
         $container->setData('launchParams', $data);
 
+        $this->logDebug(sprintf('** taoLtiConsumer: preparing http call :: to the %s, with payload %s **', $ltiUrl, json_encode(FilteringHelper::anonymize($data, ['oauth_consumer_key']))));
         return $container;
     }
 
