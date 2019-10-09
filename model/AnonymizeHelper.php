@@ -15,23 +15,24 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  *  Copyright (c) 2019 (original work) Open Assessment Technologies SA
- *
- *
  */
 
 namespace oat\taoLtiConsumer\model;
 
 use GuzzleHttp\Psr7\Stream;
+use oat\oatbox\Configurable;
 
-class FilteringHelper
+class AnonymizeHelper extends Configurable
 {
+    public const OPTION_BLACK_LIST = 'black_list';
+
     /**
      * @param array| string |Stream $incomingData
-     * @param array $blackList
      * @return string|array
      */
-    public static function anonymize($incomingData, array $blackList)
+    public function anonymize($incomingData)
     {
+        $blackList = (array)$this->getOption(self::OPTION_BLACK_LIST);
         $maskedData = $incomingData;
 
         if (is_string($incomingData) || is_a($incomingData, Stream::class)) {
@@ -42,7 +43,7 @@ class FilteringHelper
 
         if (is_array($maskedData)) {
             array_walk_recursive($maskedData, static function (&$value, $key) use ($blackList) {
-                if (in_array($key, $blackList, true)) {
+                if (in_array(trim($key), $blackList, true)) {
                     $value = '****';
                 }
             });
