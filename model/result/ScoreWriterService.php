@@ -16,63 +16,42 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
-
 namespace oat\taoLtiConsumer\model\result;
 
-use common_exception_Error;
 use common_exception_InvalidArgumentType;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
+use oat\taoLtiConsumer\model\result\validator\ValidateScoreResult;
 use oat\taoResultServer\models\classes\ResultServerService;
-use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use taoResultServer_models_classes_OutcomeVariable as ResultServerOutcomeVariable;
+use Throwable;
 
-/**
- * Class LtiXmlFormatterService
- * Class to manage XML result data with score and to store it in DeliveryExecution
- * @package oat\taoLtiConsumer\model\classes
- */
 class ScoreWriterService extends ConfigurableService
 {
     /**
      * Store the score result into a delivery execution
-     * @param $result
+     *
+     * @param array $result
+     *
      * @return string
-     * @throws ResultException
-     * @throws common_exception_Error
-     * @throws DuplicateVariableException
+     * @throws Throwable
      */
-    public function store($result)
+    public function store(array $result)
     {
-        if (!(isset($result['score']) && $this->isScoreValid($result['score']))) {
-            throw new InvalidScoreException(
-                MessageBuilder::STATUSES[MessageBuilder::STATUS_INVALID_SCORE],
-                MessageBuilder::STATUS_INVALID_SCORE,
-                null,
-                MessageBuilder::build(MessageBuilder::STATUS_INVALID_SCORE, $result)
-            );
-        }
-
-        if (!isset($result['sourcedId'])) {
-            throw new ResultException(
-                MessageBuilder::STATUSES[MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
-                MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
-                null,
-                MessageBuilder::build(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
-            );
-        }
+        $this->validateResult($result);
 
         $deliveryExecution = $this->getDeliveryExecution($result);
 
         /** @var ResultServerService $resultServerService */
-        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
+        $resultServerService = $this->getResultServerService();
+
         $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
+
         $resultStorageService->storeTestVariable(
             $result['sourcedId'],
             $deliveryExecution->getDelivery()->getUri(),
-            $this->getScoreVariable($result['score']
-            ),
+            $this->getScoreVariable($result['score']),
             $deliveryExecution->getIdentifier()
         );
 
@@ -81,35 +60,45 @@ class ScoreWriterService extends ConfigurableService
 
     /**
      * Look for a DeliveryExecution and return it or throw an Exception
+     *
      * @param array $result
-     * @throws ResultException
+     *
      * @return DeliveryExecution
+     * @throws ResultException
      */
     private function getDeliveryExecution($result)
     {
         try {
             /** @var ServiceProxy $resultService */
             $resultService = $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);
-            $deliveryExecution = $resultService->getDeliveryExecution($result['sourcedId']);
-            $deliveryExecution->getDelivery();
-        } catch (\Exception $e) {
-            throw new ResultException($e->getMessage(), MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
+            return $resultService->getDeliveryExecution($result['sourcedId']);
+        } catch (Throwable $exception) {
+            throw new ResultException(
+                $exception->getMessage(),
+                MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
+                $exception,
                 MessageBuilder::build(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
-
-        return $deliveryExecution;
     }
 
     /**
-     * TODO: Move ResultServerOutcomeVariable creation into a factory
+     * @return ResultServerService
+     */
+    private function getResultServerService()
+    {
+        return $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
+    }
+
+    /**
      * @param string $score
+     *
      * @return ResultServerOutcomeVariable
      * @throws common_exception_InvalidArgumentType
      */
     private function getScoreVariable($score)
     {
-        $scoreVariable = new ResultServerOutcomeVariable();
+        $scoreVariable = $this->getResultServiceOutcomeVariable();
         $scoreVariable->setIdentifier('SCORE');
         $scoreVariable->setCardinality(ResultServerOutcomeVariable::CARDINALITY_SINGLE);
         $scoreVariable->setBaseType('float');
@@ -120,11 +109,22 @@ class ScoreWriterService extends ConfigurableService
     }
 
     /**
-     * @param mixed $score
-     * @return bool
+     * @param array $result
+     *
+     * @throws InvalidScoreException
+     * @throws ResultException
      */
-    private function isScoreValid($score)
+    private function validateResult(array $result)
     {
-        return (is_numeric($score) && $score >= 0 && $score <= 1);
+        $validator = new ValidateScoreResult();
+        $validator->validate($result);
+    }
+
+    /**
+     * @return ResultServerOutcomeVariable
+     */
+    private function getResultServiceOutcomeVariable()
+    {
+        return new ResultServerOutcomeVariable();
     }
 }

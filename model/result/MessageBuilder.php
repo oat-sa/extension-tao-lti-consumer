@@ -42,7 +42,7 @@ class MessageBuilder
      *
      * @return array
      */
-    public function build($code, array $result)
+    public static function build($code, array $result)
     {
         $message = self::FAILURE_MESSAGE;
         $description = self::STATUSES[$code] ?? '';

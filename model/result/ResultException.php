@@ -45,7 +45,7 @@ class ResultException extends Exception
      * @param int            $code
      * @param Exception|null $previous
      *
-     * @return ResultException
+     * @throws ResultException
      */
     public static function fromCode($code = MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, Exception $previous = null)
     {
@@ -55,11 +55,11 @@ class ResultException extends Exception
             $message = MessageBuilder::STATUSES[MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED];
         }
 
-        return new self(
+        throw new self(
             $message,
             $code,
             $previous,
-            (new MessageBuilder())->build(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
+            MessageBuilder::build(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
         );
     }
 }

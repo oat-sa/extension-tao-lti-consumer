@@ -80,7 +80,7 @@ class ResultService extends ConfigurableService
             [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]
         );
 
-        return (new MessageBuilder())->build(MessageBuilder::STATUS_SUCCESS, $data);
+        return MessageBuilder::build(MessageBuilder::STATUS_SUCCESS, $data);
     }
 
     /**
