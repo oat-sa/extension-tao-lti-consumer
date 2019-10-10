@@ -16,38 +16,29 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
-
 namespace oat\taoLtiConsumer\model\result;
 
+use common_exception_Error;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
+use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
+use Throwable;
 
-/**
- * Class ResultService
- *
- * Class to manage XML result data with score and to store it in DeliveryExecution
- *
- * @package oat\taoLtiConsumer\model\result
- */
 class ResultService extends ConfigurableService
 {
-    const SERVICE_ID = 'taoLtiConsumer/resultService';
-
-    const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
-    const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
+    public const SERVICE_ID = 'taoLtiConsumer/resultService';
+    public const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
+    public const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
     /**
-     * Process the incoming payload
+     * @param string $payload
      *
-     * - Parse xml payload and extract data
-     * - Forward to specific action to handle the payload request type
-     *
-     * @param $payload string
-     * @return array
+     * @return mixed
      * @throws ResultException
+     * @throws Throwable
      */
-    public function processPayload($payload)
+    public function process($payload)
     {
         try {
             $request = $this->getXmlResultParser($payload);
@@ -58,35 +49,46 @@ class ResultService extends ConfigurableService
             }
 
             return $this->$action($request->getData());
+        } catch (Throwable $exception) {
+            $this->logError($exception->getMessage());
 
-        } catch (\Exception $e) {
-            $this->logError($e->getMessage());
-
-            if (!$e instanceof ResultException) {
-                $e = ResultException::fromCode(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, $e);
+            if (!$exception instanceof ResultException) {
+                $exception = ResultException::fromCode(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, $exception);
             }
 
-            throw $e;
+            throw $exception;
         }
     }
 
+    /**
+     * this dynamically called when the action from the call is replaceResult
+     * @param array $data
+     *
+     * @return array
+     * @throws ResultException
+     * @throws common_exception_Error
+     * @throws DuplicateVariableException
+     */
     protected function replaceResult(array $data)
     {
         $deliveryExecutionIdentifier = $this->getScoreWriter()->store($data);
 
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-        $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
-            [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]);
+        $eventManager->trigger(
+            self::LIS_SCORE_RECEIVE_EVENT,
+            [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]
+        );
 
-        return MessageBuilder::build(MessageBuilder::STATUS_SUCCESS, $data);
+        return (new MessageBuilder())->build(MessageBuilder::STATUS_SUCCESS, $data);
     }
 
     /**
-     * @param string $payload The xml to parse
-     * @return XmlResultParser
+     * @param string $payload
+     *
+     * @return mixed
      */
-    protected function getXmlResultParser($payload)
+    private function getXmlResultParser($payload)
     {
         return $this->getServiceLocator()->get(XmlResultParser::SERVICE_ID)->parse($payload);
     }
@@ -94,7 +96,7 @@ class ResultService extends ConfigurableService
     /**
      * @return ScoreWriterService
      */
-    protected function getScoreWriter()
+    private function getScoreWriter()
     {
         return $this->getServiceLocator()->get(ScoreWriterService::class);
     }

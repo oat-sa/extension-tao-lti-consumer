@@ -38,7 +38,7 @@ class ResultController extends tao_actions_CommonModule
             $this->authenticate($this->getPsrRequest());
 
             $payload = $this->getPsrRequest()->getBody()->getContents();
-            $data = $this->getLtiResultService()->processPayload($payload);
+            $data = $this->getLtiResultService()->process($payload);
             $code = MessageBuilder::STATUS_SUCCESS;
         } catch (ResultException $exception) {
             $data = $exception->getOptionalData();

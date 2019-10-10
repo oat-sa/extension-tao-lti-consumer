@@ -35,7 +35,7 @@ class ResultServiceTest extends TestCase
         $service = new ResultServiceMock();
         $service->setServiceLocator($this->getServiceLocatorMock([XmlResultParser::SERVICE_ID => $parser]));
 
-        $this->assertEquals($expectedData, $service->processPayload('payload'));
+        $this->assertEquals($expectedData, $service->process('payload'));
     }
 
     public function testProcessPayloadWithNotImplementedMethod()
@@ -52,7 +52,7 @@ class ResultServiceTest extends TestCase
         $service = new ResultService();
         $service->setServiceLocator($this->getServiceLocatorMock([XmlResultParser::SERVICE_ID => $parser]));
 
-        $service->processPayload('payload');
+        $service->process('payload');
     }
 }
 

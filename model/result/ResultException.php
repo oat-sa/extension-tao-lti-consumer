@@ -16,20 +16,14 @@
  *
  * Copyright (c) 2019 (update and modification) Open Assessment Technologies SA
  */
-
 namespace oat\taoLtiConsumer\model\result;
 
 use Exception;
 
-/**
- * Class ResultException
- * Stores optional data for further usage
- */
 class ResultException extends Exception
 {
     /**
-     * Optional data for further usage
-     * @var mixed
+     * @var array
      */
     private $optionalData;
 
@@ -48,29 +42,24 @@ class ResultException extends Exception
     }
 
     /**
-     * Helper to create a ResultException from http code
-     * - use MessageService to provide exception message & description
-     *
-     * @param int $code
+     * @param int            $code
      * @param Exception|null $previous
+     *
      * @return ResultException
      */
-    static public function fromCode($code = MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, Exception $previous = null)
+    public static function fromCode($code = MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, Exception $previous = null)
     {
-        if ($code == MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED) {
-            return new self(
-                MessageBuilder::STATUSES[MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED],
-                MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED,
-                $previous,
-                MessageBuilder::build(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED, [])
-            );
-        } else {
-            return new self(
-                MessageBuilder::STATUSES[MessageBuilder::STATUS_INTERNAL_SERVER_ERROR],
-                MessageBuilder::STATUS_INTERNAL_SERVER_ERROR,
-                $previous,
-                MessageBuilder::build(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
-            );
+        $message = MessageBuilder::STATUSES[MessageBuilder::STATUS_INTERNAL_SERVER_ERROR];
+
+        if (MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED === $code) {
+            $message = MessageBuilder::STATUSES[MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED];
         }
+
+        return new self(
+            $message,
+            $code,
+            $previous,
+            (new MessageBuilder())->build(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
+        );
     }
 }
