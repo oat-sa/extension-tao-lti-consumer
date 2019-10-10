@@ -30,10 +30,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use tao_actions_CommonModule;
 use function GuzzleHttp\Psr7\stream_for;
 
-/**
- * Class ResultController
- * @package oat\taoLtiConsumer\controller
- */
 class ResultController extends tao_actions_CommonModule
 {
     public function manageResults()
@@ -45,7 +41,6 @@ class ResultController extends tao_actions_CommonModule
             $data = $this->getLtiResultService()->processPayload($payload);
             $code = MessageBuilder::STATUS_SUCCESS;
         } catch (ResultException $exception) {
-            //todo:: add proper 403
             $data = $exception->getOptionalData();
             $code = $exception->getCode();
         }
