@@ -20,15 +20,16 @@
 
 namespace oat\taoLtiConsumer\model\delivery\container;
 
+use IMSGlobal\LTI\ToolProvider\ToolConsumer;
+use oat\generis\model\OntologyAwareTrait;
+use oat\oatbox\session\SessionService;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
-use oat\oatbox\session\SessionService;
-use oat\generis\model\OntologyAwareTrait;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLtiConsumer\model\AnonymizeHelper;
 
 /**
  * Class LtiDeliveryContainer
@@ -72,6 +73,10 @@ class LtiDeliveryContainer extends AbstractContainer
         $container->setData('launchUrl', $ltiUrl);
         $container->setData('launchParams', $data);
 
+        $this->logDebug(
+            sprintf('** taoLtiConsumer: preparing http call :: to the %s, with payload %s **',
+                $ltiUrl,
+                json_encode($this->getAnonimizerHelper()->anonymize($data))));
         return $container;
     }
 
@@ -82,5 +87,13 @@ class LtiDeliveryContainer extends AbstractContainer
     private function getLtiProvider($id)
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
+    }
+
+    /**
+     * @return AnonymizeHelper
+     */
+    private function getAnonimizerHelper()
+    {
+        return new AnonymizeHelper([AnonymizeHelper::OPTION_BLACK_LIST => ['oauth_consumer_key']]);
     }
 }
