@@ -50,7 +50,7 @@ class ScoreWriterService extends ConfigurableService
                 MessageBuilder::STATUSES[MessageBuilder::STATUS_INVALID_SCORE],
                 MessageBuilder::STATUS_INVALID_SCORE,
                 null,
-                MessageBuilder::buildMessageData(MessageBuilder::STATUS_INVALID_SCORE, $result)
+                MessageBuilder::build(MessageBuilder::STATUS_INVALID_SCORE, $result)
             );
         }
 
@@ -59,7 +59,7 @@ class ScoreWriterService extends ConfigurableService
                 MessageBuilder::STATUSES[MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND],
                 MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
                 null,
-                MessageBuilder::buildMessageData(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
+                MessageBuilder::build(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
 
@@ -94,7 +94,7 @@ class ScoreWriterService extends ConfigurableService
             $deliveryExecution->getDelivery();
         } catch (\Exception $e) {
             throw new ResultException($e->getMessage(), MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, null,
-                MessageBuilder::buildMessageData(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
+                MessageBuilder::build(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
             );
         }
 

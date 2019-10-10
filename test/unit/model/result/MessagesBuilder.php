@@ -33,7 +33,7 @@ class MessageBuilderTest extends TestCase
      */
     public function testBuildMessage($code, $data, $response)
     {
-        $result = MessageBuilder::buildMessageData($code, $data);
+        $result = MessageBuilder::build($code, $data);
         $this->assertEquals($response, $result);
     }
 

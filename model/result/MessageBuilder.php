@@ -20,16 +20,16 @@ namespace oat\taoLtiConsumer\model\result;
 
 class MessageBuilder
 {
-    const FAILURE_MESSAGE = 'failure';
-    const SUCCESS_MESSAGE = 'success';
+    public const FAILURE_MESSAGE = 'failure';
+    public const SUCCESS_MESSAGE = 'success';
 
-    const STATUS_INVALID_SCORE = 400;
-    const STATUS_DELIVERY_EXECUTION_NOT_FOUND = 404;
-    const STATUS_METHOD_NOT_IMPLEMENTED = 501;
-    const STATUS_INTERNAL_SERVER_ERROR = 500;
-    const STATUS_SUCCESS = 201;
+    public const STATUS_INVALID_SCORE = 400;
+    public const STATUS_DELIVERY_EXECUTION_NOT_FOUND = 404;
+    public const STATUS_METHOD_NOT_IMPLEMENTED = 501;
+    public const STATUS_INTERNAL_SERVER_ERROR = 500;
+    public const STATUS_SUCCESS = 201;
 
-    const STATUSES = [
+    public const STATUSES = [
         self::STATUS_INVALID_SCORE => 'Invalid score',
         self::STATUS_DELIVERY_EXECUTION_NOT_FOUND => 'DeliveryExecution not found',
         self::STATUS_METHOD_NOT_IMPLEMENTED => 'Method not implemented',
@@ -37,20 +37,19 @@ class MessageBuilder
     ];
 
     /**
-     * @param $code   int self::STATUS_* code
-     * @param $result array an array with Delivery Execution ID, score, message ID
+     * @param string $code
+     * @param array $result
      *
      * @return array
      */
-    public function buildMessageData($code, $result)
+    public function build($code, array $result)
     {
         $message = self::FAILURE_MESSAGE;
-        $description = isset(self::STATUSES[$code]) ? self::STATUSES[$code] : '';
-        $sourcedId = isset($result['sourcedId']) ? $result['sourcedId'] : '';
-        $messageIdentifier = isset($result['messageIdentifier']) ? $result['messageIdentifier'] : '';
+        $description = self::STATUSES[$code] ?? '';
+        $sourcedId = $result['sourcedId'] ?? '';
+        $messageIdentifier = $result['messageIdentifier'] ?? '';
 
         if ($code === self::STATUS_SUCCESS) {
-            $sourcedId = $result['sourcedId'];
             $message = self::SUCCESS_MESSAGE;
             $description = str_replace(
                 ['{{sourceId}}', '{{score}}'],

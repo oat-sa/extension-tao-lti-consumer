@@ -79,7 +79,7 @@ class ResultService extends ConfigurableService
         $eventManager->trigger(self::LIS_SCORE_RECEIVE_EVENT,
             [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]);
 
-        return MessageBuilder::buildMessageData(MessageBuilder::STATUS_SUCCESS, $data);
+        return MessageBuilder::build(MessageBuilder::STATUS_SUCCESS, $data);
     }
 
     /**

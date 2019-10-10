@@ -62,14 +62,14 @@ class ResultException extends Exception
                 MessageBuilder::STATUSES[MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED],
                 MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED,
                 $previous,
-                MessageBuilder::buildMessageData(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED, [])
+                MessageBuilder::build(MessageBuilder::STATUS_METHOD_NOT_IMPLEMENTED, [])
             );
         } else {
             return new self(
                 MessageBuilder::STATUSES[MessageBuilder::STATUS_INTERNAL_SERVER_ERROR],
                 MessageBuilder::STATUS_INTERNAL_SERVER_ERROR,
                 $previous,
-                MessageBuilder::buildMessageData(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
+                MessageBuilder::build(MessageBuilder::STATUS_INTERNAL_SERVER_ERROR, [])
             );
         }
     }
