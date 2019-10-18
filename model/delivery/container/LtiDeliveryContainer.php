@@ -20,6 +20,7 @@
 namespace oat\taoLtiConsumer\model\delivery\container;
 
 use oat\generis\model\OntologyAwareTrait;
+use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
@@ -83,6 +84,14 @@ class LtiDeliveryContainer extends AbstractContainer
     }
 
     /**
+     * @return UrlHelper
+     */
+    protected function getUrlHelper()
+    {
+        return $this->getServiceLocator()->get(UrlHelper::class);
+    }
+
+    /**
      * @param string $id
      *
      * @return LtiProvider
@@ -91,6 +100,7 @@ class LtiDeliveryContainer extends AbstractContainer
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
+
 
     /**
      * @return AnonymizeHelper
