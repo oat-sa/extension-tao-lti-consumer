@@ -19,6 +19,7 @@
  */
 namespace oat\taoLtiConsumer\model\delivery\container;
 
+use oat\generis\model\OntologyAwareTrait;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
