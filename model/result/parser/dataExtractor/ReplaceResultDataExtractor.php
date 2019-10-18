@@ -71,18 +71,19 @@ class ReplaceResultDataExtractor extends Configurable implements DataExtractorIn
             throw ResultException::fromCode();
         }
 
-        $messageIdentifierNode = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXHeader/lti:imsx_POXRequestHeaderInfo/lti:imsx_messageIdentifier');
-        if ($messageIdentifierNode->length != 1) {
-            throw ResultException::fromCode();
-        }
+        $messageIdentifierNode = $xpath->evaluate(
+            '/lti:imsx_POXEnvelopeRequest/lti:imsx_POXHeader/lti:imsx_POXRequestHeaderInfo/lti:imsx_messageIdentifier'
+        );
 
-        $scoreNode = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:result/lti:resultScore/lti:textString');
-        if ($scoreNode->length != 1) {
-            throw ResultException::fromCode();
-        }
+        $scoreNode = $xpath->evaluate(
+            '/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:result/lti:resultScore/lti:textString'
+        );
 
-        $sourcedIdNode = $xpath->evaluate('/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:sourcedGUID/lti:sourcedId');
-        if ($sourcedIdNode->length != 1) {
+        $sourcedIdNode = $xpath->evaluate(
+            '/lti:imsx_POXEnvelopeRequest/lti:imsx_POXBody/lti:replaceResultRequest/lti:resultRecord/lti:sourcedGUID/lti:sourcedId'
+        );
+
+        if (1 != $scoreNode->length || 1 != $messageIdentifierNode->length || 1 != $sourcedIdNode->length) {
             throw ResultException::fromCode();
         }
 

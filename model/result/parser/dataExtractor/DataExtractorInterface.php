@@ -16,7 +16,6 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
-
 namespace oat\taoLtiConsumer\model\result\parser\dataExtractor;
 
 use DOMXPath;

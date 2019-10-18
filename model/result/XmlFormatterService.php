@@ -27,11 +27,11 @@ use oat\oatbox\service\ConfigurableService;
  */
 class XmlFormatterService extends ConfigurableService
 {
-    const TEMPLATE_VAR_CODE_MAJOR = '{{codeMajor}}';
-    const TEMPLATE_VAR_DESCRIPTION = '{{description}}';
-    const TEMPLATE_VAR_MESSAGE_ID = '{{messageId}}';
-    const TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER = '{{messageIdentifier}}';
-    const RESPONSE_TEMPLATE = '<?xml version="1.0" encoding="UTF-8"?>
+    public const TEMPLATE_VAR_CODE_MAJOR = '{{codeMajor}}';
+    public const TEMPLATE_VAR_DESCRIPTION = '{{description}}';
+    public const TEMPLATE_VAR_MESSAGE_ID = '{{messageId}}';
+    public const TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER = '{{messageIdentifier}}';
+    public const RESPONSE_TEMPLATE = '<?xml version="1.0" encoding="UTF-8"?>
         <imsx_POXEnvelopeResponse xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
             <imsx_POXHeader>
                 <imsx_POXResponseHeaderInfo>
@@ -51,7 +51,7 @@ class XmlFormatterService extends ConfigurableService
             </imsx_POXBody>
         </imsx_POXEnvelopeResponse>
     ';
-    const SCORE_DESCRIPTION_TEMPLATE = 'Score for {{sourceId}} is now {{score}}';
+    public const SCORE_DESCRIPTION_TEMPLATE = 'Score for {{sourceId}} is now {{score}}';
 
     /**
      * @param $params [paramName => value]
@@ -66,7 +66,7 @@ class XmlFormatterService extends ConfigurableService
             self::TEMPLATE_VAR_MESSAGE_REF_IDENTIFIER => '',
         ];
 
-        $params += $vars;
+        $params = array_merge($params, $vars);
 
         $responseXml = str_replace(array_keys($params), array_values($params), self::RESPONSE_TEMPLATE);
 

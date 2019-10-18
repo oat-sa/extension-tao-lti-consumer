@@ -21,16 +21,13 @@ namespace oat\taoLtiConsumer\test\unit\model\result\parser;
 
 use common_exception_Error;
 use oat\generis\test\TestCase;
-use oat\oatbox\event\EventManager;
 use oat\oatbox\service\exception\InvalidServiceManagerException;
 use oat\oatbox\service\ServiceManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoLtiConsumer\model\result\InvalidScoreException;
-use oat\taoLtiConsumer\model\result\MessageBuilder;
 use oat\taoLtiConsumer\model\result\ResultException;
 use oat\taoLtiConsumer\model\result\ScoreWriterService;
-use oat\taoLtiConsumer\model\result\XmlFormatterService;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use Zend\ServiceManager\ServiceLocatorInterface;

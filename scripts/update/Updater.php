@@ -16,9 +16,9 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
-
 namespace oat\taoLtiConsumer\scripts\update;
 
+use common_Exception;
 use oat\tao\model\accessControl\func\AccessRule;
 use oat\tao\model\accessControl\func\AclProxy;
 use oat\tao\model\user\TaoRoles;
@@ -37,7 +37,9 @@ class Updater extends \common_ext_ExtensionUpdater
      * Perform update from $currentVersion to $versionUpdatedTo.
      *
      * @param string $initialVersion
+     *
      * @return void
+     * @throws common_Exception
      */
     public function update($initialVersion)
     {
@@ -55,11 +57,7 @@ class Updater extends \common_ext_ExtensionUpdater
         if ($this->isVersion('0.5.0')) {
             $this->getServiceManager()->register(
                 XmlResultParser::SERVICE_ID,
-                new XmlResultParser([
-                    XmlResultParser::OPTION_DATA_EXTRACTORS => [
-                        new ReplaceResultDataExtractor()
-                    ]
-                ])
+                new XmlResultParser([XmlResultParser::OPTION_DATA_EXTRACTORS => [new ReplaceResultDataExtractor()]])
             );
             AclProxy::applyRule(
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)

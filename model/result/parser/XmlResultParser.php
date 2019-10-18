@@ -33,8 +33,8 @@ use oat\taoLtiConsumer\model\result\ResultException;
  */
 class XmlResultParser extends ConfigurableService
 {
-    const SERVICE_ID = 'taoLtiConsumer/xmlResultParser';
-    const OPTION_DATA_EXTRACTORS = 'extractors';
+    public const SERVICE_ID = 'taoLtiConsumer/xmlResultParser';
+    public const OPTION_DATA_EXTRACTORS = 'extractors';
 
     /**
      * Parse $xml to extract data based on configured extractors
@@ -73,7 +73,7 @@ class XmlResultParser extends ConfigurableService
         $dom->loadXML($xml);
 
         $xpath = new DOMXPath($dom);
-        $xpath->registerNamespace('lti', "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0");
+        $xpath->registerNamespace('lti', 'http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0');
 
         return $xpath;
     }
