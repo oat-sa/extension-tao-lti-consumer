@@ -51,10 +51,9 @@ class Updater extends \common_ext_ExtensionUpdater
             $registry->registerContainerType('lti', new LtiDeliveryContainer());
             $this->setVersion('0.1.0');
         }
+        $this->skip('0.1.0', '0.6.0');
 
-        $this->skip('0.1.0', '0.5.0');
-
-        if ($this->isVersion('0.5.0')) {
+        if ($this->isVersion('0.6.0')) {
             $this->getServiceManager()->register(
                 XmlResultParser::SERVICE_ID,
                 new XmlResultParser([XmlResultParser::OPTION_DATA_EXTRACTORS => [new ReplaceResultDataExtractor()]])
@@ -62,7 +61,7 @@ class Updater extends \common_ext_ExtensionUpdater
             AclProxy::applyRule(
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
             );
-            $this->setVersion('0.6.0');
+            $this->setVersion('0.7.0');
         }
     }
 }
