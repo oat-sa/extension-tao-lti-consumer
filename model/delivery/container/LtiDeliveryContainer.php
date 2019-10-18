@@ -31,6 +31,7 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLtiConsumer\model\AnonymizeHelper;
 
 /**
  * Class LtiDeliveryContainer
@@ -78,6 +79,10 @@ class LtiDeliveryContainer extends AbstractContainer
         $container->setData('launchUrl', $ltiUrl);
         $container->setData('launchParams', $data);
 
+        $this->logDebug(
+            sprintf('** taoLtiConsumer: preparing http call :: to the %s, with payload %s **',
+                $ltiUrl,
+                json_encode($this->getAnonimizerHelper()->anonymize($data))));
         return $container;
     }
 
@@ -97,5 +102,13 @@ class LtiDeliveryContainer extends AbstractContainer
     protected function getUrlHelper()
     {
         return $this->getServiceLocator()->get(UrlHelper::class);
+    }
+
+    /**
+     * @return AnonymizeHelper
+     */
+    private function getAnonimizerHelper()
+    {
+        return new AnonymizeHelper([AnonymizeHelper::OPTION_BLACK_LIST => ['oauth_consumer_key']]);
     }
 }
