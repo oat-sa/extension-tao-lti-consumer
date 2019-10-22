@@ -21,6 +21,7 @@ namespace oat\taoLtiConsumer\model\result;
 use common_exception_Error;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\service\ConfigurableService;
+use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
 use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use Throwable;
@@ -28,8 +29,6 @@ use Throwable;
 class ResultService extends ConfigurableService
 {
     public const SERVICE_ID = 'taoLtiConsumer/resultService';
-    public const LIS_SCORE_RECEIVE_EVENT = 'LisScoreReceivedEvent';
-    public const DELIVERY_EXECUTION_ID = 'DeliveryExecutionID';
 
     /**
      * @param string $payload
@@ -75,10 +74,7 @@ class ResultService extends ConfigurableService
 
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-        $eventManager->trigger(
-            self::LIS_SCORE_RECEIVE_EVENT,
-            [self::DELIVERY_EXECUTION_ID => $deliveryExecutionIdentifier]
-        );
+        $eventManager->trigger(new ResultReadyEvent($deliveryExecutionIdentifier));
 
         return MessageBuilder::build(MessageBuilder::STATUS_SUCCESS, $data);
     }
