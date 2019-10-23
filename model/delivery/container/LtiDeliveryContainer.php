@@ -17,16 +17,15 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  *
  */
-
 namespace oat\taoLtiConsumer\model\delivery\container;
 
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\generis\model\OntologyAwareTrait;
-use oat\oatbox\session\SessionService;
+use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\AnonymizeHelper;
@@ -56,16 +55,20 @@ class LtiDeliveryContainer extends AbstractContainer
         $consumerKey = $ltiProvider->getKey();
         $consumerSecret = $ltiProvider->getSecret();
 
-        $returnUrl = _url('index', 'DeliveryServer', 'taoDelivery');
+        $urlHelper = $this->getUrlHelper();
+
+        $returnUrl = $urlHelper->buildUrl('index', 'DeliveryServer', 'taoDelivery');
+        $outcomeServiceUrl = $urlHelper->buildUrl('manageResults', 'ResultController', 'taoLtiConsumer');
 
         $data = [
-            'lti_message_type' => 'basic-lti-launch-request',
-            'lti_version' => 'LTI-1p0',
-            'resource_link_id' => $execution->getIdentifier(),
-            'user_id' => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
-            'roles' => 'Learner',
-            'launch_presentation_return_url' => $returnUrl,
-            'lis_result_sourcedid' => $execution->getIdentifier(),
+            LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
+            LtiLaunchData::LTI_VERSION => 'LTI-1p0',
+            LtiLaunchData::RESOURCE_LINK_ID => $execution->getIdentifier(),
+            LtiLaunchData::USER_ID => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
+            LtiLaunchData::ROLES => 'Learner',
+            LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => $returnUrl,
+            LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
+            LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
         ];
         $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
 
@@ -81,13 +84,23 @@ class LtiDeliveryContainer extends AbstractContainer
     }
 
     /**
+     * @return UrlHelper
+     */
+    protected function getUrlHelper()
+    {
+        return $this->getServiceLocator()->get(UrlHelper::class);
+    }
+
+    /**
      * @param string $id
+     *
      * @return LtiProvider
      */
     private function getLtiProvider($id)
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
+
 
     /**
      * @return AnonymizeHelper
