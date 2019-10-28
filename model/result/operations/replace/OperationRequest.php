@@ -14,27 +14,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA
+ * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
-namespace oat\taoLtiConsumer\test\integration\controller;
 
-use oat\generis\test\GenerisTestCase;
-use oat\taoLtiConsumer\controller\ResultController;
+namespace oat\taoLtiConsumer\model\result\operations\replace;
 
-class ResultControllerTest extends GenerisTestCase
+use oat\taoLtiConsumer\model\result\operations\BasicOperationRequest;
+
+/**
+ * @see https://www.imsglobal.org/specs/ltiomv1p0/specification#toc-3
+ */
+class OperationRequest extends BasicOperationRequest
 {
+    /**
+     * @var string
+     */
+    private $score;
 
-    /** @var ResultController */
-    private $subject;
-
-    public function setUp()
+    /**
+     * @param string $sourcedId
+     * @param string $score
+     */
+    public function __construct($sourcedId, $score)
     {
-        $this->subject = new ResultController();
+        parent::__construct($sourcedId);
+        $this->score = $score;
     }
 
-    public function testManageResults()
+    /**
+     * @return string
+     */
+    public function getScore()
     {
-        $this->assertTrue(true);
+        return $this->score;
     }
-
 }

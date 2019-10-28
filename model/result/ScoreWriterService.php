@@ -18,67 +18,42 @@
  */
 namespace oat\taoLtiConsumer\model\result;
 
+use common_exception_Error;
 use common_exception_InvalidArgumentType;
+use common_exception_NotFound;
 use oat\oatbox\service\ConfigurableService;
-use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoDelivery\model\execution\ServiceProxy;
-use oat\taoLtiConsumer\model\result\validator\ValidateScoreResult;
+use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoResultServer\models\classes\ResultServerService;
+use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
 use taoResultServer_models_classes_OutcomeVariable as ResultServerOutcomeVariable;
-use Throwable;
 
 class ScoreWriterService extends ConfigurableService
 {
     /**
      * Store the score result into a delivery execution
      *
-     * @param array $result
-     *
-     * @return string
-     * @throws Throwable
+     * @param DeliveryExecutionInterface $deliveryExecution
+     * @param string $score should be validated before the call
+     * @return bool true if saved, false if already exists
+     * @throws common_exception_Error
+     * @throws common_exception_NotFound
      */
-    public function store(array $result)
+    public function store(DeliveryExecutionInterface $deliveryExecution, $score)
     {
-        $this->validateResult($result);
-
-        $deliveryExecution = $this->getDeliveryExecution($result);
-
-        /** @var ResultServerService $resultServerService */
+        $deliveryExecutionId = $deliveryExecution->getIdentifier();
         $resultServerService = $this->getResultServerService();
+        $resultStorageService = $resultServerService->getResultStorage($deliveryExecutionId);
 
-        $resultStorageService = $resultServerService->getResultStorage($result['sourcedId']);
-
-        $resultStorageService->storeTestVariable(
-            $result['sourcedId'],
-            $deliveryExecution->getDelivery()->getUri(),
-            $this->getScoreVariable($result['score']),
-            $deliveryExecution->getIdentifier()
-        );
-
-        return $deliveryExecution->getIdentifier();
-    }
-
-    /**
-     * Look for a DeliveryExecution and return it or throw an Exception
-     *
-     * @param array $result
-     *
-     * @return DeliveryExecution
-     * @throws ResultException
-     */
-    private function getDeliveryExecution($result)
-    {
         try {
-            /** @var ServiceProxy $resultService */
-            $resultService = $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);
-            return $resultService->getDeliveryExecution($result['sourcedId']);
-        } catch (Throwable $exception) {
-            throw new ResultException(
-                $exception->getMessage(),
-                MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND,
-                $exception,
-                MessageBuilder::build(MessageBuilder::STATUS_DELIVERY_EXECUTION_NOT_FOUND, $result)
+            $resultStorageService->storeTestVariable(
+                $deliveryExecutionId,
+                $deliveryExecution->getDelivery()->getUri(),
+                $this->createScoreVariable($score),
+                $deliveryExecutionId
             );
+            return true;
+        } catch (DuplicateVariableException $exception) {
+            return false;
         }
     }
 
@@ -87,18 +62,18 @@ class ScoreWriterService extends ConfigurableService
      */
     private function getResultServerService()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
     }
 
     /**
      * @param string $score
-     *
      * @return ResultServerOutcomeVariable
      * @throws common_exception_InvalidArgumentType
      */
-    private function getScoreVariable($score)
+    private function createScoreVariable($score)
     {
-        $scoreVariable = $this->getResultServiceOutcomeVariable();
+        $scoreVariable = new ResultServerOutcomeVariable();
         $scoreVariable->setIdentifier('SCORE');
         $scoreVariable->setCardinality(ResultServerOutcomeVariable::CARDINALITY_SINGLE);
         $scoreVariable->setBaseType('float');
@@ -106,25 +81,5 @@ class ScoreWriterService extends ConfigurableService
         $scoreVariable->setValue($score);
 
         return $scoreVariable;
-    }
-
-    /**
-     * @param array $result
-     *
-     * @throws InvalidScoreException
-     * @throws ResultException
-     */
-    private function validateResult(array $result)
-    {
-        $validator = new ValidateScoreResult();
-        $validator->validate($result);
-    }
-
-    /**
-     * @return ResultServerOutcomeVariable
-     */
-    private function getResultServiceOutcomeVariable()
-    {
-        return new ResultServerOutcomeVariable();
     }
 }

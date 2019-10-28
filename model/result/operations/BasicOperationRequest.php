@@ -14,23 +14,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (update and modification) Open Assessment Technologies SA
+ * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\model\result;
+namespace oat\taoLtiConsumer\model\result\operations;
 
-use oat\taoLtiConsumer\model\result\ResultException;
-
-/**
- * Class ResultException
- * Stores optional data for further usage
- * @package oat\taoLtiConsumer\model
- */
-class InvalidScoreException extends ResultException
+class BasicOperationRequest implements OperationRequestInterface
 {
-    public function __construct($message = null, $code = 0, Exception $previous = null, $optionalData = [])
+    /**
+     * @var string
+     */
+    private $sourcedId;
+
+    /**
+     * @param string $sourcedId
+     */
+    public function __construct($sourcedId)
     {
-        parent::__construct($message, $code, $previous, $optionalData);
+        $this->sourcedId = $sourcedId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSourcedId()
+    {
+        return $this->sourcedId;
     }
 }
-

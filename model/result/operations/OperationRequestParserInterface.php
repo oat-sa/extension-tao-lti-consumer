@@ -14,31 +14,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA
+ * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
-namespace oat\taoLtiConsumer\model\result\parser;
 
-class LisOutcomeRequest
+namespace oat\taoLtiConsumer\model\result\operations;
+
+use DOMNode;
+use DOMXPath;
+use oat\taoLtiConsumer\model\result\ParsingException;
+
+interface OperationRequestParserInterface
 {
-    /** @var string $requestType */
-    protected $requestType;
-
-    /** @var array $data */
-    protected $data;
-
-    public function __construct($requestType, array $data)
-    {
-        $this->requestType = $requestType;
-        $this->data = $data;
-    }
-
-    public function getRequestType(): string
-    {
-        return $this->requestType;
-    }
-
-    public function getData(): array
-    {
-        return $this->data;
-    }
+    /**
+     * @param DOMXPath $xpath
+     * @param string $nsPrefix Registered namespace prefix in $xpath
+     * @param DOMNode $operationNode
+     * @return BasicOperationRequest
+     * @throws ParsingException
+     */
+    public function parse(DOMXPath $xpath, $nsPrefix, DOMNode $operationNode);
 }
