@@ -29,6 +29,8 @@ interface LisOutcomeResponseInterface
 
     public const CODE_MAJOR_SUCCESS = 'success';
     public const CODE_MAJOR_FAILURE = 'failure';
+    public const CODE_MAJOR_UNSUPPORTED = 'unsupported';
+    public const CODE_MAJOR_PROCESSING = 'processing';
 
     /**
      * @return string

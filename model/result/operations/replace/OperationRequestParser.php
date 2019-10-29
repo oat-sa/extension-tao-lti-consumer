@@ -39,11 +39,13 @@ class OperationRequestParser extends BasicOperationRequestParser implements Oper
      */
     public function parse(DOMXPath $xpath, $nsPrefix, DOMNode $operationNode)
     {
-        if (!($sourceId = $this->getSourceId($xpath, $nsPrefix, $operationNode))) {
+        $sourceId = $this->getSourceId($xpath, $nsPrefix, $operationNode);
+        if ($sourceId === null) {
             throw new ParsingException('sourceId not found');
         }
 
-        if (!($score = $this->getScore($xpath, $nsPrefix, $operationNode))) {
+        $score = $this->getScore($xpath, $nsPrefix, $operationNode);
+        if ($score === null) {
             throw new ParsingException('score not found');
         }
 

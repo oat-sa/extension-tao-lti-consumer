@@ -17,7 +17,7 @@
  *  Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
 
-namespace oat\taoLtiConsumer\test\unit\model\delivery\task;
+namespace oat\taoLtiConsumer\test\unit\model;
 
 use oat\generis\test\TestCase;
 use oat\taoLtiConsumer\model\AnonymizeHelper;

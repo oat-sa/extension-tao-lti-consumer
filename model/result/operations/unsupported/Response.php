@@ -44,7 +44,7 @@ class Response extends BasicResponse
             self::STATUS_UNSUPPORTED,
             sprintf('%s is not supported', $operationName),
             $messageIdentifier,
-            self::CODE_MAJOR_FAILURE,
+            self::CODE_MAJOR_UNSUPPORTED,
             $messageRefIdentifier,
             $operationRefIdentifier
             );

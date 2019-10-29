@@ -55,9 +55,8 @@ class BasicResponseSerializer extends ConfigurableService implements ResponseSer
         $statusInfo->addChild('imsx_codeMajor', $response->getCodeMajor());
         $statusInfo->addChild('imsx_severity', 'status');
         $statusInfo->addChild('imsx_description', $response->getStatusDescription());
-        if ($response->getMessageRefIdentifier() !== null) {
-            $statusInfo->addChild('imsx_messageRefIdentifier', $response->getMessageRefIdentifier());
-        }
+        $statusInfo->addChild('imsx_messageRefIdentifier', $response->getMessageRefIdentifier());
+
         if ($response->getOperationRefIdentifier() !== null) {
             $statusInfo->addChild('imsx_operationRefIdentifier', $response->getOperationRefIdentifier());
         }
