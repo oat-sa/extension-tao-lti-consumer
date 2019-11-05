@@ -17,7 +17,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\model\result\operations\unsupported;
+namespace oat\taoLtiConsumer\model\result\operations\failure;
+
 
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
 
@@ -28,27 +29,23 @@ class Response extends BasicResponse
      */
     private $operationName;
 
-    /**
-     * @param string $operationName
-     * @param string|null $messageIdentifier
-     * @param string|null $messageRefIdentifier
-     * @param string|null $operationRefIdentifier
-     */
     public function __construct(
         $operationName,
+        $status,
+        $statusDescription,
+        $codeMajor,
         $messageIdentifier = null,
         $messageRefIdentifier = null,
         $operationRefIdentifier = null
     ) {
         parent::__construct(
-            self::STATUS_UNSUPPORTED,
-            sprintf('%s is not supported', $operationName),
+            $status,
+            $statusDescription,
+            $codeMajor,
             $messageIdentifier,
-            self::CODE_MAJOR_UNSUPPORTED,
             $messageRefIdentifier,
             $operationRefIdentifier
-            );
-
+        );
         $this->operationName = $operationName;
     }
 

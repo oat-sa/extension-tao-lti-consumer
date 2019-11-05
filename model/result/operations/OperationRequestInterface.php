@@ -21,5 +21,8 @@ namespace oat\taoLtiConsumer\model\result\operations;
 
 interface OperationRequestInterface
 {
-
+    /**
+     * @return string
+     */
+    public function getSourcedId();
 }

@@ -21,10 +21,12 @@ namespace oat\taoLtiConsumer\model\result\operations;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
+use oat\taoLtiConsumer\model\result\operations\failure\BasicResponseSerializer;
+use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
+use oat\taoLtiConsumer\model\result\operations\failure\OperationResponseSerializer as FailureResponseSerializer;
 use oat\taoLtiConsumer\model\result\operations\replace\OperationRequestParser as ReplaceOperationRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
 use oat\taoLtiConsumer\model\result\operations\replace\ResponseSerializer as ReplaceResponseSerializer;
-use oat\taoLtiConsumer\model\result\operations\unsupported\Response as UnsupportedResponse;
 
 class OperationsCollection extends ConfigurableService
 {
@@ -32,6 +34,7 @@ class OperationsCollection extends ConfigurableService
     protected const OPERATION_READ = 'readResultRequest';
     protected const OPERATION_DELETE = 'deleteResultRequest';
 
+    protected const KEY_RESPONSE_BODY_EL = 'response_body_el';
     protected const KEY_REQUEST_PARSER = 'req_parser';
     protected const KEY_RESPONSE_CLASS = 'response_class';
     protected const KEY_RESPONSE_SERIALIZER = 'response_serializer';
@@ -50,13 +53,26 @@ class OperationsCollection extends ConfigurableService
     }
 
     /**
+     * @param string $operationName
+     * @return string|null
+     */
+    public function getBodyResponseElementName($operationName)
+    {
+        $ops = $this->getSupportedOperations();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $ops[$operationName]
+            ? $ops[$operationName][self::KEY_RESPONSE_BODY_EL]
+            : null;
+    }
+
+    /**
      * @param LisOutcomeResponseInterface $response
      * @return ResponseSerializerInterface|null
      */
     public function getResponseSerializer($response)
     {
         $ops = $this->getSupportedOperations();
-        $ops[] = $this->getUnsupportedOperation();
+        array_push($ops, ...$this->getCommonResponseSerializationInfo());
 
         foreach ($ops as $op) {
             if (is_a($response, $op[self::KEY_RESPONSE_CLASS], true)) {
@@ -75,6 +91,7 @@ class OperationsCollection extends ConfigurableService
     {
         return [
             self::OPERATION_REPLACE => [
+                self::KEY_RESPONSE_BODY_EL => ReplaceResponseSerializer::BODY_RESPONSE_EL_NAME,
                 self::KEY_REQUEST_PARSER => ReplaceOperationRequestParser::class,
                 self::KEY_RESPONSE_CLASS => ReplaceResponse::class,
                 self::KEY_RESPONSE_SERIALIZER => ReplaceResponseSerializer::class
@@ -83,14 +100,25 @@ class OperationsCollection extends ConfigurableService
     }
 
     /**
-     * @return string[]
+     * @return string[][]
      */
-    protected function getUnsupportedOperation()
+    protected function getCommonResponseSerializationInfo()
     {
         return [
-            self::KEY_REQUEST_PARSER => null,
-            self::KEY_RESPONSE_CLASS => UnsupportedResponse::class,
-            self::KEY_RESPONSE_SERIALIZER => BasicResponseSerializer::class
+            [
+                self::KEY_RESPONSE_BODY_EL => null,
+                self::KEY_REQUEST_PARSER => null,
+                self::KEY_RESPONSE_CLASS => FailureResponse::class,
+                self::KEY_RESPONSE_SERIALIZER => FailureResponseSerializer::class
+            ],
+            // Order matters, BasicResponse record should be the last one because in the opposite
+            // situation any response pass 'is_a()' check first
+            [
+                self::KEY_RESPONSE_BODY_EL => null,
+                self::KEY_REQUEST_PARSER => null,
+                self::KEY_RESPONSE_CLASS => BasicResponse::class,
+                self::KEY_RESPONSE_SERIALIZER => BasicResponseSerializer::class
+            ]
         ];
     }
 }

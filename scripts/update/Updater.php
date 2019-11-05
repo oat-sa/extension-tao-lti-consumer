@@ -25,8 +25,6 @@ use oat\tao\model\user\TaoRoles;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\controller\ResultController;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
-use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
 
 /**
  * taoLtiConsumer Updater.
@@ -54,10 +52,6 @@ class Updater extends \common_ext_ExtensionUpdater
         $this->skip('0.1.0', '0.6.0');
 
         if ($this->isVersion('0.6.0')) {
-            $this->getServiceManager()->register(
-                XmlResultParser::SERVICE_ID,
-                new XmlResultParser([XmlResultParser::OPTION_DATA_EXTRACTORS => [new ReplaceResultDataExtractor()]])
-            );
             AclProxy::applyRule(
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
             );

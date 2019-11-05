@@ -17,30 +17,44 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\model\result\operations\replace;
+namespace oat\taoLtiConsumer\model\result\operations\failure;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseSerializer;
+use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
 use oat\taoLtiConsumer\model\result\operations\ResponseSerializerInterface;
 use SimpleXMLElement;
 
-class ResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
+class OperationResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
 {
-    public const BODY_RESPONSE_EL_NAME = 'replaceResultResponse';
-
     /**
      * @param LisOutcomeResponseInterface|Response $response
      * @return string
      */
     public function toXml(LisOutcomeResponseInterface $response)
     {
-        $bodyResponseNode = new SimpleXMLElement(sprintf('<%s />', self::BODY_RESPONSE_EL_NAME));
+        $responseElementName = $this->getOperationsCollection()->getBodyResponseElementName(
+            $response->getOperationName()
+        );
+
+        $bodyResponseNode = $responseElementName
+            ? new SimpleXMLElement("<$responseElementName />")
+            : null;
 
         return $this
             ->getLisOutcomeResponseSerializer()
             ->createXmlElement($response, $bodyResponseNode)
             ->asXML();
+    }
+
+    /**
+     * @return OperationsCollection
+     */
+    protected function getOperationsCollection()
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getServiceLocator()->get(OperationsCollection::class);
     }
 
     /**

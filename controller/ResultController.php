@@ -23,13 +23,13 @@ use common_exception_Error;
 use common_exception_MethodNotAllowed;
 use common_exception_NotFound;
 use common_user_auth_AuthFailedException;
-use common_user_User;
-use oat\taoLti\models\classes\Lis\LisAuthAdapter;
+use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
+use oat\taoLti\models\classes\Lis\LtiProviderUser;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
-use oat\taoLtiConsumer\model\result\operations\BasicResponseSerializer;
+use oat\taoLtiConsumer\model\result\operations\failure\BasicResponseSerializer;
 use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
 use oat\taoLtiConsumer\model\result\ParsingException;
 use oat\taoLtiConsumer\model\result\ResultService as LtiResultService;
@@ -38,17 +38,19 @@ use Psr\Http\Message\ServerRequestInterface;
 use Request;
 use Slim\Http\StatusCode;
 use tao_actions_CommonModule;
+use tao_models_classes_UserException;
 use Throwable;
 use function GuzzleHttp\Psr7\stream_for;
 
 class ResultController extends tao_actions_CommonModule
 {
     public const XML_CONTENT_TYPE = 'application/xml';
+    public const LTI_PROVIDER_REQUIRED_ROLE = 'Instructor';
 
     /**
      * @noinspection PhpUnused
      * @throws common_exception_MethodNotAllowed
-     * @throws common_user_auth_AuthFailedException
+     * @throws tao_models_classes_UserException
      */
     public function manageResults()
     {
@@ -56,13 +58,26 @@ class ResultController extends tao_actions_CommonModule
             throw new common_exception_MethodNotAllowed(null, 0, [Request::HTTP_POST]);
         }
 
-        $this->authenticate($this->getPsrRequest());
-        $payload = $this->getPsrRequest()->getBody()->getContents();
+        try {
+            $user = $this->authorizeUser($this->getPsrRequest());
+        } catch (tao_models_classes_UserException $userException) {
+            throw $userException;
+        } catch (Throwable $throwable) {
+            $this->response = $this->createInternalErrorResponse($throwable);
+            return;
+        }
+
+        $payload = (string) $this->getPsrRequest()->getBody();
         $requestParser = $this->getRequestParser();
 
         try {
             $lisRequest = $requestParser->parse($payload);
-            $this->response = $this->processLisRequest($lisRequest);
+            $this->response = $this->processLisRequest(
+                $lisRequest,
+                // Require delivery execution to has the same tenant id (delivery property) as
+                // LtiProvider if specified for it
+                $user->getLtiProvider()->getTenantId()
+            );
         } catch (ParsingException $parsingException) {
             $this->response = $this->createParseErrorResponse($parsingException);
         } catch (Throwable $throwable) {
@@ -71,14 +86,35 @@ class ResultController extends tao_actions_CommonModule
     }
 
     /**
+     * @param ServerRequestInterface $request
+     * @return LtiProviderUser
+     * @throws tao_models_classes_UserException
+     */
+    private function authorizeUser(ServerRequestInterface $request)
+    {
+        try {
+            $user = $this->getLisAuthAdapterFactory()->create($request)->authenticate();
+        } catch (common_user_auth_AuthFailedException $authFailedException) {
+            throw new tao_models_classes_UserException($authFailedException->getMessage());
+        }
+
+        if (!in_array(self::LTI_PROVIDER_REQUIRED_ROLE, $user->getRoles(), true)) {
+            throw new tao_models_classes_UserException('You are not authorized to access this functionality');
+        }
+
+        return $user;
+    }
+
+    /**
      * @param LisOutcomeRequest $lisRequest
+     * @param string|null $tenantId Check that delivery execution belongs to specified tenant
      * @return ResponseInterface
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    private function processLisRequest(LisOutcomeRequest $lisRequest)
+    private function processLisRequest(LisOutcomeRequest $lisRequest, $tenantId)
     {
-        $lisResponse = $this->getLtiResultService()->process($lisRequest);
+        $lisResponse = $this->getLtiResultService()->process($lisRequest, $tenantId);
 
         $serializer = $this->getOperationsCollection()->getResponseSerializer($lisResponse);
         if ($serializer === null) {
@@ -130,18 +166,6 @@ class ResultController extends tao_actions_CommonModule
             StatusCode::HTTP_INTERNAL_SERVER_ERROR,
             'Internal error'
         );
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @return common_user_User
-     * @throws common_user_auth_AuthFailedException
-     */
-    private function authenticate(ServerRequestInterface $request)
-    {
-        /** @var LisAuthAdapter $adaptor */
-        $adaptor = $this->propagate(new LisAuthAdapter($request));
-        return $adaptor->authenticate();
     }
 
     /**
@@ -202,5 +226,14 @@ class ResultController extends tao_actions_CommonModule
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(OperationsCollection::class);
+    }
+
+    /**
+     * @return LisAuthAdapterFactory
+     */
+    protected function getLisAuthAdapterFactory()
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getServiceLocator()->get(LisAuthAdapterFactory::class);
     }
 }

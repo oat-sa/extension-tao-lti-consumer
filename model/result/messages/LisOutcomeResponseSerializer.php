@@ -17,30 +17,19 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\model\result\operations;
+namespace oat\taoLtiConsumer\model\result\messages;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 use SimpleXMLElement;
 
-class BasicResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
+class LisOutcomeResponseSerializer extends ConfigurableService
 {
-    /**
-     * Serializes response without body response node
-     * @param LisOutcomeResponseInterface $response
-     * @return string
-     */
-    public function toXml(LisOutcomeResponseInterface $response)
-    {
-        return $this->createMainNode($response, null)->asXML();
-    }
-
     /**
      * @param LisOutcomeResponseInterface $response
      * @param SimpleXMLElement|null $bodyResponseNode
-     * @return SimpleXMLElement
+     * @return SimpleXMLElement to allow specific serializers to modify it before converting to string
      */
-    protected function createMainNode(LisOutcomeResponseInterface $response, $bodyResponseNode)
+    public function createXmlElement(LisOutcomeResponseInterface $response, SimpleXMLElement $bodyResponseNode = null)
     {
         $root = new SimpleXMLElement(
             '<?xml version="1.0" encoding="UTF-8"?>' .

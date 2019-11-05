@@ -20,46 +20,62 @@ namespace oat\taoLtiConsumer\model\result;
 
 use common_exception_Error;
 use common_exception_NotFound;
-use core_kernel_classes_Resource;
+use LogicException;
+use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoDelivery\model\execution\ServiceProxy;
+use oat\taoLtiConsumer\model\DeliveryExecutionGetter;
 use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
+use oat\taoLtiConsumer\model\result\operations\BasicResponse;
+use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
 use oat\taoLtiConsumer\model\result\operations\replace\OperationRequest as ReplaceOperationRequest;
-use oat\taoLtiConsumer\model\result\operations\unsupported\Response as UnsupportedResponse;
 use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
 
 class ResultService extends ConfigurableService
 {
+    use OntologyAwareTrait;
+
     public const SERVICE_ID = 'taoLtiConsumer/resultService';
 
     /**
      * @param LisOutcomeRequest $request
+     * @param string|null $tenantId if not null check that delivery execution belongs to specified tenant
      * @return LisOutcomeResponseInterface
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    public function process($request)
+    public function process(LisOutcomeRequest $request, $tenantId)
     {
         $operationRequest = $request->getOperation();
-        if ($operationRequest instanceof ReplaceOperationRequest) {
-            return $this->handleReplaceRequest($request);
+        if ($operationRequest === null) {
+            return $this->getUnsupportedOperationResponse($request);
         }
 
-        return $this->handleUnsupportedRequest($request);
+        $deliveryExecution = $this->getDeliveryExecutionGetter()->get($operationRequest->getSourcedId(), $tenantId);
+        if ($deliveryExecution === null) {
+            return $this->getDeliveryNotFoundResponse($request, $operationRequest->getSourcedId(), $tenantId);
+        }
+
+        if ($operationRequest instanceof ReplaceOperationRequest) {
+            return $this->handleReplaceRequest($request, $deliveryExecution);
+        }
+
+        throw new LogicException('Wrong operation request: ' . $request->getOperationName());
     }
 
     /**
      * @param LisOutcomeRequest $request
-     * @return UnsupportedResponse
+     * @return BasicResponse
      */
-    protected function handleUnsupportedRequest(LisOutcomeRequest $request)
+    protected function getUnsupportedOperationResponse(LisOutcomeRequest $request)
     {
-        return new UnsupportedResponse(
-            $request->getOperationName(),
+        return new BasicResponse(
+            BasicResponse::STATUS_UNSUPPORTED,
+            sprintf('%s is not supported', $request->getOperationName()),
+            BasicResponse::CODE_MAJOR_UNSUPPORTED,
             null,
             $request->getMessageIdentifier(),
             $request->getOperationName()
@@ -68,31 +84,47 @@ class ResultService extends ConfigurableService
 
     /**
      * @param LisOutcomeRequest $request
+     * @param string $sourcedId
+     * @param string|null $tenantId
+     * @return FailureResponse
+     */
+    protected function getDeliveryNotFoundResponse(LisOutcomeRequest $request, $sourcedId, $tenantId)
+    {
+        $statusDescription = $tenantId !== null
+            ? "Delivery execution '$sourcedId' for tenant id '$tenantId' not found"
+            : "Delivery execution '$sourcedId' not found";
+
+        return new FailureResponse(
+            $request->getOperationName(),
+            BasicResponse::STATUS_NOT_FOUND,
+            $statusDescription,
+            BasicResponse::CODE_MAJOR_FAILURE,
+            null,
+            $request->getMessageIdentifier(),
+            $request->getOperationName()
+        );
+    }
+
+    /**
+     * @noinspection PhpDocMissingThrowsInspection
+     * @param LisOutcomeRequest $request
+     * @param DeliveryExecutionInterface $deliveryExecution
      * @return ReplaceResponse
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    protected function handleReplaceRequest(LisOutcomeRequest $request)
+    protected function handleReplaceRequest(LisOutcomeRequest $request, DeliveryExecutionInterface $deliveryExecution)
     {
         /** @var ReplaceOperationRequest $operationRequest */
         $operationRequest = $request->getOperation();
-        $deliveryExecution = $this->getDeliveryExecution($operationRequest->getSourcedId());
-        if ($deliveryExecution === null) {
-            return new ReplaceResponse(
-                ReplaceResponse::STATUS_NOT_FOUND,
-                sprintf('Delivery execution "%s" not found', $operationRequest->getSourcedId()),
-                ReplaceResponse::CODE_MAJOR_FAILURE,
-                null,
-                $request->getMessageIdentifier(),
-                $request->getOperationName()
-            );
-        }
+
         // don't check return value, ignore the case when exact the same score variable exists
         // because variables considered as equal only if their's epoch (microtime()) are the same
         $this->getScoreWriter()->store($deliveryExecution, $operationRequest->getScore());
 
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
+        /** @noinspection PhpUnhandledExceptionInspection */
         $eventManager->trigger(new ResultReadyEvent($deliveryExecution->getIdentifier()));
 
         return new ReplaceResponse(
@@ -106,48 +138,20 @@ class ResultService extends ConfigurableService
     }
 
     /**
-     * Due to multiple implementation of DE storages it's difficult to check if DE exists
-     * Ontology storage allows us to check exists() but for other storages we have to try
-     * to read mandatory 'status' property
-     * @param string $deliveryExecutionId
-     * @return DeliveryExecutionInterface|null
-     */
-    private function getDeliveryExecution($deliveryExecutionId)
-    {
-        $deliveryExecution = $this->getServiceProxy()->getDeliveryExecution($deliveryExecutionId);
-        if ($deliveryExecution instanceof core_kernel_classes_Resource) {
-            if (!$deliveryExecution->exists()) {
-                return null;
-            }
-        } else {
-            try {
-                $state = $deliveryExecution->getState();
-                if (empty($state->getUri())) {
-                    return null;
-                }
-            } catch (common_exception_NotFound $notFoundException) {
-                return null;
-            }
-        }
-
-        return $deliveryExecution;
-    }
-
-    /**
-     * @return ServiceProxy
-     */
-    private function getServiceProxy()
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);
-    }
-
-    /**
      * @return ScoreWriterService
      */
     private function getScoreWriter()
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(ScoreWriterService::class);
+    }
+
+    /**
+     * @return DeliveryExecutionGetter
+     */
+    private function getDeliveryExecutionGetter()
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getServiceLocator()->get(DeliveryExecutionGetter::class);
     }
 }
