@@ -55,7 +55,7 @@ class Updater extends \common_ext_ExtensionUpdater
             AclProxy::applyRule(
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
             );
-            $this->setVersion('0.7.0');
+            $this->setVersion('1.0.0');
         }
     }
 }
