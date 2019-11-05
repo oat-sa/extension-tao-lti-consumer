@@ -45,7 +45,6 @@ use function GuzzleHttp\Psr7\stream_for;
 class ResultController extends tao_actions_CommonModule
 {
     public const XML_CONTENT_TYPE = 'application/xml';
-    public const LTI_PROVIDER_REQUIRED_ROLE = 'Instructor';
 
     /**
      * @noinspection PhpUnused
@@ -93,16 +92,10 @@ class ResultController extends tao_actions_CommonModule
     private function authorizeUser(ServerRequestInterface $request)
     {
         try {
-            $user = $this->getLisAuthAdapterFactory()->create($request)->authenticate();
+            return $this->getLisAuthAdapterFactory()->create($request)->authenticate();
         } catch (common_user_auth_AuthFailedException $authFailedException) {
             throw new tao_models_classes_UserException($authFailedException->getMessage());
         }
-
-        if (!in_array(self::LTI_PROVIDER_REQUIRED_ROLE, $user->getRoles(), true)) {
-            throw new tao_models_classes_UserException('You are not authorized to access this functionality');
-        }
-
-        return $user;
     }
 
     /**
