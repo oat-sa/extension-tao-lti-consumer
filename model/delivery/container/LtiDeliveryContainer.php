@@ -17,9 +17,12 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  *
  */
+
 namespace oat\taoLtiConsumer\model\delivery\container;
 
+use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\generis\model\OntologyAwareTrait;
+use oat\oatbox\session\SessionService;
 use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
