@@ -47,4 +47,6 @@ class Updater extends \common_ext_ExtensionUpdater
 
         $this->skip('0.1.0', '0.6.0');
     }
+
+    $this->skip('0.6.0', '0.6.1');
 }
