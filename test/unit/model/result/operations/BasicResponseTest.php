@@ -17,11 +17,21 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
-use oat\taoLtiConsumer\model\result\parser\dataExtractor\ReplaceResultDataExtractor;
-use oat\taoLtiConsumer\model\result\parser\XmlResultParser;
+namespace oat\taoLtiConsumer\test\unit\model\result\messages;
 
-return new XmlResultParser(
-    [
-        XmlResultParser::OPTION_DATA_EXTRACTORS => [new ReplaceResultDataExtractor(),],
-    ]
-);
+use oat\generis\test\TestCase;
+use oat\taoLtiConsumer\model\result\operations\BasicResponse;
+
+class BasicResponseTest extends TestCase
+{
+    public function testGenerationUniqueMessageId()
+    {
+        /** @var string[] $responses */
+        $msgIds = [];
+        for ($i = 0; $i < 20; ++$i) {
+            $r = new BasicResponse('status', 'st_descr', 'success', null, (string) $i, 'op_ref_id');
+            $this->assertArrayNotHasKey($r->getMessageIdentifier(), $msgIds);
+            $msgIds[$r->getMessageIdentifier()] = true;
+        }
+    }
+}
