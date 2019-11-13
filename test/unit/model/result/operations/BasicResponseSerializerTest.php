@@ -16,21 +16,22 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
+
 namespace oat\taoLtiConsumer\test\unit\model\result\messages;
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseSerializer;
-use oat\taoLtiConsumer\model\result\operations\replace\ResponseSerializer;
-use oat\taoLtiConsumer\model\result\operations\replace\Response;
+use oat\taoLtiConsumer\model\result\operations\BasicResponse;
+use oat\taoLtiConsumer\model\result\operations\failure\BasicResponseSerializer;
 use SimpleXMLElement;
 
-class ResponseSerializerTest extends TestCase
+class BasicResponseSerializerTest extends TestCase
 {
     public function testSerialize()
     {
-        /** @var MockObject|Response $responseMock */
-        $responseMock = $this->createMock(Response::class);
+        /** @var MockObject|BasicResponse $responseMock */
+        $responseMock = $this->createMock(BasicResponse::class);
 
         /** @var MockObject|SimpleXMLElement $response */
         $resultXmlElement = new SimpleXMLElement('<?xml version="1.0"?><rootEl/>');
@@ -39,12 +40,10 @@ class ResponseSerializerTest extends TestCase
         $lisOutcomeResponseSerializerMock = $this->createMock(LisOutcomeResponseSerializer::class);
         $lisOutcomeResponseSerializerMock->expects($this->once())
             ->method('createXmlElement')
-            ->with($responseMock, $this->callback(function (SimpleXMLElement $bodyNode) {
-                return $bodyNode->getName() === 'replaceResultResponse';
-            }))
+            ->with($responseMock, null)
             ->willReturn($resultXmlElement);
 
-        $serializer = new ResponseSerializer();
+        $serializer = new BasicResponseSerializer();
         $serializer->setServiceLocator($this->getServiceLocatorMock([
             LisOutcomeResponseSerializer::class => $lisOutcomeResponseSerializerMock
         ]));
