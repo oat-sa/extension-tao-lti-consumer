@@ -23,11 +23,11 @@ use common_exception_MethodNotAllowed;
 use Exception;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use oat\taoDeliverConnect\model\TenantLtiProvider;
 use oat\taoLti\models\classes\Lis\LisAuthAdapter;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterException;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
 use oat\taoLti\models\classes\Lis\LtiProviderUser;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\controller\ResultController;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
@@ -170,12 +170,12 @@ class ResultControllerTest extends TestCase
             ->with('request_body')
             ->willReturn($lisRequestMock);
 
-        /** @var TenantLtiProvider|MockObject $tenantLtiProviderMock */
-        $tenantLtiProviderMock = $this->createMock(TenantLtiProvider::class);
+        /** @var LtiProvider|MockObject $LtiProviderMock */
+        $LtiProviderMock = $this->createMock(LtiProvider::class);
 
         /** @var LtiProviderUser|MockObject $ltiProviderUserMock */
         $ltiProviderUserMock = $this->createMock(LtiProviderUser::class);
-        $ltiProviderUserMock->method('getLtiProvider')->willReturn($tenantLtiProviderMock);
+        $ltiProviderUserMock->method('getLtiProvider')->willReturn($LtiProviderMock);
 
         /** @var LisOutcomeResponseInterface|MockObject $lisResponseMock */
         $lisResponseMock = $this->createMock(LisOutcomeResponseInterface::class);
@@ -208,7 +208,7 @@ class ResultControllerTest extends TestCase
         $ltiResultServiceMock = $this->createMock(LtiResultService::class);
         $ltiResultServiceMock->expects($this->once())
             ->method('process')
-            ->with($lisRequestMock, $tenantLtiProviderMock)
+            ->with($lisRequestMock, $LtiProviderMock)
             ->willReturn($lisResponseMock);
 
         /** @var LisAuthAdapter|MockObject $lisAuthAdapterMock */
@@ -251,12 +251,12 @@ class ResultControllerTest extends TestCase
             ->with('request_body')
             ->willThrowException(new ParsingException('mm'));
 
-        /** @var TenantLtiProvider|MockObject $tenantLtiProviderMock */
-        $tenantLtiProviderMock = $this->createMock(TenantLtiProvider::class);
+        /** @var LtiProvider|MockObject $LtiProviderMock */
+        $LtiProviderMock = $this->createMock(LtiProvider::class);
 
         /** @var LtiProviderUser|MockObject $ltiProviderUserMock */
         $ltiProviderUserMock = $this->createMock(LtiProviderUser::class);
-        $ltiProviderUserMock->method('getLtiProvider')->willReturn($tenantLtiProviderMock);
+        $ltiProviderUserMock->method('getLtiProvider')->willReturn($LtiProviderMock);
 
         /** @var ResponseSerializerInterface|MockObject $basicResppnseSerializerMock */
         $basicResppnseSerializerMock = $this->createMock(BasicResponseSerializer::class);
