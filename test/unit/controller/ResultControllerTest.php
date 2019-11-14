@@ -170,12 +170,12 @@ class ResultControllerTest extends TestCase
             ->with('request_body')
             ->willReturn($lisRequestMock);
 
-        /** @var LtiProvider|MockObject $LtiProviderMock */
-        $LtiProviderMock = $this->createMock(LtiProvider::class);
+        /** @var LtiProvider|MockObject $ltiProviderMock */
+        $ltiProviderMock = $this->createMock(LtiProvider::class);
 
         /** @var LtiProviderUser|MockObject $ltiProviderUserMock */
         $ltiProviderUserMock = $this->createMock(LtiProviderUser::class);
-        $ltiProviderUserMock->method('getLtiProvider')->willReturn($LtiProviderMock);
+        $ltiProviderUserMock->method('getLtiProvider')->willReturn($ltiProviderMock);
 
         /** @var LisOutcomeResponseInterface|MockObject $lisResponseMock */
         $lisResponseMock = $this->createMock(LisOutcomeResponseInterface::class);
@@ -208,7 +208,7 @@ class ResultControllerTest extends TestCase
         $ltiResultServiceMock = $this->createMock(LtiResultService::class);
         $ltiResultServiceMock->expects($this->once())
             ->method('process')
-            ->with($lisRequestMock, $LtiProviderMock)
+            ->with($lisRequestMock, $ltiProviderMock)
             ->willReturn($lisResponseMock);
 
         /** @var LisAuthAdapter|MockObject $lisAuthAdapterMock */
@@ -251,12 +251,12 @@ class ResultControllerTest extends TestCase
             ->with('request_body')
             ->willThrowException(new ParsingException('mm'));
 
-        /** @var LtiProvider|MockObject $LtiProviderMock */
-        $LtiProviderMock = $this->createMock(LtiProvider::class);
+        /** @var LtiProvider|MockObject $ltiProviderMock */
+        $ltiProviderMock = $this->createMock(LtiProvider::class);
 
         /** @var LtiProviderUser|MockObject $ltiProviderUserMock */
         $ltiProviderUserMock = $this->createMock(LtiProviderUser::class);
-        $ltiProviderUserMock->method('getLtiProvider')->willReturn($LtiProviderMock);
+        $ltiProviderUserMock->method('getLtiProvider')->willReturn($ltiProviderMock);
 
         /** @var ResponseSerializerInterface|MockObject $basicResppnseSerializerMock */
         $basicResppnseSerializerMock = $this->createMock(BasicResponseSerializer::class);

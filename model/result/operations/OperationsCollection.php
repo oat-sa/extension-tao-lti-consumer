@@ -31,8 +31,6 @@ use oat\taoLtiConsumer\model\result\operations\replace\ResponseSerializer as Rep
 class OperationsCollection extends ConfigurableService
 {
     protected const OPERATION_REPLACE = 'replaceResultRequest';
-    protected const OPERATION_READ = 'readResultRequest';
-    protected const OPERATION_DELETE = 'deleteResultRequest';
 
     protected const KEY_RESPONSE_BODY_EL = 'response_body_el';
     protected const KEY_REQUEST_PARSER = 'req_parser';
