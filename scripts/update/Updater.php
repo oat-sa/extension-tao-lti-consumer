@@ -24,7 +24,9 @@ use oat\tao\model\accessControl\func\AclProxy;
 use oat\tao\model\user\TaoRoles;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoLtiConsumer\controller\ResultController;
+use oat\taoLtiConsumer\model\BaseDeliveryExecutionGetter;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 
 /**
  * taoLtiConsumer Updater.
@@ -56,6 +58,12 @@ class Updater extends \common_ext_ExtensionUpdater
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
             );
             $this->setVersion('1.0.0');
+        }
+
+        if ($this->isVersion('1.0.0')) {
+            $baseDeGetter = new BaseDeliveryExecutionGetter();
+            $this->getServiceManager()->register(DeliveryExecutionGetterInterface::SERVICE_ID, $baseDeGetter);
+            $this->setVersion('1.1.0');
         }
     }
 }

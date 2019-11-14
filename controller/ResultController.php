@@ -25,6 +25,7 @@ use common_exception_NotFound;
 use common_user_auth_AuthFailedException;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
 use oat\taoLti\models\classes\Lis\LtiProviderUser;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
@@ -73,9 +74,7 @@ class ResultController extends tao_actions_CommonModule
             $lisRequest = $requestParser->parse($payload);
             $this->response = $this->processLisRequest(
                 $lisRequest,
-                // Require delivery execution to has the same tenant id (delivery property) as
-                // LtiProvider if specified for it
-                $user->getLtiProvider()->getTenantId()
+                $user->getLtiProvider()
             );
         } catch (ParsingException $parsingException) {
             $this->response = $this->createParseErrorResponse($parsingException);
@@ -100,14 +99,14 @@ class ResultController extends tao_actions_CommonModule
 
     /**
      * @param LisOutcomeRequest $lisRequest
-     * @param string|null $tenantId Check that delivery execution belongs to specified tenant
+     * @param LtiProvider $ltiProvider
      * @return ResponseInterface
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    private function processLisRequest(LisOutcomeRequest $lisRequest, $tenantId)
+    private function processLisRequest(LisOutcomeRequest $lisRequest, LtiProvider $ltiProvider)
     {
-        $lisResponse = $this->getLtiResultService()->process($lisRequest, $tenantId);
+        $lisResponse = $this->getLtiResultService()->process($lisRequest, $ltiProvider);
 
         $serializer = $this->getOperationsCollection()->getResponseSerializer($lisResponse);
         if ($serializer === null) {

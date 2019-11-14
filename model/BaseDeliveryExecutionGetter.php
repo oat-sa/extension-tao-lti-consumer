@@ -24,75 +24,57 @@ use core_kernel_classes_Resource;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\KVDeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 
-class DeliveryExecutionGetter extends ConfigurableService
+/**
+ * This straightforward implementation doesn't perform any check on $ltiProvider
+ */
+class BaseDeliveryExecutionGetter extends ConfigurableService implements DeliveryExecutionGetterInterface
 {
     use OntologyAwareTrait;
 
     /**
-     * Duplicated to not to create direct dependency between extensions
-     * @see \oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory::PROPERTY_TENANT_ID
-     */
-    public const PROPERTY_TENANT_ID = 'http://www.tao.lu/Ontologies/taoDeliverConnect.rdf#TenantId';
-
-    /**
      * Due to multiple implementation of DE storages it's difficult to check if DE exists
-     * Ontology storage allows us to check exists() but for other storages we have to try
+     * Ontology and KV storages allow us to check exists() but for other ones we have to try
      * to read mandatory 'status' property
      * @param string $deliveryExecutionId
-     * @param string|null $tenantId if not null require delivery execution to belong to specified tenant
+     * @param LtiProvider $ltiProvider
      * @return DeliveryExecutionInterface|null
      */
-    public function get($deliveryExecutionId, $tenantId)
+    public function get($deliveryExecutionId, LtiProvider $ltiProvider)
     {
         $deliveryExecution = $this->getServiceProxy()->getDeliveryExecution($deliveryExecutionId);
-        if ($deliveryExecution instanceof core_kernel_classes_Resource) {
-            if (!$deliveryExecution->exists()) {
-                return null;
-            }
-        } else {
-            try {
-                $state = $deliveryExecution->getState();
-                if (empty($state->getUri())) {
-                    return null;
-                }
-            } catch (common_exception_NotFound $notFoundException) {
-                return null;
-            }
-        }
-
-        if ($tenantId !== null && !$this->checkHasTenantId($deliveryExecution, $tenantId)) {
-            return null;
-        }
-
-        return $deliveryExecution;
+        return $this->isExists($deliveryExecution)
+            ? $deliveryExecution
+            : null;
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
      * @param DeliveryExecutionInterface $deliveryExecution
-     * @param string $tenantId
      * @return bool
      */
-    private function checkHasTenantId(DeliveryExecutionInterface $deliveryExecution, $tenantId)
+    protected function isExists(DeliveryExecutionInterface $deliveryExecution)
     {
-        try {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $deTenantId = (string) $deliveryExecution->getDelivery()->getOnePropertyValue(
-                $this->getProperty(self::PROPERTY_TENANT_ID)
-            );
-        } catch (common_exception_NotFound $exception) {
-            return false;
+        if ($deliveryExecution instanceof core_kernel_classes_Resource ||
+            $deliveryExecution instanceof KVDeliveryExecution
+        ) {
+            return $deliveryExecution->exists();
         }
 
-        return $deTenantId === $tenantId;
+        try {
+            $state = $deliveryExecution->getState();
+            return $state !== null && !empty($state->getUri());
+        } catch (common_exception_NotFound $notFoundException) {
+            return false;
+        }
     }
 
     /**
      * @return ServiceProxy
      */
-    private function getServiceProxy()
+    protected function getServiceProxy()
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);

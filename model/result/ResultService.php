@@ -25,7 +25,8 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoLtiConsumer\model\DeliveryExecutionGetter;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
@@ -42,21 +43,22 @@ class ResultService extends ConfigurableService
 
     /**
      * @param LisOutcomeRequest $request
-     * @param string|null $tenantId if not null check that delivery execution belongs to specified tenant
+     * @param LtiProvider $ltiProvider
      * @return LisOutcomeResponseInterface
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    public function process(LisOutcomeRequest $request, $tenantId)
+    public function process(LisOutcomeRequest $request, LtiProvider $ltiProvider)
     {
         $operationRequest = $request->getOperation();
         if ($operationRequest === null) {
             return $this->getUnsupportedOperationResponse($request);
         }
 
-        $deliveryExecution = $this->getDeliveryExecutionGetter()->get($operationRequest->getSourcedId(), $tenantId);
+        $deliveryExecution = $this->getDeliveryExecutionGetter()
+            ->get($operationRequest->getSourcedId(), $ltiProvider);
         if ($deliveryExecution === null) {
-            return $this->getDeliveryNotFoundResponse($request, $operationRequest->getSourcedId(), $tenantId);
+            return $this->getDeliveryNotFoundResponse($request, $operationRequest->getSourcedId());
         }
 
         if ($operationRequest instanceof ReplaceOperationRequest) {
@@ -85,19 +87,14 @@ class ResultService extends ConfigurableService
     /**
      * @param LisOutcomeRequest $request
      * @param string $sourcedId
-     * @param string|null $tenantId
      * @return FailureResponse
      */
-    protected function getDeliveryNotFoundResponse(LisOutcomeRequest $request, $sourcedId, $tenantId)
+    protected function getDeliveryNotFoundResponse(LisOutcomeRequest $request, $sourcedId)
     {
-        $statusDescription = $tenantId !== null
-            ? "Delivery execution '$sourcedId' for tenant id '$tenantId' not found"
-            : "Delivery execution '$sourcedId' not found";
-
         return new FailureResponse(
             $request->getOperationName(),
             BasicResponse::STATUS_NOT_FOUND,
-            $statusDescription,
+            "Delivery execution '$sourcedId' not found",
             BasicResponse::CODE_MAJOR_FAILURE,
             null,
             $request->getMessageIdentifier(),
@@ -147,11 +144,11 @@ class ResultService extends ConfigurableService
     }
 
     /**
-     * @return DeliveryExecutionGetter
+     * @return DeliveryExecutionGetterInterface
      */
     private function getDeliveryExecutionGetter()
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->getServiceLocator()->get(DeliveryExecutionGetter::class);
+        return $this->getServiceLocator()->get(DeliveryExecutionGetterInterface::SERVICE_ID);
     }
 }
