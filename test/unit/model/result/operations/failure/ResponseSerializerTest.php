@@ -2,8 +2,9 @@
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
+use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseSerializer;
 use oat\taoLtiConsumer\model\result\operations\failure\Response;
-use oat\taoLtiConsumer\model\result\operations\failure\OperationResponseSerializer;
+use oat\taoLtiConsumer\model\result\operations\failure\ResponseSerializer;
 use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
 
 /**
@@ -28,56 +29,34 @@ class ResponseSerializerTest extends TestCase
 {
     public function testSerialize()
     {
-        /** @var MockObject|Response $response */
-        $response = $this->createMock(Response::class);
-        $response->method('getOperationName')->willReturn('replaceResultRequest');
-        $response->method('getMessageIdentifier')->willReturn('msg_id');
-        $response->method('getCodeMajor')->willReturn('failure');
-        $response->method('getStatusDescription')->willReturn('with_special_char_<a>"');
-        $response->method('getMessageRefIdentifier')->willReturn('m_ref_id');
-        $response->method('getOperationRefIdentifier')->willReturn('replaceResultRequest');
+        /** @var MockObject|\oat\taoLtiConsumer\model\result\operations\replace\Response $responseMock */
+        $responseMock = $this->createMock(Response::class);
+        $responseMock->method('getOperationName')->willReturn('operationRequest');
 
-        $operationCollection = $this->createMock(OperationsCollection::class);
-        $operationCollection->expects($this->once())
-            ->method('getBodyResponseElementName')
-            ->with('replaceResultRequest')
-            ->willReturn('replaceResultResponse');
+        /** @var MockObject|SimpleXMLElement $response */
+        $resultXmlElement = new SimpleXMLElement('<?xml version="1.0"?><rootEl/>');
 
-        $serializer = new OperationResponseSerializer();
+        /** @var LisOutcomeResponseSerializer|MockObject $lisOutcomeResponseSerializerMock */
+        $lisOutcomeResponseSerializerMock = $this->createMock(LisOutcomeResponseSerializer::class);
+        $lisOutcomeResponseSerializerMock->expects($this->once())
+            ->method('createXmlElement')
+            ->with($responseMock, $this->callback(function (SimpleXMLElement $bodyNode) {
+                return $bodyNode->getName() === 'operationResponse';
+            }))
+            ->willReturn($resultXmlElement);
+
+        $operationsCollectionMock = $this->createMock(OperationsCollection::class);
+        $operationsCollectionMock->method('getBodyResponseElementName')
+            ->with('operationRequest')
+            ->willReturn('operationResponse');
+
+        $serializer = new ResponseSerializer();
         $serializer->setServiceLocator($this->getServiceLocatorMock([
-            OperationsCollection::class => $operationCollection
+            LisOutcomeResponseSerializer::class => $lisOutcomeResponseSerializerMock,
+            OperationsCollection::class => $operationsCollectionMock
         ]));
-        $xml = $serializer->toXml($response);
 
-        $dom = new DOMDocument();
-        $this->assertTrue($dom->loadXML($xml));
-        $this->assertTrue($dom->schemaValidate(
-            __DIR__ . '../../../../../../../doc/ltiXsd/OMSv1p0_LTIv1p1Profile_SyncXSD_v1p0.xsd'
-        ));
-
-        $xpath = new DOMXPath($dom);
-        $xpath->registerNamespace('ns', 'http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0');
-        $headerInfoPath = '/ns:imsx_POXEnvelopeResponse/ns:imsx_POXHeader/ns:imsx_POXResponseHeaderInfo';
-        $this->assertEquals('msg_id', $xpath->evaluate($headerInfoPath . '/ns:imsx_messageIdentifier')[0]->nodeValue);
-        $this->assertEquals(
-            'success',
-            $xpath->evaluate($headerInfoPath . '/ns:imsx_statusInfo/ns:imsx_codeMajor')[0]->nodeValue
-        );
-        $this->assertEquals(
-            'm_ref_id',
-            $xpath->evaluate($headerInfoPath . '/ns:imsx_statusInfo/ns:imsx_messageRefIdentifier')[0]->nodeValue
-        );
-        $this->assertEquals(
-            'replaceResultRequest',
-            $xpath->evaluate($headerInfoPath . '/ns:imsx_statusInfo/ns:imsx_operationRefIdentifier')[0]->nodeValue
-        );
-        $this->assertEquals(
-            'with_special_char_<a>"',
-            $xpath->evaluate($headerInfoPath . '/ns:imsx_statusInfo/ns:imsx_description')[0]->nodeValue
-        );
-        $this->assertEquals(
-            'replaceResultRequest',
-            $xpath->evaluate($headerInfoPath . '/ns:imsx_POXEnvelopeResponse/ns:imsx_statusInfo/ns:imsx_operationRefIdentifier')[0]->nodeValue
-        );
+        $xml = $serializer->toXml($responseMock);
+        $this->assertSame('<?xml version="1.0"?><rootEl/>', trim(str_replace(PHP_EOL, '', $xml)));
     }
 }

@@ -26,7 +26,7 @@ use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
 use oat\taoLtiConsumer\model\result\operations\ResponseSerializerInterface;
 use SimpleXMLElement;
 
-class OperationResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
+class ResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
 {
     /**
      * @param LisOutcomeResponseInterface|Response $response

@@ -23,6 +23,7 @@ use common_exception_NotFound;
 use LogicException;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\event\EventManager;
+use oat\oatbox\log\LoggerAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
@@ -38,6 +39,7 @@ use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceRespon
 class ResultService extends ConfigurableService
 {
     use OntologyAwareTrait;
+    use LoggerAwareTrait;
 
     public const SERVICE_ID = 'taoLtiConsumer/resultService';
 
@@ -52,13 +54,20 @@ class ResultService extends ConfigurableService
     {
         $operationRequest = $request->getOperation();
         if ($operationRequest === null) {
+            $this->logWarning('LIS Request with unsupported operation: ' . $request->getOperationName());
             return $this->getUnsupportedOperationResponse($request);
         }
 
         $deliveryExecution = $this->getDeliveryExecutionGetter()
             ->get($operationRequest->getSourcedId(), $ltiProvider);
         if ($deliveryExecution === null) {
-            return $this->getDeliveryNotFoundResponse($request, $operationRequest->getSourcedId());
+            $this->logWarning(sprintf(
+                "Delivery execution '%s' not found during '%s' operation processing for ltiProvider with key '%s': ",
+                $operationRequest->getSourcedId(),
+                $request->getOperationName(),
+                $ltiProvider->getKey()
+            ));
+            return $this->getDeliveryExecutionNotFoundResponse($request, $operationRequest->getSourcedId());
         }
 
         if ($operationRequest instanceof ReplaceOperationRequest) {
@@ -89,7 +98,7 @@ class ResultService extends ConfigurableService
      * @param string $sourcedId
      * @return FailureResponse
      */
-    protected function getDeliveryNotFoundResponse(LisOutcomeRequest $request, $sourcedId)
+    protected function getDeliveryExecutionNotFoundResponse(LisOutcomeRequest $request, $sourcedId)
     {
         return new FailureResponse(
             $request->getOperationName(),
@@ -123,6 +132,10 @@ class ResultService extends ConfigurableService
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
         /** @noinspection PhpUnhandledExceptionInspection */
         $eventManager->trigger(new ResultReadyEvent($deliveryExecution->getIdentifier()));
+
+        $this->logInfo(sprintf("Score '%s' added for delivery execution '%s'",
+            $operationRequest->getSourcedId(), $operationRequest->getScore())
+        );
 
         return new ReplaceResponse(
             ReplaceResponse::STATUS_SUCCESS,

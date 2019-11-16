@@ -28,7 +28,7 @@ use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
 use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
 use oat\taoLtiConsumer\model\result\operations\replace\OperationRequestParser as ReplaceOperationRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ResponseSerializer as ReplaceResponseSerializer;
-use oat\taoLtiConsumer\model\result\operations\failure\OperationResponseSerializer as FailureResponseSerializer;
+use oat\taoLtiConsumer\model\result\operations\failure\ResponseSerializer as FailureResponseSerializer;
 use oat\taoLtiConsumer\model\result\operations\ResponseSerializerInterface;
 
 class OperationsCollectionTest extends TestCase
