@@ -7,7 +7,9 @@ use common_exception_NotFound;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\oatbox\event\EventManager;
+use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\StateServiceInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
@@ -15,9 +17,9 @@ use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
 use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
 use oat\taoLtiConsumer\model\result\operations\replace\OperationRequest as ReplaceOperationRequest;
+use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
 use oat\taoLtiConsumer\model\result\ResultService;
 use oat\taoLtiConsumer\model\result\ScoreWriterService;
-use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -63,7 +65,7 @@ class ResultServiceTest extends TestCase
         $ltiProviderMock = $this->createMock(LtiProvider::class);
 
         /** @var DeliveryExecutionInterface|MockObject $deliveryExecutionMock */
-        $deliveryExecutionMock = $this->createMock(DeliveryExecutionInterface::class);
+        $deliveryExecutionMock = $this->createMock(DeliveryExecution::class);
         $deliveryExecutionMock->method('getIdentifier')->willReturn('de_id');
 
         /** @var ScoreWriterService|MockObject $scoreWritterMock */
@@ -91,9 +93,13 @@ class ResultServiceTest extends TestCase
         $requestMock->method('getOperationName')->willReturn('replaceResultRequest');
         $requestMock->method('getMessageIdentifier')->willReturn('msg_identifier');
 
+        $stateServiceMock = $this->createMock(StateServiceInterface::class);
+        $stateServiceMock->method('finish')->willReturn(true);
+
         $resultService = new ResultService();
         $resultService->setServiceLocator($this->getServiceLocatorMock([
             ScoreWriterService::class => $scoreWritterMock,
+            StateServiceInterface::SERVICE_ID => $stateServiceMock,
             DeliveryExecutionGetterInterface::SERVICE_ID => $deGetterMock,
             EventManager::SERVICE_ID => $eventManagerMock
         ]));
