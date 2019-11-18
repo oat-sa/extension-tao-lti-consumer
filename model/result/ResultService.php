@@ -26,6 +26,7 @@ use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\StateServiceInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
@@ -128,6 +129,8 @@ class ResultService extends ConfigurableService
         // because variables considered as equal only if their's epoch (microtime()) are the same
         $this->getScoreWriter()->store($deliveryExecution, $operationRequest->getScore());
 
+        $this->finishExecution($deliveryExecution);
+
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -163,5 +166,16 @@ class ResultService extends ConfigurableService
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(DeliveryExecutionGetterInterface::SERVICE_ID);
+    }
+
+    /**
+     * @param DeliveryExecutionInterface $deliveryExecution
+     * @return boolean
+     */
+    protected function finishExecution(DeliveryExecutionInterface $deliveryExecution)
+    {
+        /** @var StateServiceInterface $statusService */
+        $statusService = $this->getServiceLocator()->get(StateServiceInterface::SERVICE_ID);
+        return $statusService->finish($deliveryExecution);
     }
 }
