@@ -51,9 +51,10 @@ class Updater extends \common_ext_ExtensionUpdater
             $registry->registerContainerType('lti', new LtiDeliveryContainer());
             $this->setVersion('0.1.0');
         }
-        $this->skip('0.1.0', '0.6.0');
 
-        if ($this->isVersion('0.6.0')) {
+        $this->skip('0.1.0', '0.6.2');
+
+        if ($this->isVersion('0.6.2')) {
             AclProxy::applyRule(
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
             );
