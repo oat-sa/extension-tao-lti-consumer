@@ -20,7 +20,6 @@
 namespace oat\taoLtiConsumer\test\unit\model;
 
 use core_kernel_classes_Resource;
-use oat\generis\model\OntologyAwareTrait;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\taoDelivery\model\execution\KVDeliveryExecution;
@@ -32,8 +31,6 @@ use oat\taoLtiConsumer\model\BaseDeliveryExecutionGetter;
 
 class BaseDeliveryExecutionGetterTest extends TestCase
 {
-    use OntologyAwareTrait;
-
     public function testGetExistingRdf()
     {
         $deliveryExecutionMock = $this->createMock(OntologyDeliveryExecution::class);
