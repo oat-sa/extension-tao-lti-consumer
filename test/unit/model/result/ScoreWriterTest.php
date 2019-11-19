@@ -73,11 +73,11 @@ class ScoreWriterTest extends TestCase
         $deliveryExecutionMock->method('getIdentifier')->willReturn('de_id');
         $deliveryExecutionMock->method('getDelivery')->willReturn($deliveryMock);
 
-        $scoreWritter = new ScoreWriterService();
-        $scoreWritter->setServiceLocator($this->getServiceLocatorMock([
+        $scoreWriter = new ScoreWriterService();
+        $scoreWriter->setServiceLocator($this->getServiceLocatorMock([
             ResultServerService::SERVICE_ID => $resultServiceMock
         ]));
-        $result = $scoreWritter->store($deliveryExecutionMock, '0.45');
+        $result = $scoreWriter->store($deliveryExecutionMock, '0.45');
         $this->assertTrue($result);
     }
 
@@ -109,12 +109,12 @@ class ScoreWriterTest extends TestCase
         $deliveryExecutionMock->method('getIdentifier')->willReturn('de_id');
         $deliveryExecutionMock->method('getDelivery')->willReturn($deliveryMock);
 
-        $scoreWritter = new ScoreWriterService();
-        $scoreWritter->setServiceLocator($this->getServiceLocatorMock([
+        $scoreWriter = new ScoreWriterService();
+        $scoreWriter->setServiceLocator($this->getServiceLocatorMock([
             ResultServerService::SERVICE_ID => $resultServiceMock
         ]));
 
-        $result = $scoreWritter->store($deliveryExecutionMock, '0.45');
+        $result = $scoreWriter->store($deliveryExecutionMock, '0.45');
         $this->assertFalse($result);
     }
 }
