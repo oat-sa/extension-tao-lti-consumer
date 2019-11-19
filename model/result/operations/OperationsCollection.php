@@ -89,7 +89,7 @@ class OperationsCollection extends ConfigurableService
     {
         return [
             self::OPERATION_REPLACE => [
-                self::KEY_RESPONSE_BODY_EL => ReplaceResponseSerializer::BODY_RESPONSE_EL_NAME,
+                self::KEY_RESPONSE_BODY_EL => ReplaceResponseSerializer::BODY_RESPONSE_ELEMENT_NAME,
                 self::KEY_REQUEST_PARSER => ReplaceOperationRequestParser::class,
                 self::KEY_RESPONSE_CLASS => ReplaceResponse::class,
                 self::KEY_RESPONSE_SERIALIZER => ReplaceResponseSerializer::class

@@ -27,7 +27,7 @@ use SimpleXMLElement;
 
 class ResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
 {
-    public const BODY_RESPONSE_EL_NAME = 'replaceResultResponse';
+    public const BODY_RESPONSE_ELEMENT_NAME = 'replaceResultResponse';
 
     /**
      * @param LisOutcomeResponseInterface|Response $response
@@ -35,7 +35,7 @@ class ResponseSerializer extends ConfigurableService implements ResponseSerializ
      */
     public function toXml(LisOutcomeResponseInterface $response)
     {
-        $bodyResponseNode = new SimpleXMLElement(sprintf('<%s />', self::BODY_RESPONSE_EL_NAME));
+        $bodyResponseNode = new SimpleXMLElement(sprintf('<%s />', self::BODY_RESPONSE_ELEMENT_NAME));
 
         return $this
             ->getLisOutcomeResponseSerializer()

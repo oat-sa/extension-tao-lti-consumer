@@ -32,7 +32,7 @@ use taoResultServer_models_classes_OutcomeVariable;
 use taoResultServer_models_classes_Variable;
 use taoResultServer_models_classes_WritableResultStorage;
 
-class ScoreWritterTest extends TestCase
+class ScoreWriterTest extends TestCase
 {
     /**
      * @throws common_exception_Error

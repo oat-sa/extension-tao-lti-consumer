@@ -93,7 +93,7 @@ class OperationsCollectionTest extends TestCase
     {
         $collection = new OperationsCollection();
         $this->assertSame(
-            ReplaceResponseSerializer::BODY_RESPONSE_EL_NAME,
+            ReplaceResponseSerializer::BODY_RESPONSE_ELEMENT_NAME,
             $collection->getBodyResponseElementName('replaceResultRequest')
         );
         $this->assertNull($collection->getBodyResponseElementName('readResultRequest'));

@@ -177,7 +177,8 @@ class ResultController extends tao_actions_CommonModule
 
     /**
      * @param int $statusCode
-     * @param string $xmlStatus one of the LisOutcomeResponseInterface::STATUS_* consts
+     * @param string $xmlStatus one of the LisOutcomeResponseInterface::STATUS_* constants
+     * @see LisOutcomeResponseInterface
      * @param string $statusDescription
      * @return ResponseInterface
      */

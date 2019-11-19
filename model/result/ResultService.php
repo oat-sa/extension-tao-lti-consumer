@@ -55,7 +55,10 @@ class ResultService extends ConfigurableService
     {
         $operationRequest = $request->getOperation();
         if ($operationRequest === null) {
-            $this->logWarning('LIS Request with unsupported operation: ' . $request->getOperationName());
+            $this->logWarning(sprintf(
+                'The requested "%s" operation is not currently supported in our platform',
+                $request->getOperationName()
+            ));
             return $this->getUnsupportedOperationResponse($request);
         }
 
