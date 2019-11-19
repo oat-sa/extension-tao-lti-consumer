@@ -29,7 +29,7 @@ use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoDelivery\model\execution\StateServiceInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
-use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
+use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
@@ -134,7 +134,7 @@ class ResultService extends ConfigurableService
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
         /** @noinspection PhpUnhandledExceptionInspection */
-        $eventManager->trigger(new ResultReadyEvent($deliveryExecution->getIdentifier()));
+        $eventManager->trigger(new LisScoreReceivedEvent($deliveryExecution->getIdentifier()));
 
         $this->logInfo(sprintf("Score '%s' added for delivery execution '%s'",
             $operationRequest->getSourcedId(), $operationRequest->getScore())

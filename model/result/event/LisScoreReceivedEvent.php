@@ -20,7 +20,7 @@ namespace oat\taoLtiConsumer\model\result\event;
 
 use oat\oatbox\event\Event;
 
-class ResultReadyEvent implements Event
+class LisScoreReceivedEvent implements Event
 {
     public const EVENT_NAME = self::class;
 

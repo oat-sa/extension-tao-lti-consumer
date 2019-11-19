@@ -12,7 +12,7 @@ use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoDelivery\model\execution\StateServiceInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
-use oat\taoLtiConsumer\model\result\event\ResultReadyEvent;
+use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
 use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
@@ -57,7 +57,7 @@ class ResultServiceTest extends TestCase
         $eventManagerMock->expects($this->once())
             ->method('trigger')
             ->with($this->callback(function ($event) {
-                return $event instanceof ResultReadyEvent &&
+                return $event instanceof LisScoreReceivedEvent &&
                     $event->getDeliveryExecutionId() === 'de_id';
             }));
 
