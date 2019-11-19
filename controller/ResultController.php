@@ -124,12 +124,17 @@ class ResultController extends tao_actions_CommonModule
     private function mapLisResponseStatusToHttp($lisResponseStatus)
     {
         switch ($lisResponseStatus) {
-            case LisOutcomeResponseInterface::STATUS_SUCCESS: return StatusCode::HTTP_CREATED;
-            case LisOutcomeResponseInterface::STATUS_INVALID_REQUEST: return StatusCode::HTTP_BAD_REQUEST;
-            case LisOutcomeResponseInterface::STATUS_NOT_FOUND: return StatusCode::HTTP_NOT_FOUND;
-            case LisOutcomeResponseInterface::STATUS_UNSUPPORTED: return StatusCode::HTTP_NOT_IMPLEMENTED;
+            case LisOutcomeResponseInterface::STATUS_SUCCESS:
+                return StatusCode::HTTP_CREATED;
+            case LisOutcomeResponseInterface::STATUS_INVALID_REQUEST:
+                return StatusCode::HTTP_BAD_REQUEST;
+            case LisOutcomeResponseInterface::STATUS_NOT_FOUND:
+                return StatusCode::HTTP_NOT_FOUND;
+            case LisOutcomeResponseInterface::STATUS_UNSUPPORTED:
+                return StatusCode::HTTP_NOT_IMPLEMENTED;
             // including LisOutcomeResponseInterface::STATUS_INTERNAL_ERROR
-            default: return StatusCode::HTTP_INTERNAL_SERVER_ERROR;
+            default:
+                return StatusCode::HTTP_INTERNAL_SERVER_ERROR;
         }
     }
 
