@@ -21,6 +21,7 @@ namespace oat\taoLtiConsumer\model\result;
 use common_exception_Error;
 use common_exception_InvalidArgumentType;
 use common_exception_NotFound;
+use oat\oatbox\log\LoggerAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoResultServer\models\classes\ResultServerService;
@@ -29,6 +30,10 @@ use taoResultServer_models_classes_OutcomeVariable as ResultServerOutcomeVariabl
 
 class ScoreWriterService extends ConfigurableService
 {
+    const SCORE_VAR_NAME = 'SCORE';
+
+    use LoggerAwareTrait;
+
     /**
      * Store the score result into a delivery execution
      *
@@ -53,6 +58,11 @@ class ScoreWriterService extends ConfigurableService
             );
             return true;
         } catch (DuplicateVariableException $exception) {
+            $this->logWarning(sprintf(
+                'Attempt to add duplicated "%s" variable to the delivery execution "%s" results',
+                self::SCORE_VAR_NAME,
+                $deliveryExecutionId
+            ));
             return false;
         }
     }
@@ -74,7 +84,7 @@ class ScoreWriterService extends ConfigurableService
     private function createScoreVariable($score)
     {
         $scoreVariable = new ResultServerOutcomeVariable();
-        $scoreVariable->setIdentifier('SCORE');
+        $scoreVariable->setIdentifier(self::SCORE_VAR_NAME);
         $scoreVariable->setCardinality(ResultServerOutcomeVariable::CARDINALITY_SINGLE);
         $scoreVariable->setBaseType('float');
         $scoreVariable->setEpoch(microtime());

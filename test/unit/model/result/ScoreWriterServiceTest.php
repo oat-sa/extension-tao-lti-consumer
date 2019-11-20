@@ -28,11 +28,12 @@ use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoLtiConsumer\model\result\ScoreWriterService;
 use oat\taoResultServer\models\classes\ResultServerService;
 use oat\taoResultServer\models\Exceptions\DuplicateVariableException;
+use Psr\Log\LoggerInterface;
 use taoResultServer_models_classes_OutcomeVariable;
 use taoResultServer_models_classes_Variable;
 use taoResultServer_models_classes_WritableResultStorage;
 
-class ScoreWriterTest extends TestCase
+class ScoreWriterServiceTest extends TestCase
 {
     /**
      * @throws common_exception_Error
@@ -109,10 +110,19 @@ class ScoreWriterTest extends TestCase
         $deliveryExecutionMock->method('getIdentifier')->willReturn('de_id');
         $deliveryExecutionMock->method('getDelivery')->willReturn($deliveryMock);
 
+        /** @var LoggerInterface|MockObject $loggerMock */
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $loggerMock->expects($this->once())
+            ->method('warning')
+            ->with($this->callback(static function ($message) {
+                return strpos($message, 'de_id') !== false;
+            }));
+
         $scoreWriter = new ScoreWriterService();
         $scoreWriter->setServiceLocator($this->getServiceLocatorMock([
             ResultServerService::SERVICE_ID => $resultServiceMock
         ]));
+        $scoreWriter->setLogger($loggerMock);
 
         $result = $scoreWriter->store($deliveryExecutionMock, '0.45');
         $this->assertFalse($result);
