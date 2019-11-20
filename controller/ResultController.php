@@ -160,6 +160,7 @@ class ResultController extends tao_actions_CommonModule
     {
         if ($throwable !== null) {
             $this->logError('Internal error during lti outcome request. ' . $throwable->getMessage());
+            $this->logError($throwable->getTraceAsString());
         }
         return $this->getXmlFailureResponse(
             StatusCode::HTTP_INTERNAL_SERVER_ERROR,

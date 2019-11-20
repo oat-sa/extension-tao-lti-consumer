@@ -139,7 +139,7 @@ class ResultControllerTest extends TestCase
 
         /** @var LoggerInterface|MockObject $loggerMock */
         $loggerMock = $this->createMock(LoggerInterface::class);
-        $loggerMock->expects($this->once())->method('error');
+        $loggerMock->expects($this->atLeastOnce())->method('error');
 
         $controller = new ResultController();
         $controller->setServiceLocator($this->getServiceLocatorMock([
