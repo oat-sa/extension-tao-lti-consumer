@@ -20,8 +20,27 @@
 namespace oat\taoLtiConsumer\model\result;
 
 use Exception;
+use Throwable;
 
 class ParsingException extends Exception
 {
+    /**
+     * Contains message id from XML request if parsing failed after it had been extracted
+     * @var string|null
+     */
+    private $xmlMessageId;
 
+    public function __construct($message = '', $code = 0, $xmlMessageId = null, Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+        $this->xmlMessageId = $xmlMessageId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getXmlMessageId()
+    {
+        return $this->xmlMessageId;
+    }
 }

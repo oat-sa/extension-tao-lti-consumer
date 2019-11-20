@@ -43,12 +43,21 @@ class LisOutcomeRequestParser extends ConfigurableService
     {
         $xpath = $this->getXpath($xml);
         $messageIdentifier = $this->getMessageIdentifier($xpath);
-        $operationNode = $this->getOperationNode($xpath);
-        $operationName = $operationNode->nodeName;
-        $operationParser = $this->getOperationsCollection()->getOperationRequestParser($operationName);
-        $operationRequest = $operationParser
-            ? $operationParser->parse($xpath, self::XML_NAMESPACE_PREFIX, $operationNode)
-            : null;
+        try {
+            $operationNode = $this->getOperationNode($xpath);
+            $operationName = $operationNode->nodeName;
+            $operationParser = $this->getOperationsCollection()->getOperationRequestParser($operationName);
+            $operationRequest = $operationParser
+                ? $operationParser->parse($xpath, self::XML_NAMESPACE_PREFIX, $operationNode)
+                : null;
+        } catch (ParsingException $parsingException) {
+            throw new ParsingException(
+                $parsingException->getMessage(),
+                $parsingException->getCode(),
+                $messageIdentifier,
+                $parsingException
+            );
+        }
 
         return new LisOutcomeRequest($messageIdentifier, $operationName, $operationRequest);
     }

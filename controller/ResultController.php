@@ -147,7 +147,8 @@ class ResultController extends tao_actions_CommonModule
         return $this->getXmlFailureResponse(
             StatusCode::HTTP_BAD_REQUEST,
             LisOutcomeResponseInterface::STATUS_INVALID_REQUEST,
-            'Invalid input xml: ' . $parsingException->getMessage()
+            'Invalid input xml: ' . $parsingException->getMessage(),
+            $parsingException->getXmlMessageId()
             );
     }
 
@@ -183,17 +184,20 @@ class ResultController extends tao_actions_CommonModule
     /**
      * @param int $statusCode
      * @param string $xmlStatus one of the LisOutcomeResponseInterface::STATUS_* constants
-     * @see LisOutcomeResponseInterface
      * @param string $statusDescription
+     * @param string|null $messageRefIdentifier
      * @return ResponseInterface
+     * @see LisOutcomeResponseInterface
      */
-    private function getXmlFailureResponse($statusCode, $xmlStatus, $statusDescription)
+    private function getXmlFailureResponse($statusCode, $xmlStatus, $statusDescription, $messageRefIdentifier = null)
     {
         $serializer = $this->getBasicResponseSerializer();
         $xml = $serializer->toXml(new BasicResponse(
             $xmlStatus,
             $statusDescription,
-            LisOutcomeResponseInterface::CODE_MAJOR_FAILURE
+            LisOutcomeResponseInterface::CODE_MAJOR_FAILURE,
+            null,
+            $messageRefIdentifier
         ));
         return $this->getXmlResponse($statusCode, $xml);
     }
