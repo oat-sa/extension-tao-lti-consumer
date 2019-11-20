@@ -140,7 +140,7 @@ class ResultService extends ConfigurableService
         $eventManager->trigger(new LisScoreReceivedEvent($deliveryExecution->getIdentifier()));
 
         $this->logInfo(sprintf("Score '%s' added for delivery execution '%s'",
-            $operationRequest->getSourcedId(), $operationRequest->getScore())
+            $operationRequest->getScore(), $operationRequest->getSourcedId())
         );
 
         return new ReplaceResponse(
