@@ -17,6 +17,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+use oat\tao\model\user\TaoRoles;
+use oat\taoLtiConsumer\controller\ResultController;
 use oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer;
 use oat\taoLtiConsumer\scripts\update\Updater;
 
@@ -25,14 +27,16 @@ return [
     'label' => 'TAO LTI Consumer',
     'description' => 'TAO LTI Consumer extension',
     'license' => 'GPL-2.0',
-    'version' => '0.6.2',
+    'version' => '1.1.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
-        'taoLti' => '>=10.4.0',
+        'tao' => '>=38.13.0',
+        'taoLti' => '>=11.0.0',
         'taoDeliveryRdf' => '>=8.3.3',
     ],
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
+        ['grant', TaoRoles::ANONYMOUS, ResultController::class],
     ],
     'install' => [
         'rdf' => [],
