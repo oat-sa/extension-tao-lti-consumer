@@ -16,12 +16,17 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
-
 namespace oat\taoLtiConsumer\scripts\update;
 
-
+use common_Exception;
+use oat\tao\model\accessControl\func\AccessRule;
+use oat\tao\model\accessControl\func\AclProxy;
+use oat\tao\model\user\TaoRoles;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
+use oat\taoLtiConsumer\controller\ResultController;
+use oat\taoLtiConsumer\model\BaseDeliveryExecutionGetter;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 
 /**
  * taoLtiConsumer Updater.
@@ -32,7 +37,9 @@ class Updater extends \common_ext_ExtensionUpdater
      * Perform update from $currentVersion to $versionUpdatedTo.
      *
      * @param string $initialVersion
+     *
      * @return void
+     * @throws common_Exception
      */
     public function update($initialVersion)
     {
@@ -45,6 +52,19 @@ class Updater extends \common_ext_ExtensionUpdater
             $this->setVersion('0.1.0');
         }
 
-        $this->skip('0.1.0', '0.7.0');
+        $this->skip('0.1.0', '0.6.2');
+
+        if ($this->isVersion('0.6.2')) {
+            AclProxy::applyRule(
+                new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
+            );
+
+            $baseDeGetter = new BaseDeliveryExecutionGetter();
+            $this->getServiceManager()->register(DeliveryExecutionGetterInterface::SERVICE_ID, $baseDeGetter);
+            $this->setVersion('1.1.0');
+        }
+
+      $this->skip('1.1.0', '1.2.0');
+
     }
 }

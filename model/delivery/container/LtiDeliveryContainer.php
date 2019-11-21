@@ -87,6 +87,14 @@ class LtiDeliveryContainer extends AbstractContainer
     }
 
     /**
+     * @return UrlHelper
+     */
+    protected function getUrlHelper()
+    {
+        return $this->getServiceLocator()->get(UrlHelper::class);
+    }
+
+    /**
      * @param string $id
      *
      * @return LtiProvider
@@ -95,6 +103,7 @@ class LtiDeliveryContainer extends AbstractContainer
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
+
 
     /**
      * @return UrlHelper
