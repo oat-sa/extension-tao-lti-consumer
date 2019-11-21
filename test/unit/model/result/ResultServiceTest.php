@@ -9,7 +9,6 @@ use oat\generis\test\TestCase;
 use oat\oatbox\event\EventManager;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoDelivery\model\execution\StateServiceInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
@@ -93,13 +92,9 @@ class ResultServiceTest extends TestCase
         $requestMock->method('getOperationName')->willReturn('replaceResultRequest');
         $requestMock->method('getMessageIdentifier')->willReturn('msg_identifier');
 
-        $stateServiceMock = $this->createMock(StateServiceInterface::class);
-        $stateServiceMock->method('finish')->willReturn(true);
-
         $resultService = new ResultService();
         $resultService->setServiceLocator($this->getServiceLocatorMock([
             ScoreWriterService::class => $scoreWritterMock,
-            StateServiceInterface::SERVICE_ID => $stateServiceMock,
             DeliveryExecutionGetterInterface::SERVICE_ID => $deGetterMock,
             EventManager::SERVICE_ID => $eventManagerMock
         ]));
