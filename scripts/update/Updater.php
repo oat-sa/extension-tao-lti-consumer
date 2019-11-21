@@ -58,10 +58,7 @@ class Updater extends \common_ext_ExtensionUpdater
             AclProxy::applyRule(
                 new AccessRule(AccessRule::GRANT, TaoRoles::ANONYMOUS, ResultController::class)
             );
-            $this->setVersion('1.0.0');
-        }
 
-        if ($this->isVersion('1.0.0')) {
             $baseDeGetter = new BaseDeliveryExecutionGetter();
             $this->getServiceManager()->register(DeliveryExecutionGetterInterface::SERVICE_ID, $baseDeGetter);
             $this->setVersion('1.1.0');
