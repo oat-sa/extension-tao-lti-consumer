@@ -25,6 +25,8 @@
     "tao-extension-name" : "taoLtiConsumer"
   },
   "require": {
+    "ext-dom": "*",
+    "ext-simplexml": "*",
     "oat-sa/oatbox-extension-installer": "~1.1||dev-master"
   },
   "autoload" : {

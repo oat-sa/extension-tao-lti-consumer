@@ -80,7 +80,7 @@ class LtiWizardForm extends WizardForm
 
         $ltiPathElt = FormFactory::getElement('ltiPathElt', 'TextArea');
         $ltiPathElt->addValidator(FormFactory::getValidator('NotEmpty'));
-        $ltiPathElt->setDescription(__('Provide the LTI URL of A LTI compatible test'));
+        $ltiPathElt->setDescription(__('Provide the URL for the LTI compatible test'));
         $this->form->addElement($ltiPathElt);
     }
 }
