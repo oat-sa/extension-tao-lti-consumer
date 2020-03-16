@@ -170,7 +170,8 @@ class LtiDeliveryCreationTaskTest extends TestCase
      */
     public function testInvokeWithMissingParametersThrowsException($params, $missing)
     {
-        $this->setExpectedException(MissingParameterException::class, 'Expected parameter ' . $missing . ' passed to ' . LtiDeliveryCreationTask::class);
+        $this->expectException(MissingParameterException::class);
+        $this->expectExceptionMessage('Expected parameter ' . $missing . ' passed to ' . LtiDeliveryCreationTask::class);
         $subject = new LtiDeliveryCreationTask();
         $subject($params);
     }
