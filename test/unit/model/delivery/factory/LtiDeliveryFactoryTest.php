@@ -57,14 +57,14 @@ class LtiDeliveryFactoryTest extends TestCase
     /** @var Mock */
     protected $timeMock;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->timeMock = $this->MockFunction('oat\taoLtiConsumer\model\delivery\factory', "time", self::FIXED_TIME);
         $this->timeMock->disableAll();
         $this->timeMock->enable();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->timeMock->disableAll();
     }

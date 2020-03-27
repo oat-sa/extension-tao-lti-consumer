@@ -26,6 +26,7 @@ use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\StateServiceInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
 use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
@@ -130,6 +131,10 @@ class ResultService extends ConfigurableService
         // don't check return value, ignore the case when exact the same score variable exists
         // because variables considered as equal only if their's epoch (microtime()) are the same
         $this->getScoreWriter()->store($deliveryExecution, $operationRequest->getScore());
+
+        /** @var  StateServiceInterface $stateService */
+        $stateService = $this->getServiceLocator()->get(StateServiceInterface::SERVICE_ID);
+        $stateService->finish($deliveryExecution);
 
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
