@@ -46,6 +46,8 @@ class Lti1p3LaunchFactory extends ConfigurableService implements LtiLaunchFactor
         $ltiProvider = $this->getLtiProvider($params->getProviderId());
 
         // @TODO Missing add return UR / or callback URL...
+        // @TODO Add necessary extra claims
+        // @TODO Add necessary roles
         return $builder->withProvider($ltiProvider)
             ->withUser($user)
             ->withClaims(

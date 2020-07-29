@@ -14,8 +14,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA
- *
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA
  */
 
 namespace oat\taoLtiConsumer\model\delivery\container;
@@ -26,12 +25,9 @@ use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\tool\launch\LtiLaunchInterface;
-use oat\taoLti\models\tool\launch\LtiLaunchParams;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\AnonymizeHelper;
-use oat\taoLtiConsumer\model\delivery\factory\Lti1p1LaunchFactory;
-use oat\taoLtiConsumer\model\delivery\factory\Lti1p3LaunchFactory;
 
 /**
  * Class LtiDeliveryContainer
@@ -70,25 +66,16 @@ class LtiDeliveryContainer extends AbstractContainer
 
     private function proxyLtiLaunch(DeliveryExecution $execution): LtiLaunchInterface
     {
-        /**
-         * @TODO @FIXME Move to a Proxy
-         */
         $params = $this->getRuntimeParams();
         $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
 
-        $launchParams = new LtiLaunchParams(
-            $ltiProvider->getId(),
-            $params['ltiPath'],
-            $execution->getIdentifier()
-        );
-
-        if ($ltiProvider->getLtiVersion() === '1.3') {
-            return $this->getServiceLocator()->get(Lti1p3LaunchFactory::class)->create($launchParams);
-        }
-
-        if ($ltiProvider->getLtiVersion() === '1.1') {
-            return $this->getServiceLocator()->get(Lti1p1LaunchFactory::class)->create($launchParams);
-        }
+        return $this->getServiceLocator()
+            ->get(LtiDeliveryLaunchProxy::class)
+            ->launch(
+                $params['ltiPath'],
+                $ltiProvider,
+                $execution
+            );
     }
 
     /**
@@ -100,7 +87,6 @@ class LtiDeliveryContainer extends AbstractContainer
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
-
 
     /**
      * @return AnonymizeHelper
