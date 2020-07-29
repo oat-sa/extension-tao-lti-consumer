@@ -71,6 +71,13 @@ class ResultController extends tao_actions_CommonModule
         $requestParser = $this->getRequestParser();
 
         try {
+            //# @TODO @FIXME
+            //#
+            //# 1) Receive request from Delivery to update the score
+            //# 2) Check if the response is LTI 1.3 or LTI 1.1 and
+            //#
+            //#
+
             $lisRequest = $requestParser->parse($payload);
             $this->response = $this->processLisRequest(
                 $lisRequest,
