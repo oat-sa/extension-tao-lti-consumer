@@ -19,19 +19,50 @@
 
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
+use OAT\Library\Lti1p3Core\Message\Claim\ContextClaim;
 use oat\oatbox\service\ConfigurableService;
+use oat\oatbox\session\SessionService;
+use oat\oatbox\user\User;
+use oat\taoLti\models\platform\builder\Lti1p3LaunchBuilder;
+use oat\taoLti\models\platform\builder\LtiLaunchBuilderInterface;
 use oat\taoLti\models\tool\launch\factory\LtiLaunchFactoryInterface;
 use oat\taoLti\models\tool\launch\LtiLaunchInterface;
 use oat\taoLti\models\tool\launch\LtiLaunchParams;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
-use oat\taoLtiConsumer\model\delivery\container\Lti1p1DeliveryLaunch;
 
 class Lti1p3LaunchFactory extends ConfigurableService implements LtiLaunchFactoryInterface
 {
     public function create(LtiLaunchParams $params): LtiLaunchInterface
     {
-        return new Lti1p1DeliveryLaunch('', []);
+        $builder = $this->getBuilder();
+
+        //@TODO Anonymous user must be supported
+        /** @var User $user */
+        $user = $this->getServiceLocator()
+            ->get(SessionService::SERVICE_ID)
+            ->getCurrentUser();
+
+        $ltiProvider = $this->getLtiProvider($params->getProviderId());
+
+        // @TODO Missing add return UR / or callback URL...
+        return $builder->withProvider($ltiProvider)
+            ->withUser($user)
+            ->withClaims(
+                [
+                    new ContextClaim('contextId'),  // LTI claim representing the context
+                    'myCustomClaim' => 'myCustomValue' // custom claim
+                ]
+            )->withRoles(
+                [
+                    'http://purl.imsglobal.org/vocab/lis/v2/membership#Learner'
+                ]
+            )->build();
+    }
+
+    private function getBuilder(): LtiLaunchBuilderInterface
+    {
+        return $this->getServiceLocator()->get(Lti1p3LaunchBuilder::class);
     }
 
     private function getLtiProvider($id): LtiProvider
