@@ -14,21 +14,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA
- *
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA
  */
 
 namespace oat\taoLtiConsumer\model\delivery\container;
 
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\generis\model\OntologyAwareTrait;
-use oat\oatbox\session\SessionService;
-use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiLaunchData;
+use oat\taoLti\models\tool\launch\LtiLaunchInterface;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\AnonymizeHelper;
@@ -51,47 +47,35 @@ class LtiDeliveryContainer extends AbstractContainer
      */
     public function getExecutionContainer(DeliveryExecution $execution)
     {
-        $params = $this->getRuntimeParams();
-        $ltiUrl = $params['ltiPath'];
-
-        $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
-        $consumerKey = $ltiProvider->getKey();
-        $consumerSecret = $ltiProvider->getSecret();
-
-        $urlHelper = $this->getUrlHelper();
-
-        $returnUrl = $urlHelper->buildUrl('index', 'DeliveryServer', 'taoDelivery');
-        $outcomeServiceUrl = $urlHelper->buildUrl('manageResults', 'ResultController', 'taoLtiConsumer');
-
-        $data = [
-            LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
-            LtiLaunchData::LTI_VERSION => 'LTI-1p0',
-            LtiLaunchData::RESOURCE_LINK_ID => $execution->getIdentifier(),
-            LtiLaunchData::USER_ID => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
-            LtiLaunchData::ROLES => 'Learner',
-            LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => $returnUrl,
-            LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
-            LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
-        ];
-        $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
+        $launch = $this->proxyLtiLaunch($execution);
 
         $container = new LtiExecutionContainer($execution);
-        $container->setData('launchUrl', $ltiUrl);
-        $container->setData('launchParams', $data);
+        $container->setData('launchUrl', $launch->getToolLaunchUrl());
+        $container->setData('launchParams', $launch->getToolLaunchParams());
 
         $this->logDebug(
-            sprintf('** taoLtiConsumer: preparing http call :: to the %s, with payload %s **',
-                $ltiUrl,
-                json_encode($this->getAnonimizerHelper()->anonymize($data))));
+            sprintf(
+                '** taoLtiConsumer: preparing http call :: to the %s, with payload %s **',
+                $launch->getToolLaunchUrl(),
+                json_encode($this->getAnonimizerHelper()->anonymize($launch->getToolLaunchParams()))
+            )
+        );
+
         return $container;
     }
 
-    /**
-     * @return UrlHelper
-     */
-    protected function getUrlHelper()
+    private function proxyLtiLaunch(DeliveryExecution $execution): LtiLaunchInterface
     {
-        return $this->getServiceLocator()->get(UrlHelper::class);
+        $params = $this->getRuntimeParams();
+        $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
+
+        return $this->getServiceLocator()
+            ->get(LtiDeliveryLaunchProxy::class)
+            ->launch(
+                $params['ltiPath'],
+                $ltiProvider,
+                $execution
+            );
     }
 
     /**
@@ -103,7 +87,6 @@ class LtiDeliveryContainer extends AbstractContainer
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
-
 
     /**
      * @return AnonymizeHelper
