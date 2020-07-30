@@ -35,8 +35,6 @@ class Lti1p3LaunchFactory extends ConfigurableService implements LtiLaunchFactor
 {
     public function create(LtiLaunchParams $params): LtiLaunchInterface
     {
-        $builder = $this->getBuilder();
-
         //@TODO Anonymous user must be supported
         /** @var User $user */
         $user = $this->getServiceLocator()
@@ -48,7 +46,8 @@ class Lti1p3LaunchFactory extends ConfigurableService implements LtiLaunchFactor
         // @TODO Missing add return UR / or callback URL...
         // @TODO Add necessary extra claims
         // @TODO Add necessary roles
-        return $builder->withProvider($ltiProvider)
+        return $this->getBuilder()
+            ->withProvider($ltiProvider)
             ->withUser($user)
             ->withClaims(
                 [

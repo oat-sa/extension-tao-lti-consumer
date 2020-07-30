@@ -19,50 +19,54 @@
 
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\tao\helpers\UrlHelper;
+use oat\taoLti\models\platform\builder\Lti1p1LaunchBuilder;
+use oat\taoLti\models\platform\builder\LtiLaunchBuilderInterface;
 use oat\taoLti\models\tool\launch\factory\LtiLaunchFactoryInterface;
 use oat\taoLti\models\tool\launch\LtiLaunchInterface;
 use oat\taoLti\models\tool\launch\LtiLaunchParams;
 use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
-use oat\taoLtiConsumer\model\delivery\container\Lti1p1DeliveryLaunch;
 
 class Lti1p1LaunchFactory extends ConfigurableService implements LtiLaunchFactoryInterface
 {
     public function create(LtiLaunchParams $params): LtiLaunchInterface
     {
-        $ltiLaunchUrl = $params->getLaunchUrl();
-        $ltiProvider = $this->getLtiProvider($params->getProviderId());
-        $consumerKey = $ltiProvider->getKey();
-        $consumerSecret = $ltiProvider->getSecret();
-        $userId = $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier();
-
         $urlHelper = $this->getUrlHelper();
         $returnUrl = $urlHelper->buildUrl('index', 'DeliveryServer', 'taoDelivery');
         $outcomeServiceUrl = $urlHelper->buildUrl('manageResults', 'ResultController', 'taoLtiConsumer');
 
-        $data = [
-            LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
-            LtiLaunchData::LTI_VERSION => 'LTI-1p0',
-            LtiLaunchData::RESOURCE_LINK_ID => $params->getResourceLinkId(),
-            LtiLaunchData::USER_ID => $userId,
-            LtiLaunchData::ROLES => 'Learner',
-            LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => $returnUrl,
-            LtiLaunchData::LIS_RESULT_SOURCEDID => $params->getResourceLinkId(),
-            LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
-        ];
-        $data = ToolConsumer::addSignature($ltiLaunchUrl, $consumerKey, $consumerSecret, $data);
-
-        return new Lti1p1DeliveryLaunch($ltiLaunchUrl, $data);
+        return $this->getBuilder()
+            ->withUser($this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser())
+            ->withProvider($this->getLtiProvider($params->getProviderId()))
+            ->withLaunchUrl($params->getLaunchUrl())
+            ->withRoles(
+                [
+                    'Learner'
+                ]
+            )
+            ->withClaims(
+                [
+                    LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
+                    LtiLaunchData::RESOURCE_LINK_ID => $params->getResourceLinkId(),
+                    LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => $returnUrl,
+                    LtiLaunchData::LIS_RESULT_SOURCEDID => $params->getResourceLinkId(),
+                    LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
+                ]
+            )->build();
     }
 
     private function getUrlHelper(): UrlHelper
     {
         return $this->getServiceLocator()->get(UrlHelper::class);
+    }
+
+    private function getBuilder(): LtiLaunchBuilderInterface
+    {
+        return $this->getServiceLocator()->get(Lti1p1LaunchBuilder::class);
     }
 
     private function getLtiProvider($id): LtiProvider
