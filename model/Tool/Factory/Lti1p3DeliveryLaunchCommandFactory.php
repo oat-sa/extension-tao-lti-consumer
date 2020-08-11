@@ -65,6 +65,7 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 new ContextClaim('contextId'),
                 'delivery' => $execution->getIdentifier()
             ],
+            $execution->getIdentifier(),
             $user,
             $user->getIdentifier(),
             $launchUrl

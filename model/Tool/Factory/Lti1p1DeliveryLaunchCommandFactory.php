@@ -77,6 +77,7 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
                 LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
             ],
+            $execution->getIdentifier(),
             $user,
             null,
             $launchUrl
