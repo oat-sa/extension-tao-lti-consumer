@@ -15,8 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA
- *
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA
  */
 
 declare(strict_types=1);
@@ -24,7 +23,6 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\Tool\Factory;
 
 use oat\generis\model\OntologyAwareTrait;
-use OAT\Library\Lti1p3Core\Message\Claim\ContextClaim;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\oatbox\user\User;
@@ -53,17 +51,13 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
             ->get(SessionService::SERVICE_ID)
             ->getCurrentUser();
 
-        #
-        # @TODO Check with Delivery Team what are the necessary, claims, roles, etc...
-        #
         return new LtiLaunchCommand(
             $ltiProvider,
             [
                 'http://purl.imsglobal.org/vocab/lis/v2/membership#Learner'
             ],
             [
-                new ContextClaim('contextId'),
-                'delivery' => $execution->getIdentifier()
+                'deliveryExecutionId' => $execution->getIdentifier()
             ],
             $execution->getIdentifier(),
             $user,
