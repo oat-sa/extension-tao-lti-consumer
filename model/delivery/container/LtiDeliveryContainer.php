@@ -14,24 +14,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA
- *
+ * Copyright (c) 2019-2020 (original work) Open Assessment Technologies SA
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\delivery\container;
 
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use oat\generis\model\OntologyAwareTrait;
-use oat\oatbox\session\SessionService;
-use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
+use oat\taoLti\models\classes\Tool\Service\LtiLauncherInterface;
+use oat\taoLti\models\classes\Tool\Service\LtiLauncherProxy;
 use oat\taoLtiConsumer\model\AnonymizeHelper;
+use oat\taoLtiConsumer\model\Tool\Factory\LtiDeliveryLaunchCommandFactoryProxy;
 
 /**
  * Class LtiDeliveryContainer
@@ -52,64 +53,52 @@ class LtiDeliveryContainer extends AbstractContainer
     public function getExecutionContainer(DeliveryExecution $execution)
     {
         $params = $this->getRuntimeParams();
-        $ltiUrl = $params['ltiPath'];
-
+        $launchUrl = $params['ltiPath'];
         $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
-        $consumerKey = $ltiProvider->getKey();
-        $consumerSecret = $ltiProvider->getSecret();
 
-        $urlHelper = $this->getUrlHelper();
-
-        $returnUrl = $urlHelper->buildUrl('index', 'DeliveryServer', 'taoDelivery');
-        $outcomeServiceUrl = $urlHelper->buildUrl('manageResults', 'ResultController', 'taoLtiConsumer');
-
-        $data = [
-            LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
-            LtiLaunchData::LTI_VERSION => 'LTI-1p0',
-            LtiLaunchData::RESOURCE_LINK_ID => $execution->getIdentifier(),
-            LtiLaunchData::USER_ID => $this->getServiceLocator()->get(SessionService::SERVICE_ID)->getCurrentUser()->getIdentifier(),
-            LtiLaunchData::ROLES => 'Learner',
-            LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => $returnUrl,
-            LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
-            LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
+        $config = [
+            'launchUrl' => $launchUrl,
+            'ltiProvider' => $ltiProvider,
+            'deliveryExecution' => $execution,
         ];
-        $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
+
+        $command = $this->getLtiLaunchCommandFactory()->create($config);
+        $launch = $this->getLtiLauncher()->launch($command);
 
         $container = new LtiExecutionContainer($execution);
-        $container->setData('launchUrl', $ltiUrl);
-        $container->setData('launchParams', $data);
+        $container->setData('launchUrl', $launch->getToolLaunchUrl());
+        $container->setData('launchParams', $launch->getToolLaunchParams());
 
         $this->logDebug(
-            sprintf('** taoLtiConsumer: preparing http call :: to the %s, with payload %s **',
-                $ltiUrl,
-                json_encode($this->getAnonimizerHelper()->anonymize($data))));
+            sprintf(
+                '** taoLtiConsumer: preparing http call :: to the %s, with payload %s **',
+                $launchUrl,
+                json_encode(
+                    $this->getAnonimizerHelper()->anonymize($launch->getToolLaunchParams())
+                )
+            )
+        );
+
         return $container;
     }
 
-    /**
-     * @return UrlHelper
-     */
-    protected function getUrlHelper()
-    {
-        return $this->getServiceLocator()->get(UrlHelper::class);
-    }
-
-    /**
-     * @param string $id
-     *
-     * @return LtiProvider
-     */
-    private function getLtiProvider($id)
+    private function getLtiProvider(string $id): LtiProvider
     {
         return $this->getServiceLocator()->get(LtiProviderService::class)->searchById($id);
     }
 
-
-    /**
-     * @return AnonymizeHelper
-     */
-    private function getAnonimizerHelper()
+    private function getAnonimizerHelper(): AnonymizeHelper
     {
         return new AnonymizeHelper([AnonymizeHelper::OPTION_BLACK_LIST => ['oauth_consumer_key']]);
+    }
+
+    private function getLtiLaunchCommandFactory(): LtiLaunchCommandFactoryInterface
+    {
+        return $this->getServiceLocator()->get(LtiDeliveryLaunchCommandFactoryProxy::class);
+    }
+
+    private function getLtiLauncher(): LtiLauncherInterface
+    {
+        return $this->getServiceLocator()->get(LtiLauncherProxy::class);
     }
 }
