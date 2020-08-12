@@ -25,7 +25,6 @@ namespace oat\taoLtiConsumer\model\Tool\Factory;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
-use oat\oatbox\user\User;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
@@ -46,23 +45,31 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         /** @var DeliveryExecution $execution */
         $execution = $config['deliveryExecution'];
 
-        /** @var User $user */
-        $user = $this->getServiceLocator()
-            ->get(SessionService::SERVICE_ID)
+        #
+        # @TODO Check with Deliver why now we do not use TAO Delivery execution URI
+        #
+        $resourceIdentifier = $execution->getIdentifier();
+
+        $user = $this->getSessionService()
             ->getCurrentUser();
 
         return new LtiLaunchCommand(
             $ltiProvider,
             [
-                'http://purl.imsglobal.org/vocab/lis/v2/membership#Learner'
+                'Learner'
             ],
             [
                 'deliveryExecutionId' => $execution->getIdentifier()
             ],
-            $execution->getIdentifier(),
+            $resourceIdentifier,
             $user,
             $user->getIdentifier(),
             $launchUrl
         );
+    }
+
+    private function getSessionService(): SessionService
+    {
+        return $this->getServiceLocator()->get(SessionService::SERVICE_ID);
     }
 }
