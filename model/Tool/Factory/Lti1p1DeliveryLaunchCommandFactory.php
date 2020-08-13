@@ -25,7 +25,6 @@ namespace oat\taoLtiConsumer\model\Tool\Factory;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
-use oat\oatbox\user\User;
 use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiLaunchData;
@@ -48,9 +47,7 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
         /** @var DeliveryExecution $execution */
         $execution = $config['deliveryExecution'];
 
-        /** @var User $user */
-        $user = $this->getServiceLocator()
-            ->get(SessionService::SERVICE_ID)
+        $user = $this->getSessionService()
             ->getCurrentUser();
 
         $urlHelper = $this->getUrlHelper();
@@ -87,5 +84,11 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
     private function getUrlHelper(): UrlHelper
     {
         return $this->getServiceLocator()->get(UrlHelper::class);
+    }
+
+    private function getSessionService(): SessionService
+    {
+        return $this->getServiceLocator()
+            ->get(SessionService::SERVICE_ID);
     }
 }
