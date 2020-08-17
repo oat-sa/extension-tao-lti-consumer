@@ -20,154 +20,92 @@
 
 namespace oat\taoLtiConsumer\test\unit\model\delivery\container;
 
-use core_kernel_classes_Resource as RdfResource;
-use IMSGlobal\LTI\ToolProvider\ToolConsumer;
-use oat\generis\test\unit\OntologyMockTest;
-use oat\oatbox\session\SessionService;
-use oat\oatbox\user\User;
-use oat\tao\helpers\UrlHelper;
+use oat\generis\test\TestCase;
+use oat\oatbox\log\LoggerService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLti\models\classes\Tool\LtiLaunch;
+use oat\taoLti\models\classes\Tool\LtiLaunchCommandInterface;
+use oat\taoLti\models\classes\Tool\Service\LtiLauncherProxy;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\delivery\container\LtiExecutionContainer;
-use phpmock\MockBuilder;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use oat\taoLtiConsumer\model\Tool\Factory\LtiDeliveryLaunchCommandFactoryProxy;
+use PHPUnit\Framework\MockObject\MockObject;
 
-class LtiDeliveryContainerTest extends OntologyMockTest
+class LtiDeliveryContainerTest extends TestCase
 {
-    public function testGetExecutionContainer()
+    /** @var LtiDeliveryContainer */
+    private $subject;
+
+    /** @var LtiLauncherProxy|MockObject */
+    private $launcherProxy;
+
+    /** @var LtiDeliveryLaunchCommandFactoryProxy|MockObject */
+    private $launchCommandFactoryProxy;
+
+    /** @var LtiProviderService|MockObject */
+    private $ltiProvider;
+
+    /** @var LoggerService|MockObject */
+    private $logger;
+
+    public function setUp(): void
     {
-        $identifier = 'delivery identifier';
-        $ltiProviderId = 'lti provider id';
-        $ltiUrl = 'path to lti';
-        $consumerKey = 'consumerKey';
-        $consumerSecret = 'consumerSecret';
-        $returnUrl = 'returnUrl';
-        $userId = 'userId';
-        $md5 = 'random-md5';
-
-        $params = [
-            'ltiProvider' => $ltiProviderId,
-            'ltiPath' => $ltiUrl,
-        ];
-
-        /** @var RdfResource|MockObject $delivery */
-        $delivery = $this->getMockBuilder(RdfResource::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getUri'])
-            ->getMock();
-
-        /** @var DeliveryExecution|MockObject $execution */
-        $execution = $this->getMockBuilder(DeliveryExecution::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getDelivery', 'getIdentifier'])
-            ->getMock();
-        $execution->method('getDelivery')->willReturn($delivery);
-        $execution->method('getIdentifier')->willReturn($identifier);
-
-        /** @var User|MockObject $serviceLocator */
-        $user = $this->getMockBuilder(User::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getIdentifier'])
-            ->getMockForAbstractClass();
-        $user->method('getIdentifier')->willReturn($userId);
-
-        /** @var SessionService|MockObject $serviceLocator */
-        $sessionService = $this->getMockBuilder(SessionService::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getCurrentUser'])
-            ->getMock();
-        $sessionService->method('getCurrentUser')->willReturn($user);
-
-        /** @var LtiProvider|MockObject $ltiProvider */
-        $ltiProvider = $this->getMockBuilder(LtiProvider::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getSecret', 'getKey'])
-            ->getMock();
-        $ltiProvider->method('getKey')->willReturn($consumerKey);
-        $ltiProvider->method('getSecret')->willReturn($consumerSecret);
-
-        /** @var LtiProviderService|MockObject $serviceLocator */
-        $ltiProviderService = $this->getMockBuilder(LtiProviderService::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['searchById'])
-            ->getMock();
-        $ltiProviderService->method('searchById')->willReturn($ltiProvider);
-
-        $urlHelper = $this->getMockBuilder(UrlHelper::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['buildUrl'])
-            ->getMock();
-        $urlHelper->method('buildUrl')->willReturnCallback(
-            function ($method, $class, $extension) {
-                return $extension . '/' . $class . '/' . $method;
-            }
+        $this->logger = $this->createMock(LoggerService::class);
+        $this->ltiProvider = $this->createMock(LtiProviderService::class);
+        $this->launchCommandFactoryProxy = $this->createMock(LtiDeliveryLaunchCommandFactoryProxy::class);
+        $this->launcherProxy = $this->createMock(LtiLauncherProxy::class);
+        $this->subject = new LtiDeliveryContainer();
+        $this->subject->setLogger($this->logger);
+        $this->subject->setServiceLocator(
+            $this->getServiceLocatorMock(
+                [
+                    LtiProviderService::class => $this->ltiProvider,
+                    LtiDeliveryLaunchCommandFactoryProxy::class => $this->launchCommandFactoryProxy,
+                    LtiLauncherProxy::class => $this->launcherProxy,
+                    LoggerService::SERVICE_ID => $this->logger,
+                ]
+            )
         );
-
-        /** @var ServiceLocatorInterface|MockObject $serviceLocator */
-        $serviceLocator = $this->getMockBuilder(ServiceLocatorInterface::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['get'])
-            ->getMockForAbstractClass();
-
-        $serviceLocator->method('get')->willReturnCallback(
-            function ($id) use ($sessionService, $ltiProviderService, $urlHelper) {
-                switch ($id) {
-                    case SessionService::SERVICE_ID:
-                        return $sessionService;
-                    case LtiProviderService::class:
-                        return $ltiProviderService;
-                    case UrlHelper::class:
-                        return $urlHelper;
-                }
-            }
+        $this->subject->setRuntimeParams(
+            [
+                'ltiPath' => 'launchUrl',
+                'ltiProvider' => 'providerId',
+            ]
         );
-        $data = [
-            LtiLaunchData::LTI_MESSAGE_TYPE => 'basic-lti-launch-request',
-            LtiLaunchData::LTI_VERSION => 'LTI-1p0',
-            LtiLaunchData::RESOURCE_LINK_ID => $identifier,
-            LtiLaunchData::USER_ID => $userId,
-            LtiLaunchData::ROLES => 'Learner',
-            LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => 'taoDelivery/DeliveryServer/index',
-            LtiLaunchData::LIS_RESULT_SOURCEDID => $identifier,
-            LtiLaunchData::LIS_OUTCOME_SERVICE_URL => 'taoLtiConsumer/ResultController/manageResults',
-        ];
-
-        // Mock general scope's md5 function to have a testable signature.
-        $mockedMd5 = $this->mockGlobalFunction('IMSGlobal\LTI\OAuth', 'md5', $md5);
-        $data = ToolConsumer::addSignature($ltiUrl, $consumerKey, $consumerSecret, $data);
-
-        $subject = new LtiDeliveryContainer();
-
-        $subject->setRuntimeParams($params);
-        $subject->setServiceLocator($serviceLocator);
-
-        $expected = new LtiExecutionContainer($execution);
-        $expected->setData('launchUrl', $ltiUrl);
-        $expected->setData('launchParams', $data);
-
-        $this->assertEquals($expected, $subject->getExecutionContainer($execution));
-        $mockedMd5->disable();
     }
 
-    public function mockGlobalFunction($namespace, $name, $value)
+    public function testGetExecutionContainer(): void
     {
-        // Mock general scope's md5 function to have a testable signature.
-        $builder = new MockBuilder();
-        $builder->setNamespace($namespace)
-            ->setName($name)
-            ->setFunction(
-                function () use ($value) {
-                    return $value;
-                }
-            );
+        $provider = $this->createMock(LtiProvider::class);
+        $command = $this->createMock(LtiLaunchCommandInterface::class);
+        $launch = new LtiLaunch('launchUrl', ['param' => 'value']);
 
-        $mock = $builder->build();
-        $mock->enable();
+        $this->ltiProvider
+            ->method('searchById')
+            ->willReturn($provider);
 
-        return $mock;
+        $this->launchCommandFactoryProxy
+            ->method('create')
+            ->willReturn($command);
+
+        $this->launcherProxy
+            ->method('launch')
+            ->willReturn($launch);
+
+        $this->logger
+            ->method('debug');
+
+        $execution = $this->createMock(DeliveryExecution::class);
+
+        $container = new LtiExecutionContainer($execution);
+        $container->setData('launchUrl', 'launchUrl');
+        $container->setData('launchParams', ['param' => 'value']);
+
+        $this->assertEquals(
+            $container,
+            $this->subject->getExecutionContainer($execution)
+        );
     }
 }
