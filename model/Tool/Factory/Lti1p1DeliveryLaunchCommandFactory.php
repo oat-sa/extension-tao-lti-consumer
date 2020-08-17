@@ -51,11 +51,13 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
             ->getCurrentUser();
 
         $urlHelper = $this->getUrlHelper();
+
         $returnUrl = $urlHelper->buildUrl(
             'index',
             'DeliveryServer',
             'taoDelivery'
         );
+
         $outcomeServiceUrl = $urlHelper->buildUrl(
             'manageResults',
             'ResultController',
