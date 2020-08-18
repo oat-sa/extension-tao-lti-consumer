@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,8 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2019-2020 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\operations;
 
@@ -37,37 +40,23 @@ class OperationsCollection extends ConfigurableService
     protected const KEY_RESPONSE_CLASS = 'response_class';
     protected const KEY_RESPONSE_SERIALIZER = 'response_serializer';
 
-    /**
-     * @param string $operationName
-     * @return OperationRequestParserInterface|null
-     */
-    public function getOperationRequestParser($operationName)
+    public function getOperationRequestParser(string $operationName): ?OperationRequestParserInterface
     {
         $ops = $this->getSupportedOperations();
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return isset($ops[$operationName])
             ? $this->getServiceLocator()->get($ops[$operationName][self::KEY_REQUEST_PARSER])
             : null;
     }
 
-    /**
-     * @param string $operationName
-     * @return string|null
-     */
-    public function getBodyResponseElementName($operationName)
+    public function getBodyResponseElementName(string $operationName): ?string
     {
         $ops = $this->getSupportedOperations();
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $ops[$operationName]
             ? $ops[$operationName][self::KEY_RESPONSE_BODY_EL]
             : null;
     }
 
-    /**
-     * @param LisOutcomeResponseInterface $response
-     * @return ResponseSerializerInterface|null
-     */
-    public function getResponseSerializer($response)
+    public function getResponseSerializer(LisOutcomeResponseInterface $response): ?ResponseSerializerInterface
     {
         $ops = $this->getSupportedOperations();
         array_push($ops, ...$this->getCommonResponseSerializationInfo());
@@ -85,7 +74,7 @@ class OperationsCollection extends ConfigurableService
     /**
      * @return string[][]
      */
-    protected function getSupportedOperations()
+    protected function getSupportedOperations(): array
     {
         return [
             self::OPERATION_REPLACE => [
@@ -100,7 +89,7 @@ class OperationsCollection extends ConfigurableService
     /**
      * @return string[][]
      */
-    protected function getCommonResponseSerializationInfo()
+    protected function getCommonResponseSerializationInfo(): array
     {
         return [
             [
