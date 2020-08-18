@@ -83,11 +83,9 @@ class ResultController extends tao_actions_CommonModule
     }
 
     /**
-     * @param ServerRequestInterface $request
-     * @return LtiProviderUser
      * @throws tao_models_classes_UserException
      */
-    private function authorizeUser(ServerRequestInterface $request)
+    private function authorizeUser(ServerRequestInterface $request): LtiProviderUser
     {
         try {
             return $this->getLisAuthAdapterFactory()->create($request)->authenticate();
