@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,8 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2019-2020 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\messages;
 
@@ -35,11 +38,9 @@ class LisOutcomeRequestParser extends ConfigurableService
     protected const XML_NAMESPACE_PREFIX = 'lti';
 
     /**
-     * @param string $xml
-     * @return LisOutcomeRequest
      * @throws ParsingException
      */
-    public function parse($xml)
+    public function parse(string $xml): LisOutcomeRequest
     {
         $xpath = $this->getXpath($xml);
         $messageIdentifier = $this->getMessageIdentifier($xpath);
@@ -63,16 +64,10 @@ class LisOutcomeRequestParser extends ConfigurableService
     }
 
     /**
-     * @param $xml
-     * @return DOMXPath
      * @throws ParsingException
      */
-    protected function getXpath($xml)
+    protected function getXpath(string $xml): DOMXPath
     {
-        if (!is_string($xml)) {
-            throw new InvalidArgumentException('xml argument is not a string');
-        }
-
         // prevent libxml from writing warnings to the output
         libxml_use_internal_errors(true);
         $dom = new DOMDocument();
@@ -97,11 +92,9 @@ class LisOutcomeRequestParser extends ConfigurableService
     }
 
     /**
-     * @param DOMXPath $xpath
-     * @return string
      * @throws ParsingException
      */
-    protected function getMessageIdentifier(DOMXPath $xpath)
+    protected function getMessageIdentifier(DOMXPath $xpath): string
     {
         /** @var DOMNodeList $nodes */
         $nodes = $xpath->evaluate(sprintf(
@@ -115,11 +108,9 @@ class LisOutcomeRequestParser extends ConfigurableService
     }
 
     /**
-     * @param DOMXPath $xpath
-     * @return DOMNode
      * @throws ParsingException
      */
-    protected function getOperationNode(DOMXPath $xpath)
+    protected function getOperationNode(DOMXPath $xpath): DOMNode
     {
         /** @var DOMNodeList $nodes */
         $nodes = $xpath->evaluate(
@@ -134,12 +125,8 @@ class LisOutcomeRequestParser extends ConfigurableService
         return $nodes->item(0);
     }
 
-    /**
-     * @return OperationsCollection
-     */
-    protected function getOperationsCollection()
+    protected function getOperationsCollection(): OperationsCollection
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(OperationsCollection::class);
     }
 }
