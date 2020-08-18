@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,57 +18,39 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\model\result\operations;
 
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 
 class BasicResponse implements LisOutcomeResponseInterface
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $status;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $statusDescription;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $codeMajor;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $messageIdentifier;
 
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private $messageRefIdentifier;
 
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private $operationRefIdentifier;
 
-    /**
-     * @param string $status
-     * @param string $statusDescription
-     * @param string $codeMajor
-     * @param string $messageIdentifier
-     * @param string $messageRefIdentifier|null
-     * @param string $operationRefIdentifier|null
-     */
     public function __construct(
-        $status,
-        $statusDescription,
-        $codeMajor,
-        $messageIdentifier = null,
-        $messageRefIdentifier = null,
-        $operationRefIdentifier = null
+        string $status,
+        string $statusDescription,
+        string $codeMajor,
+        string $messageIdentifier = null,
+        string $messageRefIdentifier = null,
+        string $operationRefIdentifier = null
     ) {
         $this->status = $status;
         $this->statusDescription = $statusDescription;
@@ -77,60 +60,40 @@ class BasicResponse implements LisOutcomeResponseInterface
         $this->operationRefIdentifier = $operationRefIdentifier;
     }
 
-    /**
-     * @return string
-     */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    /**
-     * @return string
-     */
-    public function getStatusDescription()
+    public function getStatusDescription(): string
     {
         return $this->statusDescription;
     }
 
-    /**
-     * @return string
-     */
-    public function getCodeMajor()
+    public function getCodeMajor(): string
     {
         return $this->codeMajor;
     }
 
-    /**
-     * @return string
-     */
-    public function getMessageIdentifier()
+    public function getMessageIdentifier(): string
     {
         return $this->messageIdentifier;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getMessageRefIdentifier()
+    public function getMessageRefIdentifier(): string
     {
         return $this->messageRefIdentifier;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getOperationRefIdentifier()
+    public function getOperationRefIdentifier(): string
     {
         return $this->operationRefIdentifier;
     }
 
     /**
      * $requestContextPrefix is any string which depends on request to decrease probability of collisions
-     * @param string|null $requestContextPrefix
-     * @return string
      */
-    protected function generateMessageIdentifier($requestContextPrefix = null)
+    protected function generateMessageIdentifier(string $requestContextPrefix = null): string
     {
         return md5(
             microtime() .

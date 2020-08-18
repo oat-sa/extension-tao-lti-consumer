@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,6 +18,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\model\result\operations\replace;
 
 use oat\taoLtiConsumer\model\result\operations\BasicOperationRequest;
@@ -26,25 +29,16 @@ use oat\taoLtiConsumer\model\result\operations\BasicOperationRequest;
  */
 class OperationRequest extends BasicOperationRequest
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $score;
 
-    /**
-     * @param string $sourcedId
-     * @param string $score
-     */
-    public function __construct($sourcedId, $score)
+    public function __construct(string $sourcedId, string $score)
     {
         parent::__construct($sourcedId);
         $this->score = $score;
     }
 
-    /**
-     * @return string
-     */
-    public function getScore()
+    public function getScore(): string
     {
         return $this->score;
     }

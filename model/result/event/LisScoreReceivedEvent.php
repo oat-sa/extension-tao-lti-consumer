@@ -29,18 +29,12 @@ class LisScoreReceivedEvent implements Event
      */
     private $deliveryExecutionId;
 
-    /**
-     * @param string $deliveryExecutionId
-     */
-    public function __construct($deliveryExecutionId)
+    public function __construct(string $deliveryExecutionId)
     {
         $this->deliveryExecutionId = $deliveryExecutionId;
     }
 
-    /**
-     * @return string
-     */
-    public function getDeliveryExecutionId()
+    public function getDeliveryExecutionId(): string
     {
         return $this->deliveryExecutionId;
     }
@@ -48,7 +42,7 @@ class LisScoreReceivedEvent implements Event
     /**
      * @inheritDoc
      */
-    public function getName()
+    public function getName(): string
     {
         return self::EVENT_NAME;
     }

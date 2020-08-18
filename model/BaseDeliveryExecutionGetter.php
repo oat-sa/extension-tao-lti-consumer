@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,6 +17,8 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model;
 
@@ -36,11 +39,8 @@ class BaseDeliveryExecutionGetter extends ConfigurableService implements Deliver
      * Due to multiple implementation of DE storages it's difficult to check if DE exists
      * Ontology and KV storages allow us to check exists() but for other ones we have to try
      * to read mandatory 'status' property
-     * @param string $deliveryExecutionId
-     * @param LtiProvider $ltiProvider
-     * @return DeliveryExecutionInterface|null
      */
-    public function get($deliveryExecutionId, LtiProvider $ltiProvider)
+    public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface
     {
         $deliveryExecution = $this->getServiceProxy()->getDeliveryExecution($deliveryExecutionId);
         return $this->isExists($deliveryExecution)
@@ -48,11 +48,7 @@ class BaseDeliveryExecutionGetter extends ConfigurableService implements Deliver
             : null;
     }
 
-    /**
-     * @param DeliveryExecutionInterface $deliveryExecution
-     * @return bool
-     */
-    protected function isExists(DeliveryExecutionInterface $deliveryExecution)
+    protected function isExists(DeliveryExecutionInterface $deliveryExecution): bool
     {
         if ($deliveryExecution instanceof core_kernel_classes_Resource ||
             $deliveryExecution instanceof KVDeliveryExecution
@@ -68,12 +64,8 @@ class BaseDeliveryExecutionGetter extends ConfigurableService implements Deliver
         }
     }
 
-    /**
-     * @return ServiceProxy
-     */
-    protected function getServiceProxy()
+    protected function getServiceProxy(): ServiceProxy
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);
     }
 }

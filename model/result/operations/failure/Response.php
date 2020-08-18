@@ -24,9 +24,7 @@ use oat\taoLtiConsumer\model\result\operations\BasicResponse;
 
 class Response extends BasicResponse
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $operationName;
 
     public function __construct(
@@ -49,10 +47,7 @@ class Response extends BasicResponse
         $this->operationName = $operationName;
     }
 
-    /**
-     * @return string
-     */
-    public function getOperationName()
+    public function getOperationName(): string
     {
         return $this->operationName;
     }
