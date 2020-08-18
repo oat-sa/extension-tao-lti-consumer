@@ -51,7 +51,7 @@ class ResultController extends tao_actions_CommonModule
      * @throws common_exception_MethodNotAllowed
      * @throws tao_models_classes_UserException
      */
-    public function manageResults()
+    public function manageResults(): void
     {
         if (!$this->isRequestPost()) {
             throw new common_exception_MethodNotAllowed(null, 0, [Request::HTTP_POST]);
@@ -162,7 +162,12 @@ class ResultController extends tao_actions_CommonModule
     /**
      * @see LisOutcomeResponseInterface
      */
-    private function getXmlFailureResponse(int $statusCode, string $xmlStatus, string $statusDescription, string $messageRefIdentifier = null): ResponseInterface
+    private function getXmlFailureResponse(
+        int $statusCode,
+        string $xmlStatus,
+        string $statusDescription,
+        string $messageRefIdentifier = null
+    ): ResponseInterface
     {
         $serializer = $this->getBasicResponseSerializer();
         $xml = $serializer->toXml(new BasicResponse(
