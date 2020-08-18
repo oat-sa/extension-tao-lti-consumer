@@ -48,7 +48,6 @@ class ResultController extends tao_actions_CommonModule
     public const XML_CONTENT_TYPE = 'application/xml';
 
     /**
-     * @noinspection PhpUnused
      * @throws common_exception_MethodNotAllowed
      * @throws tao_models_classes_UserException
      */
@@ -98,13 +97,10 @@ class ResultController extends tao_actions_CommonModule
     }
 
     /**
-     * @param LisOutcomeRequest $lisRequest
-     * @param LtiProvider $ltiProvider
-     * @return ResponseInterface
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    private function processLisRequest(LisOutcomeRequest $lisRequest, LtiProvider $ltiProvider)
+    private function processLisRequest(LisOutcomeRequest $lisRequest, LtiProvider $ltiProvider): ResponseInterface
     {
         $lisResponse = $this->getLtiResultService()->process($lisRequest, $ltiProvider);
 
@@ -117,11 +113,7 @@ class ResultController extends tao_actions_CommonModule
         return $this->getXmlResponse($httpStatus, $xml);
     }
 
-    /**
-     * @param string $lisResponseStatus
-     * @return int
-     */
-    private function mapLisResponseStatusToHttp($lisResponseStatus)
+    private function mapLisResponseStatusToHttp(string $lisResponseStatus): int
     {
         switch ($lisResponseStatus) {
             case LisOutcomeResponseInterface::STATUS_SUCCESS:
@@ -138,11 +130,7 @@ class ResultController extends tao_actions_CommonModule
         }
     }
 
-    /**
-     * @param ParsingException $parsingException
-     * @return ResponseInterface
-     */
-    private function createParseErrorResponse(ParsingException $parsingException)
+    private function createParseErrorResponse(ParsingException $parsingException): ResponseInterface
     {
         return $this->getXmlFailureResponse(
             StatusCode::HTTP_BAD_REQUEST,
@@ -152,11 +140,7 @@ class ResultController extends tao_actions_CommonModule
             );
     }
 
-    /**
-     * @param Throwable $throwable
-     * @return ResponseInterface
-     */
-    private function createInternalErrorResponse(Throwable $throwable = null)
+    private function createInternalErrorResponse(Throwable $throwable = null): ResponseInterface
     {
         if ($throwable !== null) {
             $this->logError('Internal error during lti outcome request. ' . $throwable->getMessage());
@@ -169,12 +153,7 @@ class ResultController extends tao_actions_CommonModule
         );
     }
 
-    /**
-     * @param int $statusCode
-     * @param string $xml
-     * @return ResponseInterface
-     */
-    private function getXmlResponse($statusCode, $xml)
+    private function getXmlResponse(int $statusCode, string $xml): ResponseInterface
     {
         return $this->getPsrResponse()
             ->withStatus($statusCode)
@@ -183,14 +162,9 @@ class ResultController extends tao_actions_CommonModule
     }
 
     /**
-     * @param int $statusCode
-     * @param string $xmlStatus one of the LisOutcomeResponseInterface::STATUS_* constants
-     * @param string $statusDescription
-     * @param string|null $messageRefIdentifier
-     * @return ResponseInterface
      * @see LisOutcomeResponseInterface
      */
-    private function getXmlFailureResponse($statusCode, $xmlStatus, $statusDescription, $messageRefIdentifier = null)
+    private function getXmlFailureResponse(int $statusCode, string $xmlStatus, string $statusDescription, string $messageRefIdentifier = null): ResponseInterface
     {
         $serializer = $this->getBasicResponseSerializer();
         $xml = $serializer->toXml(new BasicResponse(
@@ -203,48 +177,28 @@ class ResultController extends tao_actions_CommonModule
         return $this->getXmlResponse($statusCode, $xml);
     }
 
-    /**
-     * @return LtiResultService
-     */
-    private function getLtiResultService()
+    private function getLtiResultService(): LtiResultService
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LtiResultService::class);
     }
 
-    /**
-     * @return LisOutcomeRequestParser
-     */
-    private function getRequestParser()
+    private function getRequestParser(): LisOutcomeRequestParser
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LisOutcomeRequestParser::class);
     }
 
-    /**
-     * @return BasicResponseSerializer
-     */
-    private function getBasicResponseSerializer()
+    private function getBasicResponseSerializer(): BasicResponseSerializer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(BasicResponseSerializer::class);
     }
 
-    /**
-     * @return OperationsCollection
-     */
-    protected function getOperationsCollection()
+    protected function getOperationsCollection(): OperationsCollection
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(OperationsCollection::class);
     }
 
-    /**
-     * @return LisAuthAdapterFactory
-     */
-    protected function getLisAuthAdapterFactory()
+    protected function getLisAuthAdapterFactory(): LisAuthAdapterFactory
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LisAuthAdapterFactory::class);
     }
 }
