@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,8 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2019-2020 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\operations\failure;
 
@@ -28,11 +31,7 @@ use SimpleXMLElement;
 
 class ResponseSerializer extends ConfigurableService implements ResponseSerializerInterface
 {
-    /**
-     * @param LisOutcomeResponseInterface|Response $response
-     * @return string
-     */
-    public function toXml(LisOutcomeResponseInterface $response)
+    public function toXml(LisOutcomeResponseInterface $response): string
     {
         $responseElementName = $this->getOperationsCollection()->getBodyResponseElementName(
             $response->getOperationName()
@@ -48,21 +47,13 @@ class ResponseSerializer extends ConfigurableService implements ResponseSerializ
             ->asXML();
     }
 
-    /**
-     * @return OperationsCollection
-     */
-    protected function getOperationsCollection()
+    protected function getOperationsCollection(): OperationsCollection
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(OperationsCollection::class);
     }
 
-    /**
-     * @return LisOutcomeResponseSerializer
-     */
-    protected function getLisOutcomeResponseSerializer()
+    protected function getLisOutcomeResponseSerializer(): LisOutcomeResponseSerializer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LisOutcomeResponseSerializer::class);
     }
 }

@@ -28,10 +28,8 @@ class BasicResponseSerializer extends ConfigurableService implements ResponseSer
 {
     /**
      * Serializes response without body response node
-     * @param LisOutcomeResponseInterface $response
-     * @return string
      */
-    public function toXml(LisOutcomeResponseInterface $response)
+    public function toXml(LisOutcomeResponseInterface $response): string
     {
         return $this
             ->getLisOutcomeResponseSerializer()
@@ -39,12 +37,8 @@ class BasicResponseSerializer extends ConfigurableService implements ResponseSer
             ->asXML();
     }
 
-    /**
-     * @return LisOutcomeResponseSerializer
-     */
-    protected function getLisOutcomeResponseSerializer()
+    protected function getLisOutcomeResponseSerializer(): LisOutcomeResponseSerializer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LisOutcomeResponseSerializer::class);
     }
 }

@@ -17,6 +17,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\model\result\operations\replace;
 
 use oat\oatbox\service\ConfigurableService;
@@ -29,11 +31,7 @@ class ResponseSerializer extends ConfigurableService implements ResponseSerializ
 {
     public const BODY_RESPONSE_ELEMENT_NAME = 'replaceResultResponse';
 
-    /**
-     * @param LisOutcomeResponseInterface|Response $response
-     * @return string
-     */
-    public function toXml(LisOutcomeResponseInterface $response)
+    public function toXml(LisOutcomeResponseInterface $response): string
     {
         $bodyResponseNode = new SimpleXMLElement(sprintf('<%s />', self::BODY_RESPONSE_ELEMENT_NAME));
 
@@ -43,12 +41,8 @@ class ResponseSerializer extends ConfigurableService implements ResponseSerializ
             ->asXML();
     }
 
-    /**
-     * @return LisOutcomeResponseSerializer
-     */
-    protected function getLisOutcomeResponseSerializer()
+    protected function getLisOutcomeResponseSerializer(): LisOutcomeResponseSerializer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LisOutcomeResponseSerializer::class);
     }
 }
