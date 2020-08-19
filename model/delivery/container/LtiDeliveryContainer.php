@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\delivery\container;
 
 use oat\generis\model\OntologyAwareTrait;
+use oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory;
 use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\container\execution\ExecutionClientContainer;
 use oat\taoDelivery\model\container\ExecutionContainer;

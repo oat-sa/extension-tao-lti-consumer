@@ -25,7 +25,10 @@ namespace oat\taoLtiConsumer\model\Tool\Factory;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
+use oat\tao\helpers\UrlHelper;
+use oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
@@ -45,10 +48,22 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         /** @var DeliveryExecution $execution */
         $execution = $config['deliveryExecution'];
 
-        #
-        # @TODO Check with Deliver why now we do not use TAO Delivery execution URI
-        #
-        $resourceIdentifier = $execution->getIdentifier();
+        $resourceIdentifier = (string)$execution->getDelivery()
+            ->getUniquePropertyValue($this->getProperty(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID));
+
+        $urlHelper = $this->getUrlHelper();
+
+        $returnUrl = $urlHelper->buildUrl(
+            'index',
+            'DeliveryServer',
+            'taoDelivery'
+        );
+
+        $outcomeServiceUrl = $urlHelper->buildUrl(
+            'manageResults',
+            'ResultController',
+            'taoLtiConsumer'
+        );
 
         $user = $this->getSessionService()
             ->getCurrentUser();
@@ -59,11 +74,13 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 'Learner'
             ],
             [
-                'deliveryExecutionId' => $execution->getIdentifier()
+                'deliveryExecutionId' => $execution->getIdentifier(),
+                LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
+                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
             ],
             $resourceIdentifier,
             $user,
-            $user->getIdentifier(),
+            null, //$user->getIdentifier(), @TODO Remove oidc connect for now to make test easier
             $launchUrl
         );
     }
@@ -71,5 +88,10 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
     private function getSessionService(): SessionService
     {
         return $this->getServiceLocator()->get(SessionService::SERVICE_ID);
+    }
+
+    private function getUrlHelper(): UrlHelper
+    {
+        return $this->getServiceLocator()->get(UrlHelper::class);
     }
 }
