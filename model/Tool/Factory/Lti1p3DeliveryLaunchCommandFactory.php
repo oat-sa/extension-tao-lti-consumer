@@ -48,16 +48,13 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         /** @var DeliveryExecution $execution */
         $execution = $config['deliveryExecution'];
 
+        #
+        # @TODO This is the way Deliver works, but we might reuse to save AGS resource_link_id too.
+        #
         $resourceIdentifier = (string)$execution->getDelivery()
             ->getUniquePropertyValue($this->getProperty(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID));
 
         $urlHelper = $this->getUrlHelper();
-
-        $returnUrl = $urlHelper->buildUrl(
-            'index',
-            'DeliveryServer',
-            'taoDelivery'
-        );
 
         $outcomeServiceUrl = $urlHelper->buildUrl(
             'manageResults',
