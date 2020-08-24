@@ -23,9 +23,14 @@ use common_exception_Error;
 use common_exception_MethodNotAllowed;
 use common_exception_NotFound;
 use common_user_auth_AuthFailedException;
+use OAT\Library\Lti1p3Core\Registration\RegistrationRepositoryInterface;
+use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidator;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
 use oat\taoLti\models\classes\Lis\LtiProviderUser;
+use oat\taoLti\models\classes\LtiProvider\ConfigurableLtiProviderRepository;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderRepositoryInterface;
+use oat\taoLti\models\classes\Platform\Repository\Lti1p3RegistrationRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
@@ -58,23 +63,34 @@ class ResultController extends tao_actions_CommonModule
             throw new common_exception_MethodNotAllowed(null, 0, [Request::HTTP_POST]);
         }
 
-        try {
-            $user = $this->authorizeUser($this->getPsrRequest());
-        } catch (tao_models_classes_UserException $userException) {
-            throw $userException;
-        } catch (Throwable $throwable) {
-            $this->response = $this->createInternalErrorResponse($throwable);
-            return;
+        $validator = new AccessTokenRequestValidator($this->getRegistrationRepository());
+        $result = $validator->validate($this->getPsrRequest());
+
+        if (!$result->hasError() && $result->getRegistration() !== null) {
+            $ltiProvider = $this->getLtiProviderRepository()->searchById($result->getRegistration()->getIdentifier());
         }
 
-        $payload = (string) $this->getPsrRequest()->getBody();
+        if (!isset($ltiProvider)) {
+            try {
+                $user = $this->authorizeUser($this->getPsrRequest());
+            } catch (tao_models_classes_UserException $userException) {
+                throw $userException;
+            } catch (Throwable $throwable) {
+                $this->response = $this->createInternalErrorResponse($throwable);
+                return;
+            }
+
+            $ltiProvider = $user->getLtiProvider();
+        }
+
+        $payload = (string)$this->getPsrRequest()->getBody();
         $requestParser = $this->getRequestParser();
 
         try {
             $lisRequest = $requestParser->parse($payload);
             $this->response = $this->processLisRequest(
                 $lisRequest,
-                $user->getLtiProvider()
+                $ltiProvider
             );
         } catch (ParsingException $parsingException) {
             $this->response = $this->createParseErrorResponse($parsingException);
@@ -149,7 +165,7 @@ class ResultController extends tao_actions_CommonModule
             LisOutcomeResponseInterface::STATUS_INVALID_REQUEST,
             'Invalid input xml: ' . $parsingException->getMessage(),
             $parsingException->getXmlMessageId()
-            );
+        );
     }
 
     /**
@@ -246,5 +262,15 @@ class ResultController extends tao_actions_CommonModule
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(LisAuthAdapterFactory::class);
+    }
+
+    private function getRegistrationRepository(): RegistrationRepositoryInterface
+    {
+        return $this->getServiceLocator()->get(Lti1p3RegistrationRepository::class);
+    }
+
+    private function getLtiProviderRepository(): LtiProviderRepositoryInterface
+    {
+        return $this->getServiceLocator()->get(ConfigurableLtiProviderRepository::class);
     }
 }
