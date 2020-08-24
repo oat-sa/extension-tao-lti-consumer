@@ -27,6 +27,7 @@ use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\tao\helpers\UrlHelper;
 use oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory;
+use oat\taoDeliverConnect\model\TenantLtiProvider;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
@@ -51,8 +52,15 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         #
         # @TODO This is the way Deliver works, but we might reuse to save AGS resource_link_id too.
         #
-        $resourceIdentifier = (string)$execution->getDelivery()
-            ->getUniquePropertyValue($this->getProperty(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID));
+        $resourceIdentifier = (string)$execution->getIdentifier();
+
+        #
+        # @TODO Hack for PoC. Correct is to factory this identifier in other class
+        #
+        if ($ltiProvider instanceof TenantLtiProvider) {
+            $resourceIdentifier = (string)$execution->getDelivery()
+                ->getUniquePropertyValue($this->getProperty(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID));
+        }
 
         $urlHelper = $this->getUrlHelper();
 
@@ -77,7 +85,7 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
             ],
             $resourceIdentifier,
             $user,
-            null, //$user->getIdentifier(), @TODO Remove oidc connect for now to make test easier
+            null, //$user->getIdentifier(),
             $launchUrl
         );
     }
