@@ -16,7 +16,7 @@ use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
 use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
-use oat\taoLtiConsumer\model\result\operations\replace\OperationRequest as ReplaceOperationRequest;
+use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest as ReplaceOperationRequest;
 use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
 use oat\taoLtiConsumer\model\result\ResultService;
 use oat\taoLtiConsumer\model\result\ScoreWriterService;
