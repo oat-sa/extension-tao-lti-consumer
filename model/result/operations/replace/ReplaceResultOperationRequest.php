@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,24 +20,33 @@
 
 namespace oat\taoLtiConsumer\model\result\operations\replace;
 
-use oat\taoLtiConsumer\model\result\operations\BasicOperationRequest;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 
 /**
  * @see https://www.imsglobal.org/specs/ltiomv1p0/specification#toc-3
  */
-class OperationRequest extends BasicOperationRequest
+class ReplaceResultOperationRequest
 {
-    /** @var string */
-    private $score;
+    /** @var LisOutcomeRequest */
+    private $operationRequest;
 
-    public function __construct(string $sourcedId, string $score)
+    /** @var LtiProvider */
+    private $ltiProvider;
+
+    public function __construct(LisOutcomeRequest $operationRequest, LtiProvider $ltiProvider)
     {
-        parent::__construct($sourcedId);
-        $this->score = $score;
+        $this->operationRequest = $operationRequest;
+        $this->ltiProvider = $ltiProvider;
     }
 
-    public function getScore(): string
+    public function getOperationRequest(): LisOutcomeRequest
     {
-        return $this->score;
+        return $this->operationRequest;
+    }
+
+    public function getLtiProvider(): LtiProvider
+    {
+        return $this->ltiProvider;
     }
 }

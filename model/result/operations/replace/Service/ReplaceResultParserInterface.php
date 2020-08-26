@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,29 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoLtiConsumer\model\result\operations\replace;
+declare(strict_types=1);
 
-use oat\taoLtiConsumer\model\result\operations\BasicOperationRequest;
+namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
-/**
- * @see https://www.imsglobal.org/specs/ltiomv1p0/specification#toc-3
- */
-class OperationRequest extends BasicOperationRequest
+use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
+use Psr\Http\Message\ServerRequestInterface;
+
+interface ReplaceResultParserInterface
 {
-    /** @var string */
-    private $score;
-
-    public function __construct(string $sourcedId, string $score)
-    {
-        parent::__construct($sourcedId);
-        $this->score = $score;
-    }
-
-    public function getScore(): string
-    {
-        return $this->score;
-    }
+    public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest;
 }

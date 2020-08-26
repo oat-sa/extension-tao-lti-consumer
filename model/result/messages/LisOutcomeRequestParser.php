@@ -35,11 +35,9 @@ class LisOutcomeRequestParser extends ConfigurableService
     protected const XML_NAMESPACE_PREFIX = 'lti';
 
     /**
-     * @param string $xml
-     * @return LisOutcomeRequest
      * @throws ParsingException
      */
-    public function parse($xml)
+    public function parse(string $xml): LisOutcomeRequest
     {
         $xpath = $this->getXpath($xml);
         $messageIdentifier = $this->getMessageIdentifier($xpath);
@@ -134,10 +132,7 @@ class LisOutcomeRequestParser extends ConfigurableService
         return $nodes->item(0);
     }
 
-    /**
-     * @return OperationsCollection
-     */
-    protected function getOperationsCollection()
+    protected function getOperationsCollection(): OperationsCollection
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(OperationsCollection::class);

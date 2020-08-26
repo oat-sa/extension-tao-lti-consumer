@@ -28,56 +28,37 @@ use oat\taoLtiConsumer\model\result\operations\OperationRequestInterface;
  */
 class LisOutcomeRequest
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $messageIdentifier;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $operationName;
 
-    /**
-     * @var OperationRequestInterface|null
-     */
+    /** @var OperationRequestInterface|null */
     private $operation;
 
-    /**
-     * @param string $messageIdentifier
-     * @param string $operationName
-     * @param OperationRequestInterface|null $operation
-     */
     public function __construct(
-        $messageIdentifier,
-        $operationName,
+        string $messageIdentifier,
+        string $operationName,
         OperationRequestInterface $operation = null
-    ) {
+    )
+    {
         $this->messageIdentifier = $messageIdentifier;
         $this->operationName = $operationName;
         $this->operation = $operation;
     }
 
-    /**
-     * @return string
-     */
-    public function getMessageIdentifier()
+    public function getMessageIdentifier(): string
     {
         return $this->messageIdentifier;
     }
 
-    /**
-     * @return string
-     */
-    public function getOperationName()
+    public function getOperationName(): string
     {
         return $this->operationName;
     }
 
-    /**
-     * @return OperationRequestInterface|null
-     */
-    public function getOperation()
+    public function getOperation(): ?OperationRequestInterface
     {
         return $this->operation;
     }
