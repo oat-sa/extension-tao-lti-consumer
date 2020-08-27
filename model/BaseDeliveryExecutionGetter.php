@@ -24,6 +24,7 @@ use core_kernel_classes_Resource;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoDelivery\model\execution\KVDeliveryExecution;
 use oat\taoDelivery\model\execution\ServiceProxy;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
@@ -64,7 +65,7 @@ class BaseDeliveryExecutionGetter extends ConfigurableService implements Deliver
         }
     }
 
-    protected function getServiceProxy(): ServiceProxy
+    protected function getServiceProxy(): DeliveryExecutionService
     {
         return $this->getServiceLocator()->get(ServiceProxy::SERVICE_ID);
     }
