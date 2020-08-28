@@ -29,20 +29,20 @@ use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 class ReplaceResultOperationRequest
 {
     /** @var LisOutcomeRequest */
-    private $operationRequest;
+    private $lisOutcomeRequest;
 
     /** @var LtiProvider */
     private $ltiProvider;
 
     public function __construct(LisOutcomeRequest $operationRequest, LtiProvider $ltiProvider)
     {
-        $this->operationRequest = $operationRequest;
+        $this->lisOutcomeRequest = $operationRequest;
         $this->ltiProvider = $ltiProvider;
     }
 
-    public function getOperationRequest(): LisOutcomeRequest
+    public function getLisOutcomeRequest(): LisOutcomeRequest
     {
-        return $this->operationRequest;
+        return $this->lisOutcomeRequest;
     }
 
     public function getLtiProvider(): LtiProvider

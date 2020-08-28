@@ -28,14 +28,19 @@ use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
 use oat\taoLti\models\classes\Lis\LtiProviderUser;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
+use oat\taoLtiConsumer\model\result\ParsingException;
 use Psr\Http\Message\ServerRequestInterface;
 use tao_models_classes_UserException;
 
 class Lti1p1ReplaceResultParser extends ConfigurableService implements ReplaceResultParserInterface
 {
+    /**
+     * @throws ParsingException
+     * @throws tao_models_classes_UserException
+     */
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
-        $user = $this->authorizeUser($request);
+        $user = $this->getAuthorizeUser($request);
         $ltiProvider = $user->getLtiProvider();
 
         $payload = (string)$request->getBody();
@@ -44,7 +49,10 @@ class Lti1p1ReplaceResultParser extends ConfigurableService implements ReplaceRe
         return new ReplaceResultOperationRequest($requestParser->parse($payload), $ltiProvider);
     }
 
-    private function authorizeUser(ServerRequestInterface $request): LtiProviderUser
+    /**
+     * @throws tao_models_classes_UserException
+     */
+    private function getAuthorizeUser(ServerRequestInterface $request): LtiProviderUser
     {
         try {
             return $this->getLisAuthAdapterFactory()->create($request)->authenticate();

@@ -48,7 +48,7 @@ class ResultController extends tao_actions_CommonModule
     public const XML_CONTENT_TYPE = 'application/xml';
 
     /**
-     * @throws tao_models_classes_UserException|\common_exception_MethodNotAllowed
+     * @throws tao_models_classes_UserException|common_exception_MethodNotAllowed
      */
     public function manageResults(): void
     {
@@ -67,7 +67,7 @@ class ResultController extends tao_actions_CommonModule
 
         try {
             $this->response = $this->processLisRequest(
-                $operationRequest->getOperationRequest(), # change method name
+                $operationRequest->getLisOutcomeRequest(),
                 $operationRequest->getLtiProvider()
             );
         } catch (ParsingException $parsingException) {
@@ -159,8 +159,7 @@ class ResultController extends tao_actions_CommonModule
         string $xmlStatus,
         string $statusDescription,
         string $messageRefIdentifier = null
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         $serializer = $this->getBasicResponseSerializer();
 
         $xml = $serializer->toXml(new BasicResponse(

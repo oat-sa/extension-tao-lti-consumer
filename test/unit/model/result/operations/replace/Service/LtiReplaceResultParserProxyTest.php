@@ -35,7 +35,6 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class LtiReplaceResultParserProxyTest extends TestCase
 {
-
     /** @var LtiReplaceResultParserProxy */
     private $subject;
 

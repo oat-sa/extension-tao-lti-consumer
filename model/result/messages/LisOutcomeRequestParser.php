@@ -134,7 +134,6 @@ class LisOutcomeRequestParser extends ConfigurableService
 
     protected function getOperationsCollection(): OperationsCollection
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(OperationsCollection::class);
     }
 }
