@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,6 +17,9 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA
  */
+
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\model\result;
 
 use common_exception_Error;
@@ -45,13 +49,10 @@ class ResultService extends ConfigurableService
     public const SERVICE_ID = 'taoLtiConsumer/resultService';
 
     /**
-     * @param LisOutcomeRequest $request
-     * @param LtiProvider $ltiProvider
-     * @return LisOutcomeResponseInterface
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    public function process(LisOutcomeRequest $request, LtiProvider $ltiProvider)
+    public function process(LisOutcomeRequest $request, LtiProvider $ltiProvider): LisOutcomeResponseInterface
     {
         $operationRequest = $request->getOperation();
         if ($operationRequest === null) {
@@ -81,11 +82,7 @@ class ResultService extends ConfigurableService
         throw new LogicException('Wrong operation request: ' . $request->getOperationName());
     }
 
-    /**
-     * @param LisOutcomeRequest $request
-     * @return BasicResponse
-     */
-    protected function getUnsupportedOperationResponse(LisOutcomeRequest $request)
+    private function getUnsupportedOperationResponse(LisOutcomeRequest $request): BasicResponse
     {
         return new BasicResponse(
             BasicResponse::STATUS_UNSUPPORTED,
@@ -97,12 +94,7 @@ class ResultService extends ConfigurableService
         );
     }
 
-    /**
-     * @param LisOutcomeRequest $request
-     * @param string $sourcedId
-     * @return FailureResponse
-     */
-    protected function getDeliveryExecutionNotFoundResponse(LisOutcomeRequest $request, $sourcedId)
+    private function getDeliveryExecutionNotFoundResponse(LisOutcomeRequest $request, string $sourcedId): FailureResponse
     {
         return new FailureResponse(
             $request->getOperationName(),
@@ -116,14 +108,10 @@ class ResultService extends ConfigurableService
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @param LisOutcomeRequest $request
-     * @param DeliveryExecutionInterface $deliveryExecution
-     * @return ReplaceResponse
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    protected function handleReplaceRequest(LisOutcomeRequest $request, DeliveryExecutionInterface $deliveryExecution)
+    private function handleReplaceRequest(LisOutcomeRequest $request, DeliveryExecutionInterface $deliveryExecution): ReplaceResponse
     {
         /** @var ReplaceOperationRequest $operationRequest */
         $operationRequest = $request->getOperation();
@@ -141,8 +129,12 @@ class ResultService extends ConfigurableService
         /** @noinspection PhpUnhandledExceptionInspection */
         $eventManager->trigger(new LisScoreReceivedEvent($deliveryExecution->getIdentifier()));
 
-        $this->logInfo(sprintf("Score '%s' added for delivery execution '%s'",
-            $operationRequest->getScore(), $operationRequest->getSourcedId())
+        $this->logInfo(
+            sprintf(
+            "Score '%s' added for delivery execution '%s'",
+            $operationRequest->getScore(),
+            $operationRequest->getSourcedId()
+        )
         );
 
         return new ReplaceResponse(
@@ -155,21 +147,14 @@ class ResultService extends ConfigurableService
         );
     }
 
-    /**
-     * @return ScoreWriterService
-     */
-    private function getScoreWriter()
+    private function getScoreWriter(): ScoreWriterService
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(ScoreWriterService::class);
     }
 
-    /**
-     * @return DeliveryExecutionGetterInterface
-     */
-    private function getDeliveryExecutionGetter()
+    private function getDeliveryExecutionGetter(): DeliveryExecutionGetterInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getServiceLocator()->get(DeliveryExecutionGetterInterface::SERVICE_ID);
     }
 }
