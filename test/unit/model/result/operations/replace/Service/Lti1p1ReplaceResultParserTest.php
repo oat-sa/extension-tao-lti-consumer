@@ -49,7 +49,6 @@ class Lti1p1ReplaceResultParserTest extends TestCase
     /** @var MockObject|ServerRequestInterface */
     private $requestMock;
 
-
     public function setUp(): void
     {
         $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);

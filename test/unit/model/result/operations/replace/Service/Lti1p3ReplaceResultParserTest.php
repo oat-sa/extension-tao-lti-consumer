@@ -28,7 +28,7 @@ use OAT\Library\Lti1p3Core\Registration\RegistrationInterface;
 use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidationResult;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
-use oat\taoLti\models\classes\Security\DataAccess\Service\AccessTokenRequestValidator;
+use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p3ReplaceResultParser;
@@ -78,9 +78,8 @@ class Lti1p3ReplaceResultParserTest extends TestCase
         );
     }
 
-    public function testParse()
+    public function testParse(): void
     {
-
         $registrationMock = $this->createMock(RegistrationInterface::class);
         $lisOutcomeRequestMock = $this->createMock(LisOutcomeRequest::class);
         $ltiProviderMock = $this->createMock(LtiProvider::class);
@@ -113,7 +112,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
         $this->subject->parse($this->requestMock);
     }
 
-    public function testParseValidationHasErrors()
+    public function testParseValidationHasErrors(): void
     {
         $this->expectException(tao_models_classes_UserException::class);
 

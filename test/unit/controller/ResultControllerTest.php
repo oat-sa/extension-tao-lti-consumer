@@ -91,10 +91,8 @@ class ResultControllerTest extends TestCase
             ->with('Content-Type', ResultController::XML_CONTENT_TYPE)
             ->willReturn($this->responseMock);
 
-
         $this->subject->setRequest($this->requestMock);
         $this->subject->setResponse($this->responseMock);
-
     }
 
     public function testManageResults()
@@ -183,7 +181,6 @@ class ResultControllerTest extends TestCase
 
         $this->subject->manageResults();
     }
-
 
     public function testManageResultsGET(): void
     {

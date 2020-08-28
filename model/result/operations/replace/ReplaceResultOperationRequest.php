@@ -18,6 +18,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\model\result\operations\replace;
 
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;

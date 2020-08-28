@@ -32,7 +32,7 @@ class LtiReplaceResultParserProxy extends ConfigurableService implements Replace
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
         if ($this->isLti1p3($request)) {
-            return $this->getLti1p3()->parse($request);
+            return $this->getLti1p3ReplaceResultParser()->parse($request);
         }
 
         return $this->getLti1p1ReplaceResultParser()->parse($request);
@@ -50,7 +50,7 @@ class LtiReplaceResultParserProxy extends ConfigurableService implements Replace
         return $this->getServiceLocator()->get(Lti1p1ReplaceResultParser::class);
     }
 
-    private function getLti1p3(): ReplaceResultParserInterface
+    private function getLti1p3ReplaceResultParser(): ReplaceResultParserInterface
     {
         return $this->getServiceLocator()->get(Lti1p3ReplaceResultParser::class);
     }
