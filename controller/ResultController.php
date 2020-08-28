@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,12 +18,13 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\controller;
 
 use common_exception_Error;
 use common_exception_MethodNotAllowed;
 use common_exception_NotFound;
-use oat\taoLtiConsumer\model\result\ResultService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
@@ -32,6 +34,7 @@ use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\LtiReplaceResultParserProxy;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\ReplaceResultParserInterface;
 use oat\taoLtiConsumer\model\result\ParsingException;
+use oat\taoLtiConsumer\model\result\ResultService;
 use Psr\Http\Message\ResponseInterface;
 use Request;
 use Slim\Http\StatusCode;

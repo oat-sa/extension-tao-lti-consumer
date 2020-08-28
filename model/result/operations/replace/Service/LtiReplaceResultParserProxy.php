@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
-use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidator;
 use oat\oatbox\service\ConfigurableService;
+use oat\taoLti\models\classes\Security\DataAccess\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
