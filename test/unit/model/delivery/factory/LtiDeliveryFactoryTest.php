@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,6 +18,8 @@
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA (under the project TAO-PRODUCT);
  *
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
@@ -59,6 +62,7 @@ class LtiDeliveryFactoryTest extends TestCase
 
     public function setUp(): void
     {
+        define('CONFIG_PATH', ROOT_PATH . 'config/');
         $this->timeMock = $this->MockFunction('oat\taoLtiConsumer\model\delivery\factory', "time", self::FIXED_TIME);
         $this->timeMock->disableAll();
         $this->timeMock->enable();
@@ -123,7 +127,9 @@ class LtiDeliveryFactoryTest extends TestCase
             ->getMockForAbstractClass();
         $logger->expects($this->once())->method('info')->with(sprintf(
             'Creating LTI delivery with LTI provider "%s" ' . 'with LTI test url "%s" under delivery class "%s"',
-            $ltiProviderLabel, $ltiPath, $classLabel
+            $ltiProviderLabel,
+            $ltiPath,
+            $classLabel
         ));
 
         /** @var EventManager|MockObject $eventManager */
@@ -268,10 +274,12 @@ class LtiDeliveryFactoryTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['createTask'])
             ->getMock();
-        $queueDispatcher->method('createTask')->with($this->callback(
+        $queueDispatcher->method('createTask')->with(
+            $this->callback(
             function ($callable) {
                 return $callable instanceof LtiDeliveryCreationTask;
-            }),
+            }
+        ),
             $params,
             __('Publishing of LTI delivery : "%s"', $ltiProviderLabel),
             null,
