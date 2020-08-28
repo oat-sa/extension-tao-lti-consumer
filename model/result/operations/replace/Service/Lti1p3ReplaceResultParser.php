@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
-use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidator;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use oat\taoLtiConsumer\model\result\ParsingException;
