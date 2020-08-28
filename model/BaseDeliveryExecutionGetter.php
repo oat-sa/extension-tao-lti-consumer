@@ -43,7 +43,7 @@ class BaseDeliveryExecutionGetter extends ConfigurableService implements Deliver
      * @param string $deliveryExecutionId
      * @param LtiProvider $ltiProvider
      */
-    public function get($deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface
+    public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface
     {
         $deliveryExecution = $this->getServiceProxy()->getDeliveryExecution($deliveryExecutionId);
         return $this->isExists($deliveryExecution)
