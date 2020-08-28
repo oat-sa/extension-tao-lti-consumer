@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\taoLti\models\classes\Security\DataAccess\Service\AccessTokenRequestValidator;
+use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
