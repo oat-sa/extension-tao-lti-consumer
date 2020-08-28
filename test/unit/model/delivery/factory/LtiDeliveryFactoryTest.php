@@ -54,14 +54,15 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 class LtiDeliveryFactoryTest extends TestCase
 {
-    const FIXED_TIME = 1234567890;
-    const RESOURCE_URI = 'Uri of the resource';
+    public const FIXED_TIME = 1234567890;
+    public const RESOURCE_URI = 'Uri of the resource';
 
     /** @var Mock */
     protected $timeMock;
 
     public function setUp(): void
     {
+        define('ROOT_PATH', '');
         define('CONFIG_PATH', ROOT_PATH . 'config/');
         $this->timeMock = $this->MockFunction('oat\taoLtiConsumer\model\delivery\factory', "time", self::FIXED_TIME);
         $this->timeMock->disableAll();
