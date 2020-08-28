@@ -42,7 +42,9 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
         $result = $this->getAccessTokenRequestValidator()->validate($request);
 
         if ($result->hasError() || $result->getRegistration() === null) {
-            throw new tao_models_classes_UserException(sprintf('Access Token Validation failed. %s', $result->getError()));
+            throw new tao_models_classes_UserException(
+                sprintf('Access Token Validation failed. %s', $result->getError())
+            );
         }
 
         $parsedPayload = $this->getLisOutcomeRequestParser()->parse((string)$request->getBody());
