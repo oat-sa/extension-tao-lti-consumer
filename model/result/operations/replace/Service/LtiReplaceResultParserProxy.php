@@ -40,7 +40,7 @@ class LtiReplaceResultParserProxy extends ConfigurableService implements Replace
 
     private function isLti1p3(ServerRequestInterface $request): bool
     {
-        $result = $this->getAccessTokenRequestValidator()->validate($request);
+        $result = $this->getAccessTokenRequestValidator()->validate($request, self::REPLACE_RESULT_ROLE);
 
         return !$result->hasError() && $result->getRegistration();
     }

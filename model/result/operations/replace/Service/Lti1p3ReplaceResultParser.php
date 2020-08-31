@@ -39,7 +39,10 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
      */
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
-        $result = $this->getAccessTokenRequestValidator()->validate($request);
+        $result = $this->getAccessTokenRequestValidator()->validate(
+            $request,
+            ReplaceResultParserInterface::REPLACE_RESULT_ROLE
+        );
 
         if ($result->hasError() || $result->getRegistration() === null) {
             throw new tao_models_classes_UserException(

@@ -27,5 +27,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface ReplaceResultParserInterface
 {
+    public const REPLACE_RESULT_ROLE = 'https://purl.imsglobal.org/spec/lti-bo/scope/basicoutcome';
+
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest;
 }
