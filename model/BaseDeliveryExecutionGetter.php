@@ -21,7 +21,6 @@ namespace oat\taoLtiConsumer\model;
 
 use common_exception_NotFound;
 use core_kernel_classes_Resource;
-use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoDelivery\model\execution\DeliveryExecutionService;
@@ -34,14 +33,10 @@ use oat\taoLti\models\classes\LtiProvider\LtiProvider;
  */
 class BaseDeliveryExecutionGetter extends ConfigurableService implements DeliveryExecutionGetterInterface
 {
-    use OntologyAwareTrait;
-
     /**
      * Due to multiple implementation of DE storages it's difficult to check if DE exists
      * Ontology and KV storages allow us to check exists() but for other ones we have to try
      * to read mandatory 'status' property
-     * @param string $deliveryExecutionId
-     * @param LtiProvider $ltiProvider
      */
     public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface
     {
