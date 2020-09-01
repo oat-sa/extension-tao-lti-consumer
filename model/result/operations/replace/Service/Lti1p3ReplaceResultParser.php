@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
 use oat\oatbox\service\ConfigurableService;
+use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
@@ -53,7 +54,12 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
         $parsedPayload = $this->getLisOutcomeRequestParser()->parse((string)$request->getBody());
 
         //todo: implement correct LtiProvider retrieve
-        $ltiProvider = $this->getLtiProviderService()->findAll();
+        $deliveryExecutionId = $parsedPayload->getOperation()->getSourcedId();
+        $deliveryExecutionService = $this->getServiceLocator()->get(DeliveryExecutionService::SERVICE_ID);
+        $deliveryExecution = $deliveryExecutionService->getDeliveryExecution($deliveryExecutionId);
+        $delivery = $deliveryExecution->getDelivery();
+
+        $ltiProvider = $this->getLtiProviderService()->findByDeliveryId($delivery->getUri());
         $ltiProvider = reset($ltiProvider);
 
         return new ReplaceResultOperationRequest($parsedPayload, $ltiProvider);
