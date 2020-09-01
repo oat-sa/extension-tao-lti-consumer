@@ -53,14 +53,16 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
 
         $parsedPayload = $this->getLisOutcomeRequestParser()->parse((string)$request->getBody());
 
-        //todo: implement correct LtiProvider retrieve
-        $deliveryExecutionId = $parsedPayload->getOperation()->getSourcedId();
-        $deliveryExecutionService = $this->getServiceLocator()->get(DeliveryExecutionService::SERVICE_ID);
-        $deliveryExecution = $deliveryExecutionService->getDeliveryExecution($deliveryExecutionId);
-        $delivery = $deliveryExecution->getDelivery();
+        if (!$parsedPayload->getOperation()) {
+            throw new ParsingException('Lis request does not contain valid operation');
+        }
 
-        $ltiProvider = $this->getLtiProviderService()->findByDeliveryId($delivery->getUri());
-        $ltiProvider = reset($ltiProvider);
+        $deliveryUri = $this->getDeliveryExecutionService()
+            ->getDeliveryExecution($parsedPayload->getOperation()->getSourcedId())
+            ->getDelivery()
+            ->getUri();
+
+        $ltiProvider = $this->getLtiProviderService()->findByDeliveryId($deliveryUri);
 
         return new ReplaceResultOperationRequest($parsedPayload, $ltiProvider);
     }
@@ -78,5 +80,10 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
     private function getAccessTokenRequestValidator(): AccessTokenRequestValidator
     {
         return $this->getServiceLocator()->get(AccessTokenRequestValidator::class);
+    }
+
+    private function getDeliveryExecutionService(): DeliveryExecutionService
+    {
+        return $this->getServiceLocator()->get(DeliveryExecutionService::SERVICE_ID);
     }
 }

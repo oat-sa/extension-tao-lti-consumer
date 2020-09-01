@@ -22,15 +22,19 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\test\unit\model\result\operations\replace\Service;
 
+use core_kernel_classes_Resource;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use OAT\Library\Lti1p3Core\Registration\RegistrationInterface;
 use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidationResult;
+use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
+use oat\taoLtiConsumer\model\result\operations\OperationRequestInterface;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p3ReplaceResultParser;
 use Psr\Http\Message\ServerRequestInterface;
 use tao_models_classes_UserException;
@@ -55,6 +59,9 @@ class Lti1p3ReplaceResultParserTest extends TestCase
     /** @var AccessTokenRequestValidationResult|MockObject */
     private $accessTokenRequestValidationResultMock;
 
+    /** @var DeliveryExecutionService|MockObject */
+    private $deliveryExecutionServiceMock;
+
     protected function setUp(): void
     {
         $this->subject = new Lti1p3ReplaceResultParser();
@@ -62,6 +69,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
         $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
         $this->ltiProviderServiceMock = $this->createMock(LtiProviderService::class);
         $this->accessTokenRequestValidatorMock = $this->createMock(AccessTokenRequestValidator::class);
+        $this->deliveryExecutionServiceMock = $this->createMock(DeliveryExecutionService::class);
 
         $this->accessTokenRequestValidationResultMock = $this->createMock(AccessTokenRequestValidationResult::class);
 
@@ -73,6 +81,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
                     LisOutcomeRequestParser::class => $this->lisOutcomeRequestParserMock,
                     LtiProviderService::SERVICE_ID => $this->ltiProviderServiceMock,
                     AccessTokenRequestValidator::class => $this->accessTokenRequestValidatorMock,
+                    DeliveryExecutionService::SERVICE_ID => $this->deliveryExecutionServiceMock,
                 ]
             )
         );
@@ -86,13 +95,25 @@ class Lti1p3ReplaceResultParserTest extends TestCase
 
         $this->ltiProviderServiceMock
             ->expects($this->once())
-            ->method('findAll')
-            ->willReturn([$ltiProviderMock]);
+            ->method('findByDeliveryId')
+            ->willReturn($ltiProviderMock);
 
         $this->lisOutcomeRequestParserMock
             ->expects($this->once())
             ->method('parse')
             ->willReturn($lisOutcomeRequestMock);
+
+        $operationRequestMock = $this->createMock(OperationRequestInterface::class);
+
+        $lisOutcomeRequestMock
+            ->expects($this->exactly(2))
+            ->method('getOperation')
+            ->willReturn($operationRequestMock);
+
+        $operationRequestMock
+            ->expects($this->once())
+            ->method('getSourcedId')
+            ->willReturn('deliveryExecutionId');
 
         $this->accessTokenRequestValidatorMock
             ->expects($this->once())
@@ -108,6 +129,25 @@ class Lti1p3ReplaceResultParserTest extends TestCase
             ->expects($this->once())
             ->method('getRegistration')
             ->willReturn($registrationMock);
+
+        $deliveryExecution = $this->createMock(DeliveryExecutionInterface::class);
+
+        $this->deliveryExecutionServiceMock
+            ->expects($this->once())
+            ->method('getDeliveryExecution')
+            ->willReturn($deliveryExecution);
+
+        $deliveryResource = $this->createMock(core_kernel_classes_Resource::class);
+
+        $deliveryExecution
+            ->expects($this->once())
+            ->method('getDelivery')
+            ->willReturn($deliveryResource);
+
+        $deliveryResource
+            ->expects($this->once())
+            ->method('getUri')
+            ->willReturn('deliveryUri');
 
         $this->subject->parse($this->requestMock);
     }
