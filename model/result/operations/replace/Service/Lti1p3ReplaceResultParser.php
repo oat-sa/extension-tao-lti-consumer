@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
@@ -57,12 +56,9 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
             throw new ParsingException('Lis request does not contain valid operation');
         }
 
-        $deliveryUri = $this->getDeliveryExecutionService()
-            ->getDeliveryExecution($parsedPayload->getOperation()->getSourcedId())
-            ->getDelivery()
-            ->getUri();
-
-        $ltiProvider = $this->getLtiProviderService()->findByDeliveryId($deliveryUri);
+        $ltiProvider = $this->getLtiProviderService()->searchByDeliveryExecutionId(
+            $parsedPayload->getOperation()->getSourcedId()
+        );
 
         return new ReplaceResultOperationRequest($parsedPayload, $ltiProvider);
     }
@@ -80,10 +76,5 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
     private function getAccessTokenRequestValidator(): AccessTokenRequestValidator
     {
         return $this->getServiceLocator()->get(AccessTokenRequestValidator::class);
-    }
-
-    private function getDeliveryExecutionService(): DeliveryExecutionService
-    {
-        return $this->getServiceLocator()->get(DeliveryExecutionService::SERVICE_ID);
     }
 }
