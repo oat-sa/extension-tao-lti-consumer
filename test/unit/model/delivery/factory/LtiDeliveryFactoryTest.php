@@ -29,6 +29,7 @@ use common_report_Report as Report;
 use core_kernel_classes_Class as RdfClass;
 use core_kernel_classes_Resource as RdfResource;
 use oat\generis\model\OntologyRdfs;
+use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerService;
@@ -41,7 +42,6 @@ use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use phpmock\Mock;
 use phpmock\MockBuilder;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Psr\Log\LoggerInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
