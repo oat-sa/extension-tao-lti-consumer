@@ -25,8 +25,6 @@ namespace oat\taoLtiConsumer\test\unit\model\result\operations\replace\Service;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use OAT\Library\Lti1p3Core\Registration\RegistrationInterface;
-use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidationResult;
-use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p1ReplaceResultParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p3ReplaceResultParser;
@@ -47,12 +45,6 @@ class LtiReplaceResultParserProxyTest extends TestCase
     /** @var ServerRequestInterface|MockObject */
     private $requestMock;
 
-    /** @var AccessTokenRequestValidator|MockObject */
-    private $accessTokenRequestValidatorMock;
-
-    /** @var AccessTokenRequestValidationResult|MockObject */
-    private $accessTokenRequestValidationResultMock;
-
     /** @var RegistrationInterface|MockObject */
     private $registrationMock;
 
@@ -62,12 +54,10 @@ class LtiReplaceResultParserProxyTest extends TestCase
     protected function setUp(): void
     {
         $this->subject = new LtiReplaceResultParserProxy();
-        $this->accessTokenRequestValidatorMock = $this->createMock(AccessTokenRequestValidator::class);
         $this->lti1p1ReplaceResultParser = $this->createMock(Lti1p1ReplaceResultParser::class);
         $this->lti1p3ReplaceResultParser = $this->createMock(Lti1p3ReplaceResultParser::class);
         $this->replaceResultOperationRequestMock = $this->createMock(ReplaceResultOperationRequest::class);
 
-        $this->accessTokenRequestValidationResultMock = $this->createMock(AccessTokenRequestValidationResult::class);
         $this->registrationMock = $this->createMock(RegistrationInterface::class);
 
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
@@ -77,7 +67,6 @@ class LtiReplaceResultParserProxyTest extends TestCase
                 [
                     Lti1p1ReplaceResultParser::class => $this->lti1p1ReplaceResultParser,
                     Lti1p3ReplaceResultParser::class => $this->lti1p3ReplaceResultParser,
-                    AccessTokenRequestValidator::class => $this->accessTokenRequestValidatorMock,
                 ]
             )
         );
@@ -85,20 +74,17 @@ class LtiReplaceResultParserProxyTest extends TestCase
 
     public function testParseIsLti1p3(): void
     {
-        $this->accessTokenRequestValidatorMock
+        $this->requestMock
             ->expects($this->once())
-            ->method('validate')
-            ->willReturn($this->accessTokenRequestValidationResultMock);
+            ->method('hasHeader')
+            ->with('authorization')
+            ->willReturn(true);
 
-        $this->accessTokenRequestValidationResultMock
+        $this->requestMock
             ->expects($this->once())
-            ->method('hasError')
-            ->willReturn(false);
-
-        $this->accessTokenRequestValidationResultMock
-            ->expects($this->once())
-            ->method('getRegistration')
-            ->willReturn($this->registrationMock);
+            ->method('getHeader')
+            ->with('authorization')
+            ->willReturn(['Bearer ey123']);
 
         $this->lti1p3ReplaceResultParser
             ->expects($this->once())
@@ -110,15 +96,17 @@ class LtiReplaceResultParserProxyTest extends TestCase
 
     public function testParseIsLti1p1(): void
     {
-        $this->accessTokenRequestValidatorMock
+        $this->requestMock
             ->expects($this->once())
-            ->method('validate')
-            ->willReturn($this->accessTokenRequestValidationResultMock);
-
-        $this->accessTokenRequestValidationResultMock
-            ->expects($this->once())
-            ->method('hasError')
+            ->method('hasHeader')
+            ->with('authorization')
             ->willReturn(true);
+
+        $this->requestMock
+            ->expects($this->once())
+            ->method('getHeader')
+            ->with('authorization')
+            ->willReturn(['qwe Bearer']);
 
         $this->lti1p1ReplaceResultParser
             ->expects($this->once())

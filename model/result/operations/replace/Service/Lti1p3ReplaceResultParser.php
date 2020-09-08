@@ -39,17 +39,6 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
      */
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
-        $result = $this->getAccessTokenRequestValidator()->validate(
-            $request,
-            ReplaceResultParserInterface::REPLACE_RESULT_ROLE
-        );
-
-        if ($result->hasError() || $result->getRegistration() === null) {
-            throw new tao_models_classes_UserException(
-                sprintf('Access Token Validation failed. %s', $result->getError())
-            );
-        }
-
         $parsedPayload = $this->getLisOutcomeRequestParser()->parse((string)$request->getBody());
 
         if (!$parsedPayload->getOperation()) {
@@ -57,6 +46,12 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
         }
 
         $ltiProvider = $this->getLtiProviderService()->searchByDeliveryExecutionId(
+            $parsedPayload->getOperation()->getSourcedId()
+        );
+
+        $this->getAccessTokenRequestValidator()->validate(
+            $request,
+            ReplaceResultParserInterface::REPLACE_RESULT_ROLE,
             $parsedPayload->getOperation()->getSourcedId()
         );
 

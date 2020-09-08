@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -40,9 +39,8 @@ class LtiReplaceResultParserProxy extends ConfigurableService implements Replace
 
     private function isLti1p3(ServerRequestInterface $request): bool
     {
-        $result = $this->getAccessTokenRequestValidator()->validate($request, self::REPLACE_RESULT_ROLE);
-
-        return !$result->hasError() && $result->getRegistration();
+        return $request->hasHeader('authorization') &&
+            strpos($request->getHeader('authorization')[0], 'Bearer') === 0;
     }
 
     private function getLti1p1ReplaceResultParser(): ReplaceResultParserInterface
@@ -53,10 +51,5 @@ class LtiReplaceResultParserProxy extends ConfigurableService implements Replace
     private function getLti1p3ReplaceResultParser(): ReplaceResultParserInterface
     {
         return $this->getServiceLocator()->get(Lti1p3ReplaceResultParser::class);
-    }
-
-    private function getAccessTokenRequestValidator(): AccessTokenRequestValidator
-    {
-        return $this->getServiceLocator()->get(AccessTokenRequestValidator::class);
     }
 }
