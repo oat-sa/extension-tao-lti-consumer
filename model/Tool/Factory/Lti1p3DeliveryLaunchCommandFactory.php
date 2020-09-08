@@ -30,6 +30,8 @@ use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommandInterface;
+use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
+use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
 
 class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements LtiLaunchCommandFactoryInterface
 {
@@ -45,10 +47,8 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         /** @var DeliveryExecution $execution */
         $execution = $config['deliveryExecution'];
 
-        #
-        # @TODO Check with Deliver why now we do not use TAO Delivery execution URI
-        #
-        $resourceIdentifier = $execution->getIdentifier();
+        $resourceIdentifier = $this->getResourceLinkIdDiscover()
+            ->discoverByDeliveryExecutionAndLtiProvider($execution, $ltiProvider);
 
         $user = $this->getSessionService()
             ->getCurrentUser();
@@ -71,5 +71,10 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
     private function getSessionService(): SessionService
     {
         return $this->getServiceLocator()->get(SessionService::SERVICE_ID);
+    }
+
+    private function getResourceLinkIdDiscover(): ResourceLinkIdDiscoverInterface
+    {
+        return $this->getServiceLocator()->get(ResourceLinkIdDiscover::class);
     }
 }

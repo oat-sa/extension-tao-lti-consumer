@@ -26,10 +26,15 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
+use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
+use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
 {
+    /** @var ResourceLinkIdDiscoverInterface|MockObject */
+    private $resourceLinkIdDiscover;
+
     /** @var SessionService|MockObject */
     private $sessionService;
 
@@ -39,11 +44,13 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
     public function setUp(): void
     {
         $this->sessionService = $this->createMock(SessionService::class);
+        $this->resourceLinkIdDiscover = $this->createMock(ResourceLinkIdDiscoverInterface::class);
         $this->subject = new Lti1p3DeliveryLaunchCommandFactory();
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
                 [
-                    SessionService::SERVICE_ID => $this->sessionService
+                    SessionService::SERVICE_ID => $this->sessionService,
+                    ResourceLinkIdDiscover::class => $this->resourceLinkIdDiscover
                 ]
             )
         );
@@ -66,6 +73,11 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
         $this->sessionService
             ->method('getCurrentUser')
             ->willReturn($user);
+
+        $this->resourceLinkIdDiscover
+            ->method('discoverByDeliveryExecutionAndLtiProvider')
+            ->with($execution, $ltiProvider)
+            ->willReturn('deliveryExecutionIdentifier');
 
         $expectedCommand = new LtiLaunchCommand(
             $ltiProvider,
