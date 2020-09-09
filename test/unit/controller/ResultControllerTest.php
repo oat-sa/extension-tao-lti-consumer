@@ -56,7 +56,7 @@ class ResultControllerTest extends TestCase
     private $requestMock;
 
     /** @var ReplaceResultOperationRequest */
-    private $ReplaceResultOperationRequest;
+    private $replaceResultOperationRequest;
 
     /** @var ResponseInterface|MockObject */
     private $responseMock;
@@ -73,7 +73,7 @@ class ResultControllerTest extends TestCase
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
         $this->responseMock = $this->createMock(ResponseInterface::class);
 
-        $this->ReplaceResultOperationRequest = $this->createMock(ReplaceResultOperationRequest::class);
+        $this->replaceResultOperationRequest = $this->createMock(ReplaceResultOperationRequest::class);
 
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
@@ -95,15 +95,20 @@ class ResultControllerTest extends TestCase
         $this->subject->setResponse($this->responseMock);
     }
 
-    public function testManageResults()
+    public function testManageResults(): void
     {
-        $this->requestMock->method('getMethod')->willReturn('POST');
-        $this->requestMock->method('getBody')->willReturn('request_body');
+        $this->requestMock
+            ->method('getMethod')
+            ->willReturn('POST');
+
+        $this->requestMock
+            ->method('getBody')
+            ->willReturn('request_body');
 
         $this->ltiReplaceResultParserProxyMock
             ->expects($this->once())
             ->method('parse')
-            ->willReturn($this->ReplaceResultOperationRequest);
+            ->willReturn($this->replaceResultOperationRequest);
 
         $lisResponseMock = $this->createMock(LisOutcomeResponseInterface::class);
 
@@ -144,13 +149,18 @@ class ResultControllerTest extends TestCase
 
     public function testManageResultsEmptySerialiser(): void
     {
-        $this->requestMock->method('getMethod')->willReturn('POST');
-        $this->requestMock->method('getBody')->willReturn('request_body');
+        $this->requestMock
+            ->method('getMethod')
+            ->willReturn('POST');
+
+        $this->requestMock
+            ->method('getBody')
+            ->willReturn('request_body');
 
         $this->ltiReplaceResultParserProxyMock
             ->expects($this->once())
             ->method('parse')
-            ->willReturn($this->ReplaceResultOperationRequest);
+            ->willReturn($this->replaceResultOperationRequest);
 
         $lisResponseMock = $this->createMock(LisOutcomeResponseInterface::class);
 
@@ -182,11 +192,14 @@ class ResultControllerTest extends TestCase
         $this->subject->manageResults();
     }
 
-    public function testManageResultsGET(): void
+    public function testManageResultsWithGetIsNotAllowed(): void
     {
         $this->expectException(common_exception_MethodNotAllowed::class);
 
-        $this->requestMock->method('getMethod')->willReturn('GET');
+        $this->requestMock
+            ->method('getMethod')
+            ->willReturn('GET');
+        
         $this->subject->manageResults();
     }
 }

@@ -24,9 +24,6 @@ namespace oat\taoLtiConsumer\test\unit\model\result\operations\replace\Service;
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use OAT\Library\Lti1p3Core\Registration\RegistrationInterface;
-use OAT\Library\Lti1p3Core\Service\Server\Validator\AccessTokenRequestValidationResult;
-use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
@@ -34,8 +31,8 @@ use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\OperationRequestInterface;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p3ReplaceResultParser;
+use oat\taoLtiConsumer\model\result\ParsingException;
 use Psr\Http\Message\ServerRequestInterface;
-use tao_models_classes_UserException;
 
 class Lti1p3ReplaceResultParserTest extends TestCase
 {
@@ -54,11 +51,8 @@ class Lti1p3ReplaceResultParserTest extends TestCase
     /** @var AccessTokenRequestValidator|MockObject */
     private $accessTokenRequestValidatorMock;
 
-    /** @var AccessTokenRequestValidationResult|MockObject */
-    private $accessTokenRequestValidationResultMock;
-
-    /** @var DeliveryExecutionService|MockObject */
-    private $deliveryExecutionServiceMock;
+    /** @var LisOutcomeRequest */
+    private $lisOutcomeRequestMock;
 
     protected function setUp(): void
     {
@@ -67,10 +61,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
         $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
         $this->ltiProviderServiceMock = $this->createMock(LtiProviderService::class);
         $this->accessTokenRequestValidatorMock = $this->createMock(AccessTokenRequestValidator::class);
-        $this->deliveryExecutionServiceMock = $this->createMock(DeliveryExecutionService::class);
-
-        $this->accessTokenRequestValidationResultMock = $this->createMock(AccessTokenRequestValidationResult::class);
-
+        $this->lisOutcomeRequestMock = $this->createMock(LisOutcomeRequest::class);
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
 
         $this->subject->setServiceLocator(
@@ -86,9 +77,8 @@ class Lti1p3ReplaceResultParserTest extends TestCase
 
     public function testParse(): void
     {
-        $registrationMock = $this->createMock(RegistrationInterface::class);
-        $lisOutcomeRequestMock = $this->createMock(LisOutcomeRequest::class);
         $ltiProviderMock = $this->createMock(LtiProvider::class);
+        $operationRequestMock = $this->createMock(OperationRequestInterface::class);
 
         $this->ltiProviderServiceMock
             ->expects($this->once())
@@ -98,51 +88,42 @@ class Lti1p3ReplaceResultParserTest extends TestCase
         $this->lisOutcomeRequestParserMock
             ->expects($this->once())
             ->method('parse')
-            ->willReturn($lisOutcomeRequestMock);
+            ->willReturn($this->lisOutcomeRequestMock);
 
-        $operationRequestMock = $this->createMock(OperationRequestInterface::class);
 
-        $lisOutcomeRequestMock
-            ->expects($this->exactly(2))
+        $this->lisOutcomeRequestMock
+            ->expects($this->exactly(3))
             ->method('getOperation')
             ->willReturn($operationRequestMock);
 
         $operationRequestMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getSourcedId')
             ->willReturn('deliveryExecutionId');
 
         $this->accessTokenRequestValidatorMock
             ->expects($this->once())
-            ->method('validate')
-            ->willReturn($this->accessTokenRequestValidationResultMock);
+            ->method('validate');
 
-        $this->accessTokenRequestValidationResultMock
-            ->expects($this->once())
-            ->method('hasError')
-            ->willReturn(false);
+        $result = $this->subject->parse($this->requestMock);
 
-        $this->accessTokenRequestValidationResultMock
-            ->expects($this->once())
-            ->method('getRegistration')
-            ->willReturn($registrationMock);
-
-        $this->subject->parse($this->requestMock);
+        $this->assertSame($this->lisOutcomeRequestMock, $result->getLisOutcomeRequest());
+        $this->assertSame($ltiProviderMock, $result->getLtiProvider());
     }
 
-    public function testParseValidationHasErrors(): void
+    public function testParseOperationMissing(): void
     {
-        $this->expectException(tao_models_classes_UserException::class);
+        $this->expectException(ParsingException::class);
 
-        $this->accessTokenRequestValidatorMock
+        $this->lisOutcomeRequestParserMock
             ->expects($this->once())
-            ->method('validate')
-            ->willReturn($this->accessTokenRequestValidationResultMock);
+            ->method('parse')
+            ->willReturn($this->lisOutcomeRequestMock);
 
-        $this->accessTokenRequestValidationResultMock
+        $this->lisOutcomeRequestMock
             ->expects($this->once())
-            ->method('hasError')
-            ->willReturn(true);
+            ->method('getOperation')
+            ->willReturn(null);
 
         $this->subject->parse($this->requestMock);
     }

@@ -34,7 +34,7 @@ class LisOutcomeRequestParserTest extends TestCase
     /** @var OperationsCollection|MockObject */
     private $operationsCollectionMock;
 
-    public function testParseLti1p3OutcomeBasic()
+    public function testParseLti1p3OutcomeBasic(): void
     {
         $payload = $this->getPayload();
         $subject = new LisOutcomeRequestParser();

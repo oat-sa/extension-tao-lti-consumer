@@ -62,8 +62,6 @@ class LtiDeliveryFactoryTest extends TestCase
 
     public function setUp(): void
     {
-        define('ROOT_PATH', '');
-        define('CONFIG_PATH', ROOT_PATH . 'config/');
         $this->timeMock = $this->MockFunction('oat\taoLtiConsumer\model\delivery\factory', "time", self::FIXED_TIME);
         $this->timeMock->disableAll();
         $this->timeMock->enable();
