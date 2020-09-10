@@ -26,8 +26,8 @@ use oat\oatbox\service\ConfigurableService;
 use oat\taoLti\models\classes\LtiException;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
-use oat\taoLti\models\classes\Platform\Service\InvalidLtiProviderException;
 use oat\taoLti\models\classes\Platform\Service\MissingScopeException;
+use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use oat\taoLtiConsumer\model\result\ParsingException;
@@ -39,7 +39,6 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
     /**
      * @throws ParsingException
      * @throws LtiException
-     * @throws InvalidLtiProviderException
      * @throws MissingScopeException
      * @throws tao_models_classes_UserException
      */
@@ -55,11 +54,10 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
             $parsedPayload->getOperation()->getSourcedId()
         );
 
-        $this->getAccessTokenRequestValidator()->validate(
-            $request,
-            ReplaceResultParserInterface::REPLACE_RESULT_ROLE,
-            $parsedPayload->getOperation()->getSourcedId()
-        );
+        $this->getAccessTokenRequestValidator()
+            ->withLtiProvider($ltiProvider)
+            ->withRole(ReplaceResultParserInterface::REPLACE_RESULT_ROLE)
+            ->validate($request);
 
         return new ReplaceResultOperationRequest($parsedPayload, $ltiProvider);
     }
@@ -71,7 +69,7 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
 
     private function getLtiProviderService(): LtiProviderService
     {
-        return $this->getServiceLocator()->get(LtiProviderService::SERVICE_ID);
+        return $this->getServiceLocator()->get(DeliveryLtiProviderRepository::SERVICE_ID);
     }
 
     private function getAccessTokenRequestValidator(): AccessTokenRequestValidator
