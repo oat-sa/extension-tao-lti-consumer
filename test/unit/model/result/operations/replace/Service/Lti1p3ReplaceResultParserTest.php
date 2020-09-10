@@ -27,6 +27,7 @@ use oat\generis\test\TestCase;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
+use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\OperationRequestInterface;
@@ -59,7 +60,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
         $this->subject = new Lti1p3ReplaceResultParser();
 
         $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
-        $this->ltiProviderServiceMock = $this->createMock(LtiProviderService::class);
+        $this->ltiProviderServiceMock = $this->createMock(DeliveryLtiProviderRepository::class);
         $this->accessTokenRequestValidatorMock = $this->createMock(AccessTokenRequestValidator::class);
         $this->lisOutcomeRequestMock = $this->createMock(LisOutcomeRequest::class);
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
@@ -68,7 +69,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
             $this->getServiceLocatorMock(
                 [
                     LisOutcomeRequestParser::class => $this->lisOutcomeRequestParserMock,
-                    LtiProviderService::SERVICE_ID => $this->ltiProviderServiceMock,
+                    DeliveryLtiProviderRepository::class=> $this->ltiProviderServiceMock,
                     AccessTokenRequestValidator::class => $this->accessTokenRequestValidatorMock,
                 ]
             )
@@ -92,14 +93,24 @@ class Lti1p3ReplaceResultParserTest extends TestCase
 
 
         $this->lisOutcomeRequestMock
-            ->expects($this->exactly(3))
+            ->expects($this->exactly(2))
             ->method('getOperation')
             ->willReturn($operationRequestMock);
 
         $operationRequestMock
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getSourcedId')
             ->willReturn('deliveryExecutionId');
+
+        $this->accessTokenRequestValidatorMock
+            ->expects($this->once())
+            ->method('withLtiProvider')
+            ->willReturn($this->accessTokenRequestValidatorMock);
+
+        $this->accessTokenRequestValidatorMock
+            ->expects($this->once())
+            ->method('withRole')
+            ->willReturn($this->accessTokenRequestValidatorMock);
 
         $this->accessTokenRequestValidatorMock
             ->expects($this->once())

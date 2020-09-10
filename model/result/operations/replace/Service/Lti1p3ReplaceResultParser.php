@@ -24,7 +24,6 @@ namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLti\models\classes\LtiException;
-use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
 use oat\taoLti\models\classes\Platform\Service\MissingScopeException;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
@@ -67,9 +66,9 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
         return $this->getServiceLocator()->get(LisOutcomeRequestParser::class);
     }
 
-    private function getLtiProviderService(): LtiProviderService
+    private function getLtiProviderService(): DeliveryLtiProviderRepository
     {
-        return $this->getServiceLocator()->get(DeliveryLtiProviderRepository::SERVICE_ID);
+        return $this->getServiceLocator()->get(DeliveryLtiProviderRepository::class);
     }
 
     private function getAccessTokenRequestValidator(): AccessTokenRequestValidator
