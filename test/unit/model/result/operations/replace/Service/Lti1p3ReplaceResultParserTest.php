@@ -26,7 +26,7 @@ use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
-use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
+use oat\taoLti\models\classes\Security\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;

@@ -24,8 +24,8 @@ namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLti\models\classes\LtiException;
-use oat\taoLti\models\classes\Platform\Service\AccessTokenRequestValidator;
-use oat\taoLti\models\classes\Platform\Service\MissingScopeException;
+use oat\taoLti\models\classes\Security\AccessTokenRequestValidator;
+use oat\taoLti\models\classes\Security\MissingScopeException;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
