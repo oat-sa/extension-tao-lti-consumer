@@ -91,7 +91,7 @@ class LtiReplaceResultParserProxyTest extends TestCase
             ->method('parse')
             ->willReturn($this->replaceResultOperationRequestMock);
 
-        $this->subject->parse($this->requestMock);
+        $this->assertSame($this->replaceResultOperationRequestMock, $this->subject->parse($this->requestMock));
     }
 
     public function testParseIsLti1p1(): void
@@ -113,6 +113,6 @@ class LtiReplaceResultParserProxyTest extends TestCase
             ->method('parse')
             ->willReturn($this->replaceResultOperationRequestMock);
 
-        $this->subject->parse($this->requestMock);
+        $this->assertSame($this->replaceResultOperationRequestMock, $this->subject->parse($this->requestMock));
     }
 }
