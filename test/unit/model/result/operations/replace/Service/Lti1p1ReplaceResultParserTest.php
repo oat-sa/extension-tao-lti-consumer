@@ -98,7 +98,9 @@ class Lti1p1ReplaceResultParserTest extends TestCase
             ->method('authenticate')
             ->willReturn($ltiProviderUserMock);
 
-        $this->subject->parse($this->requestMock);
+        $result = $this->subject->parse($this->requestMock);
+        $this->assertSame($ltiProviderMock, $result->getLtiProvider());
+        $this->assertSame($lisOutcomeRequest, $result->getLisOutcomeRequest());
     }
 
     public function testLisAuthAdapterFactoryThrowError(): void
