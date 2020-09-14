@@ -78,7 +78,7 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
             ],
             $execution->getIdentifier(),
             $user,
-            null,
+            $user->getIdentifier(),
             $launchUrl
         );
     }

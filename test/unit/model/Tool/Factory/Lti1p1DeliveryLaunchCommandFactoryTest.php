@@ -83,7 +83,7 @@ class Lti1p1DeliveryLaunchCommandFactoryTest extends TestCase
             ],
             'deliveryExecutionIdentifier',
             $user,
-            null,
+            'userIdentifier',
             'launchUrl'
         );
 
