@@ -49,7 +49,7 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
             throw new ParsingException('Lis request does not contain valid operation');
         }
 
-        $ltiProvider = $this->getLtiProviderService()->searchByDeliveryExecutionId(
+        $ltiProvider = $this->getDeliveryLtiProviderRepository()->searchByDeliveryExecutionId(
             $parsedPayload->getOperation()->getSourcedId()
         );
 
@@ -66,7 +66,7 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
         return $this->getServiceLocator()->get(LisOutcomeRequestParser::class);
     }
 
-    private function getLtiProviderService(): DeliveryLtiProviderRepository
+    private function getDeliveryLtiProviderRepository(): DeliveryLtiProviderRepository
     {
         return $this->getServiceLocator()->get(DeliveryLtiProviderRepository::class);
     }

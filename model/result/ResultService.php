@@ -66,12 +66,13 @@ class ResultService extends ConfigurableService
         $deliveryExecution = $this->getDeliveryExecutionGetter()
             ->get($operationRequest->getSourcedId(), $ltiProvider);
         if ($deliveryExecution === null) {
-            $this->logWarning(sprintf(
-                "Delivery execution '%s' not found during '%s' operation processing for ltiProvider with key '%s': ",
-                $operationRequest->getSourcedId(),
-                $request->getOperationName(),
-                $ltiProvider->getKey()
-            ));
+            $this->logWarning(
+                sprintf(
+                    "Delivery execution '%s' not found during '%s' operation processing for ltiProvider with key '%s': ",
+                    $operationRequest->getSourcedId(),
+                    $request->getOperationName(),
+                    $ltiProvider->getKey()
+                ));
             return $this->getDeliveryExecutionNotFoundResponse($request, $operationRequest->getSourcedId());
         }
 

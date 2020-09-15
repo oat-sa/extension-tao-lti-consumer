@@ -29,8 +29,5 @@ interface DeliveryExecutionGetterInterface
 {
     public const SERVICE_ID = 'taoLtiConsumer/DeliveryExecutionGetter';
 
-    /**
-     * Retrieves delivery execution by id (or returns null if doesn't exist) accessible by passed $ltiProvider
-     */
     public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface;
 }

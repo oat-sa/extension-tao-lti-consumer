@@ -48,7 +48,7 @@ class DeliveryLtiProviderRepository extends ConfigurableService
             true
         );
 
-        if (!isset($containerJson['params']) || !isset($containerJson['params']['ltiProvider'])) {
+        if (empty($containerJson['params']['ltiProvider'])) {
             throw new LtiException('This delivery does not contain required lti provider defined');
         }
 
