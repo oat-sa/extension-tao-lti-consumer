@@ -15,19 +15,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
 
-namespace oat\taoLtiConsumer\model;
+namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
-use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
+use Psr\Http\Message\ServerRequestInterface;
 
-interface DeliveryExecutionGetterInterface
+interface ReplaceResultParserInterface
 {
-    public const SERVICE_ID = 'taoLtiConsumer/DeliveryExecutionGetter';
+    public const REPLACE_RESULT_ROLE = 'https://purl.imsglobal.org/spec/lti-bo/scope/basicoutcome';
 
-    public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface;
+    public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest;
 }

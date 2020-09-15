@@ -16,6 +16,7 @@
  *
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
+
 namespace oat\taoLtiConsumer\test\unit\model\result\messages;
 
 use DOMNode;
@@ -58,7 +59,7 @@ class LisOutcomeRequestParserTest extends TestCase
 
         $parser = new LisOutcomeRequestParser();
         $parser->setServiceLocator($this->getServiceLocatorMock([
-            OperationsCollection::class => $opCollectionMock
+            OperationsCollection::class => $opCollectionMock,
         ]));
         /** @noinspection PhpUnhandledExceptionInspection */
         $result = $parser->parse($this->getReplaceRequestXml('msg_id'));
@@ -103,7 +104,7 @@ class LisOutcomeRequestParserTest extends TestCase
 
         $parser = new LisOutcomeRequestParser();
         $parser->setServiceLocator($this->getServiceLocatorMock([
-            OperationsCollection::class => $opCollectionMock
+            OperationsCollection::class => $opCollectionMock,
         ]));
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -114,6 +115,7 @@ class LisOutcomeRequestParserTest extends TestCase
 
     /**
      * @param string|null $msgId
+     *
      * @return string
      */
     protected function getReplaceRequestXml($msgId)
@@ -139,6 +141,7 @@ class LisOutcomeRequestParserTest extends TestCase
 
     /**
      * @param string|null $operationNode
+     *
      * @return string
      */
     protected function getRequestXml($operationNode)

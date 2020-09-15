@@ -1,27 +1,5 @@
 <?php
 
-namespace oat\taoLtiConsumer\test\unit\model\result;
-
-use common_exception_Error;
-use common_exception_NotFound;
-use oat\generis\test\MockObject;
-use oat\generis\test\TestCase;
-use oat\oatbox\event\EventManager;
-use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoDelivery\model\execution\StateServiceInterface;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
-use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
-use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
-use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
-use oat\taoLtiConsumer\model\result\operations\BasicResponse;
-use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
-use oat\taoLtiConsumer\model\result\operations\replace\OperationRequest as ReplaceOperationRequest;
-use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
-use oat\taoLtiConsumer\model\result\ResultService;
-use oat\taoLtiConsumer\model\result\ScoreWriterService;
-use Psr\Log\LoggerInterface;
-
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,13 +18,38 @@ use Psr\Log\LoggerInterface;
  * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
  */
 
+declare(strict_types=1);
+
+namespace oat\taoLtiConsumer\test\unit\model\result;
+
+use common_exception_Error;
+use common_exception_NotFound;
+use oat\generis\test\MockObject;
+use oat\generis\test\TestCase;
+use oat\oatbox\event\EventManager;
+use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
+use oat\taoDelivery\model\execution\StateServiceInterface;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\DeliveryExecutionGetterInterface;
+use oat\taoLtiConsumer\model\result\event\LisScoreReceivedEvent;
+use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
+use oat\taoLtiConsumer\model\result\operations\BasicResponse;
+use oat\taoLtiConsumer\model\result\operations\failure\Response as FailureResponse;
+use oat\taoLtiConsumer\model\result\operations\OperationRequestInterface;
+use oat\taoLtiConsumer\model\result\operations\replace\OperationRequest as ReplaceOperationRequest;
+use oat\taoLtiConsumer\model\result\operations\replace\Response as ReplaceResponse;
+use oat\taoLtiConsumer\model\result\ResultService;
+use oat\taoLtiConsumer\model\result\ScoreWriterService;
+use Psr\Log\LoggerInterface;
+
 class ResultServiceTest extends TestCase
 {
     /**
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    public function testProcessReplaceRequest()
+    public function testProcessReplaceRequest(): void
     {
         /** @var LoggerInterface|MockObject $loggerMock */
         $loggerMock = $this->createMock(LoggerInterface::class);
@@ -84,9 +87,6 @@ class ResultServiceTest extends TestCase
 
         /** @var DeliveryExecutionGetterInterface|MockObject $deGetterMock */
         $stateServiceMock = $this->createMock(StateServiceInterface::class);
-        $deGetterMock->method('finish')
-            ->with($deliveryExecutionMock)
-            ->willReturn(true);
 
         /** @var ReplaceOperationRequest|MockObject $operationRequestMock */
         $operationRequestMock = $this->createMock(ReplaceOperationRequest::class);
@@ -116,15 +116,15 @@ class ResultServiceTest extends TestCase
         $this->assertNotSame($response->getMessageIdentifier(), $response->getMessageRefIdentifier());
         $this->assertSame('msg_identifier', $response->getMessageRefIdentifier());
         $this->assertSame('replaceResultRequest', $response->getOperationRefIdentifier());
-        $this->assertContains('de_id', $response->getStatusDescription());
-        $this->assertContains('0.234', $response->getStatusDescription());
+        $this->assertStringContainsString('de_id', $response->getStatusDescription());
+        $this->assertStringContainsString('0.234', $response->getStatusDescription());
     }
 
     /**
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    public function testProcessUnsupportedOperationRequest()
+    public function testProcessUnsupportedOperationRequest(): void
     {
         /** @var LoggerInterface|MockObject $loggerMock */
         $loggerMock = $this->createMock(LoggerInterface::class);
@@ -156,7 +156,7 @@ class ResultServiceTest extends TestCase
      * @throws common_exception_Error
      * @throws common_exception_NotFound
      */
-    public function testDeliveryExecutionNotFound()
+    public function testDeliveryExecutionNotFound(): void
     {
         /** @var LoggerInterface|MockObject $loggerMock */
         $loggerMock = $this->createMock(LoggerInterface::class);
@@ -173,9 +173,8 @@ class ResultServiceTest extends TestCase
             ->willReturn(null);
 
         /** @var ReplaceOperationRequest|MockObject $operationRequestMock */
-        $operationRequestMock = $this->createMock(ReplaceOperationRequest::class);
+        $operationRequestMock = $this->createMock(OperationRequestInterface::class);
         $operationRequestMock->method('getSourcedId')->willReturn('de_id');
-        $operationRequestMock->method('getScore')->willReturn('0.234');
 
         /** @var LisOutcomeRequest|MockObject $requestMock */
         $requestMock = $this->createMock(LisOutcomeRequest::class);
@@ -197,6 +196,6 @@ class ResultServiceTest extends TestCase
         $this->assertNotSame($response->getMessageIdentifier(), $response->getMessageRefIdentifier());
         $this->assertSame('msg_identifier', $response->getMessageRefIdentifier());
         $this->assertSame('replaceResultRequest', $response->getOperationRefIdentifier());
-        $this->assertContains('de_id', $response->getStatusDescription());
+        $this->assertStringContainsString('de_id', $response->getStatusDescription());
     }
 }
