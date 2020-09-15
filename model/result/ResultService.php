@@ -72,7 +72,8 @@ class ResultService extends ConfigurableService
                     $operationRequest->getSourcedId(),
                     $request->getOperationName(),
                     $ltiProvider->getKey()
-                ));
+                )
+            );
             return $this->getDeliveryExecutionNotFoundResponse($request, $operationRequest->getSourcedId());
         }
 
@@ -132,10 +133,10 @@ class ResultService extends ConfigurableService
 
         $this->logInfo(
             sprintf(
-            "Score '%s' added for delivery execution '%s'",
-            $operationRequest->getScore(),
-            $operationRequest->getSourcedId()
-        )
+                "Score '%s' added for delivery execution '%s'",
+                $operationRequest->getScore(),
+                $operationRequest->getSourcedId()
+            )
         );
 
         return new ReplaceResponse(
