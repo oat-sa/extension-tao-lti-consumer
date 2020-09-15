@@ -25,6 +25,7 @@ use oat\oatbox\user\User;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
+use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
@@ -75,7 +76,7 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
             ->willReturn($user);
 
         $config = [
-            'launchUrl' => 'launchUrl',
+            LtiDeliveryContainer::CONTAINER_LTI_LAUNCH_URL => 'launchUrl',
             'ltiProvider' => $ltiProvider,
             'deliveryExecution' => $execution
         ];

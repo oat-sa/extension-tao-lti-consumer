@@ -64,7 +64,7 @@ class LtiDeliveryContainer extends AbstractContainer
         $config = [
             'launchUrl' => $launchUrl,
             'deliveryExecution' => $execution,
-            self::CONTAINER_LTI_PROVIDER_ID => $ltiProvider,
+            'ltiProvider' => $ltiProvider,
             self::CONTAINER_LTI_RESOURCE_LINK_ID => $params[self::CONTAINER_LTI_RESOURCE_LINK_ID] ?? null,
         ];
 
