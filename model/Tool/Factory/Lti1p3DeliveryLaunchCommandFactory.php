@@ -26,6 +26,7 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
@@ -59,7 +60,8 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 'Learner'
             ],
             [
-                'deliveryExecutionId' => $execution->getIdentifier()
+                LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
+                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $this->getLisOutcomeServiceUrlFactory()->create(),
             ],
             $resourceIdentifier,
             $user,
@@ -76,5 +78,10 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
     private function getResourceLinkIdDiscover(): ResourceLinkIdDiscoverInterface
     {
         return $this->getServiceLocator()->get(ResourceLinkIdDiscover::class);
+    }
+
+    private function getLisOutcomeServiceUrlFactory(): LisOutcomeServiceUrlFactory
+    {
+        return $this->getServiceLocator()->get(LisOutcomeServiceUrlFactory::class);
     }
 }

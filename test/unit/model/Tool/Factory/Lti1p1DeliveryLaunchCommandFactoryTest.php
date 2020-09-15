@@ -27,6 +27,7 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
+use oat\taoLtiConsumer\model\Tool\Factory\LisOutcomeServiceUrlFactory;
 use oat\taoLtiConsumer\model\Tool\Factory\Lti1p1DeliveryLaunchCommandFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -38,12 +39,16 @@ class Lti1p1DeliveryLaunchCommandFactoryTest extends TestCase
     /** @var UrlHelper|MockObject */
     private $urlHelper;
 
+    /** @var LisOutcomeServiceUrlFactory|MockObject */
+    private $lisOutcomeServiceUrlFactory;
+
     /** @var Lti1p1DeliveryLaunchCommandFactory */
     private $subject;
 
     public function setUp(): void
     {
         $this->sessionService = $this->createMock(SessionService::class);
+        $this->lisOutcomeServiceUrlFactory = $this->createMock(LisOutcomeServiceUrlFactory::class);
         $this->urlHelper = $this->createMock(UrlHelper::class);
         $this->subject = new Lti1p1DeliveryLaunchCommandFactory();
         $this->subject->setServiceLocator(
@@ -51,6 +56,7 @@ class Lti1p1DeliveryLaunchCommandFactoryTest extends TestCase
                 [
                     SessionService::SERVICE_ID => $this->sessionService,
                     UrlHelper::class => $this->urlHelper,
+                    LisOutcomeServiceUrlFactory::class => $this->lisOutcomeServiceUrlFactory,
                 ]
             )
         );
@@ -62,12 +68,13 @@ class Lti1p1DeliveryLaunchCommandFactoryTest extends TestCase
         $ltiProvider = $this->createMock(LtiProvider::class);
         $user = $this->expectUser();
 
+        $this->lisOutcomeServiceUrlFactory
+            ->method('create')
+            ->willReturn('outcomeServiceUrl');
+
         $this->urlHelper
             ->method('buildUrl')
-            ->willReturnOnConsecutiveCalls(
-                'returnUrl',
-                'outcomeServiceUrl'
-            );
+            ->willReturn('returnUrl');
 
         $expectedCommand = new LtiLaunchCommand(
             $ltiProvider,

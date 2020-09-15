@@ -23,9 +23,11 @@ use oat\generis\test\TestCase;
 use oat\oatbox\session\SessionService;
 use oat\oatbox\user\User;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
+use oat\taoLtiConsumer\model\Tool\Factory\LisOutcomeServiceUrlFactory;
 use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
@@ -39,19 +41,24 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
     /** @var SessionService|MockObject */
     private $sessionService;
 
+    /** @var LisOutcomeServiceUrlFactory|MockObject */
+    private $lisOutcomeServiceUrlFactory;
+
     /** @var Lti1p3DeliveryLaunchCommandFactory */
     private $subject;
 
     public function setUp(): void
     {
         $this->sessionService = $this->createMock(SessionService::class);
+        $this->lisOutcomeServiceUrlFactory = $this->createMock(LisOutcomeServiceUrlFactory::class);
         $this->resourceLinkIdDiscover = $this->createMock(ResourceLinkIdDiscoverInterface::class);
         $this->subject = new Lti1p3DeliveryLaunchCommandFactory();
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
                 [
                     SessionService::SERVICE_ID => $this->sessionService,
-                    ResourceLinkIdDiscover::class => $this->resourceLinkIdDiscover
+                    ResourceLinkIdDiscover::class => $this->resourceLinkIdDiscover,
+                    LisOutcomeServiceUrlFactory::class => $this->lisOutcomeServiceUrlFactory,
                 ]
             )
         );
@@ -75,8 +82,12 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
             ->method('getCurrentUser')
             ->willReturn($user);
 
+        $this->lisOutcomeServiceUrlFactory
+            ->method('create')
+            ->willReturn('outcomeServiceUrl');
+
         $config = [
-            LtiDeliveryContainer::CONTAINER_LTI_LAUNCH_URL => 'launchUrl',
+            'launchUrl' => 'launchUrl',
             'ltiProvider' => $ltiProvider,
             'deliveryExecution' => $execution
         ];
@@ -92,7 +103,8 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
                 'Learner'
             ],
             [
-                'deliveryExecutionId' => 'deliveryExecutionIdentifier'
+                LtiLaunchData::LIS_RESULT_SOURCEDID => 'deliveryExecutionIdentifier',
+                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => 'outcomeServiceUrl',
             ],
             'deliveryExecutionIdentifier',
             $user,

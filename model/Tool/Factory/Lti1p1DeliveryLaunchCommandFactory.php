@@ -58,12 +58,6 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
             'taoDelivery'
         );
 
-        $outcomeServiceUrl = $urlHelper->buildUrl(
-            'manageResults',
-            'ResultController',
-            'taoLtiConsumer'
-        );
-
         return new LtiLaunchCommand(
             $ltiProvider,
             [
@@ -74,7 +68,7 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 LtiLaunchData::RESOURCE_LINK_ID => $execution->getIdentifier(),
                 LtiLaunchData::LAUNCH_PRESENTATION_RETURN_URL => $returnUrl,
                 LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
-                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
+                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $this->getLisOutcomeServiceUrlFactory()->create(),
             ],
             $execution->getIdentifier(),
             $user,
@@ -92,5 +86,10 @@ class Lti1p1DeliveryLaunchCommandFactory extends ConfigurableService implements 
     {
         return $this->getServiceLocator()
             ->get(SessionService::SERVICE_ID);
+    }
+
+    private function getLisOutcomeServiceUrlFactory(): LisOutcomeServiceUrlFactory
+    {
+        return $this->getServiceLocator()->get(LisOutcomeServiceUrlFactory::class);
     }
 }
