@@ -23,12 +23,8 @@ declare(strict_types=1);
 namespace oat\taoLtiConsumer\model\Tool\Service;
 
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 
 interface ResourceLinkIdDiscoverInterface
 {
-    public function discoverByDeliveryExecutionAndLtiProvider(
-        DeliveryExecution $execution,
-        LtiProvider $ltiProvider
-    ): string;
+    public function discoverByDeliveryExecution(DeliveryExecution $execution, array $ltiConfiguration): string;
 }

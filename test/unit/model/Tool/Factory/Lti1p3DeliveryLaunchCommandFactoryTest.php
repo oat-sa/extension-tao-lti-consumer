@@ -74,9 +74,15 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
             ->method('getCurrentUser')
             ->willReturn($user);
 
+        $config = [
+            'launchUrl' => 'launchUrl',
+            'ltiProvider' => $ltiProvider,
+            'deliveryExecution' => $execution
+        ];
+
         $this->resourceLinkIdDiscover
-            ->method('discoverByDeliveryExecutionAndLtiProvider')
-            ->with($execution, $ltiProvider)
+            ->method('discoverByDeliveryExecution')
+            ->with($execution, $config)
             ->willReturn('deliveryExecutionIdentifier');
 
         $expectedCommand = new LtiLaunchCommand(
@@ -92,12 +98,6 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
             'userIdentifier',
             'launchUrl'
         );
-
-        $config = [
-            'launchUrl' => 'launchUrl',
-            'ltiProvider' => $ltiProvider,
-            'deliveryExecution' => $execution
-        ];
 
         $this->assertEquals($expectedCommand, $this->subject->create($config));
     }

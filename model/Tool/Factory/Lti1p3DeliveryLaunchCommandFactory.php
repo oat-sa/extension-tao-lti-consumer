@@ -48,7 +48,7 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         $execution = $config['deliveryExecution'];
 
         $resourceIdentifier = $this->getResourceLinkIdDiscover()
-            ->discoverByDeliveryExecutionAndLtiProvider($execution, $ltiProvider);
+            ->discoverByDeliveryExecution($execution, $config);
 
         $user = $this->getSessionService()
             ->getCurrentUser();

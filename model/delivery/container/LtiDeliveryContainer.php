@@ -43,6 +43,11 @@ class LtiDeliveryContainer extends AbstractContainer
 {
     use OntologyAwareTrait;
 
+    public const CONTAINER_LTI_INDEX = 'lti';
+    public const CONTAINER_LTI_LAUNCH_URL = 'ltiPath';
+    public const CONTAINER_LTI_PROVIDER_ID = 'ltiProvider';
+    public const CONTAINER_LTI_RESOURCE_LINK_ID = 'ltiResourceLinkId';
+
     /**
      * Get the execution container to render LTI based delivery
      *
@@ -53,13 +58,14 @@ class LtiDeliveryContainer extends AbstractContainer
     public function getExecutionContainer(DeliveryExecution $execution)
     {
         $params = $this->getRuntimeParams();
-        $launchUrl = $params['ltiPath'];
-        $ltiProvider = $this->getLtiProvider($params['ltiProvider']);
+        $launchUrl = $params[self::CONTAINER_LTI_LAUNCH_URL];
+        $ltiProvider = $this->getLtiProvider($params[self::CONTAINER_LTI_PROVIDER_ID]);
 
         $config = [
             'launchUrl' => $launchUrl,
-            'ltiProvider' => $ltiProvider,
             'deliveryExecution' => $execution,
+            self::CONTAINER_LTI_PROVIDER_ID => $ltiProvider,
+            self::CONTAINER_LTI_RESOURCE_LINK_ID => $params[self::CONTAINER_LTI_RESOURCE_LINK_ID] ?? null,
         ];
 
         $command = $this->getLtiLaunchCommandFactory()->create($config);

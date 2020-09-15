@@ -24,25 +24,17 @@ namespace oat\taoLtiConsumer\model\Tool\Service;
 
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
-use oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory;
-use oat\taoDeliverConnect\model\TenantLtiProvider;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 
 class ResourceLinkIdDiscover extends ConfigurableService implements ResourceLinkIdDiscoverInterface
 {
     use OntologyAwareTrait;
 
-    public function discoverByDeliveryExecutionAndLtiProvider(
-        DeliveryExecution $execution,
-        LtiProvider $ltiProvider
-    ): string
+    public function discoverByDeliveryExecution(DeliveryExecution $execution, array $ltiConfiguration): string
     {
-        if ($ltiProvider instanceof TenantLtiProvider) {
-            return (string)$execution->getDelivery()
-                ->getUniquePropertyValue($this->getProperty(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID));
-        }
-
-        return $execution->getIdentifier();
+        return empty($ltiConfiguration[LtiDeliveryContainer::CONTAINER_LTI_RESOURCE_LINK_ID])
+            ? $execution->getIdentifier()
+            : (string)$ltiConfiguration[LtiDeliveryContainer::CONTAINER_LTI_RESOURCE_LINK_ID];
     }
 }

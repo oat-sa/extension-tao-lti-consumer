@@ -19,73 +19,39 @@
 
 namespace oat\taoLtiConsumer\test\unit\model\Tool\Service;
 
-use core_kernel_classes_Property;
-use core_kernel_classes_Resource;
-use oat\generis\model\data\Ontology;
 use oat\generis\test\TestCase;
-use oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory;
-use oat\taoDeliverConnect\model\TenantLtiProvider;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
-use PHPUnit\Framework\MockObject\MockObject;
 
 class ResourceLinkIdDiscoverTest extends TestCase
 {
-    /** @var Ontology|MockObject */
-    private $ontology;
-
     /** @var ResourceLinkIdDiscover */
     private $subject;
 
     public function setUp(): void
     {
-        $this->ontology = $this->createMock(Ontology::class);
         $this->subject = new ResourceLinkIdDiscover();
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    Ontology::SERVICE_ID => $this->ontology
-                ]
-            )
-        );
     }
 
-    public function testDiscoverByDeliveryExecutionAndLtiProviderBasedOnRdfLtiProvider(): void
+    public function testDiscoverByDeliveryExecutionAndLtiProviderExecution(): void
     {
-        $ltiProvider = $this->createMock(LtiProvider::class);
         $execution = $this->createMock(DeliveryExecution::class);
 
         $execution->method('getIdentifier')
-            ->willReturn('deliveryExecutionIdentifier');
+            ->willReturn('identifier');
 
-        $this->assertSame(
-            'deliveryExecutionIdentifier',
-            $this->subject->discoverByDeliveryExecutionAndLtiProvider($execution, $ltiProvider)
-        );
+        $this->assertSame('identifier', $this->subject->discoverByDeliveryExecution($execution, []));
     }
 
-    public function testDiscoverByDeliveryExecutionAndLtiProviderBasedOnTenantLtiProvider(): void
+    public function testDiscoverByDeliveryExecutionBasedOnLtiConfiguration(): void
     {
-        $ltiProvider = $this->createMock(TenantLtiProvider::class);
-        $delivery = $this->createMock(core_kernel_classes_Resource::class);
-        $publishDeliveryProperty = $this->createMock(core_kernel_classes_Property::class);
         $execution = $this->createMock(DeliveryExecution::class);
 
-        $delivery->method('getUniquePropertyValue')
-            ->willReturn('abc123');
+        $ltiConfiguration = [
+            LtiDeliveryContainer::CONTAINER_LTI_RESOURCE_LINK_ID => 'abc123'
+        ];
 
-        $execution->method('getDelivery')
-            ->willReturn($delivery);
-
-        $this->ontology
-            ->method('getProperty')
-            ->with(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID)
-            ->willReturn($publishDeliveryProperty);
-
-        $this->assertSame(
-            'abc123',
-            $this->subject->discoverByDeliveryExecutionAndLtiProvider($execution, $ltiProvider)
-        );
+        $this->assertSame('abc123', $this->subject->discoverByDeliveryExecution($execution, $ltiConfiguration));
     }
 }
