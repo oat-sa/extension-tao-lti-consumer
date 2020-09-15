@@ -25,7 +25,6 @@ namespace oat\taoLtiConsumer\test\unit\model\ltiProvider\repository;
 use core_kernel_classes_Property;
 use core_kernel_classes_Resource;
 use oat\generis\model\data\Ontology;
-use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoDelivery\model\execution\DeliveryExecutionService;
@@ -33,6 +32,7 @@ use oat\taoLti\models\classes\LtiException;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class DeliveryLtiProviderRepositoryTest extends TestCase
 {
