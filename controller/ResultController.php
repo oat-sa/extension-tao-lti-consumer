@@ -56,6 +56,13 @@ class ResultController extends tao_actions_CommonModule
             throw new common_exception_MethodNotAllowed(null, 0, [Request::HTTP_POST]);
         }
 
+        //FIXME
+        //FIXME
+        //FIXME
+        $this->logError('=====> AAAAAAAAAAAAAAAAAAAAAAA ' . ((string) $this->getPsrRequest()->getBody()));
+        //FIXME
+        //FIXME
+
         try {
             $operationRequest = $this->getLtiReplaceResultParser()->parse($this->getPsrRequest());
         } catch (tao_models_classes_UserException $userException) {

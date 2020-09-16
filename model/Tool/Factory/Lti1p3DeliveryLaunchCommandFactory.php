@@ -25,7 +25,11 @@ namespace oat\taoLtiConsumer\model\Tool\Factory;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
+use oat\tao\helpers\UrlHelper;
+use oat\taoDeliverConnect\model\delivery\factory\RemoteDeliveryFactory;
+use oat\taoDeliverConnect\model\TenantLtiProvider;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
@@ -46,9 +50,25 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         $execution = $config['deliveryExecution'];
 
         #
-        # @TODO Check with Deliver why now we do not use TAO Delivery execution URI
+        # @TODO This is the way Deliver works, but we might reuse to save AGS resource_link_id too.
         #
-        $resourceIdentifier = $execution->getIdentifier();
+        $resourceIdentifier = (string)$execution->getIdentifier();
+
+        #
+        # @TODO Hack for PoC. Correct is to factory this identifier in other class
+        #
+        if ($ltiProvider instanceof TenantLtiProvider) {
+            $resourceIdentifier = (string)$execution->getDelivery()
+                ->getUniquePropertyValue($this->getProperty(RemoteDeliveryFactory::PROPERTY_PUBLISHED_DELIVERY_ID));
+        }
+
+        $urlHelper = $this->getUrlHelper();
+
+        $outcomeServiceUrl = $urlHelper->buildUrl(
+            'manageResults',
+            'ResultController',
+            'taoLtiConsumer'
+        );
 
         $user = $this->getSessionService()
             ->getCurrentUser();
@@ -59,11 +79,13 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 'Learner'
             ],
             [
-                'deliveryExecutionId' => $execution->getIdentifier()
+                'deliveryExecutionId' => $execution->getIdentifier(),
+                LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
+                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $outcomeServiceUrl,
             ],
             $resourceIdentifier,
             $user,
-            $user->getIdentifier(),
+            null, //$user->getIdentifier(),
             $launchUrl
         );
     }
@@ -71,5 +93,10 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
     private function getSessionService(): SessionService
     {
         return $this->getServiceLocator()->get(SessionService::SERVICE_ID);
+    }
+
+    private function getUrlHelper(): UrlHelper
+    {
+        return $this->getServiceLocator()->get(UrlHelper::class);
     }
 }
