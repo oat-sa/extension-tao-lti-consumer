@@ -17,6 +17,8 @@
  *  Copyright (c) 2020 (original work) Open Assessment Technologies SA
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\test\unit\model\Tool\Factory;
 
 use oat\generis\test\TestCase;

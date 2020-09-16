@@ -22,14 +22,11 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\Tool\Factory;
 
-use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\tao\helpers\UrlHelper;
 
 class LisOutcomeServiceUrlFactory extends ConfigurableService
 {
-    use OntologyAwareTrait;
-
     public function create(): string
     {
         return $this->getUrlHelper()->buildUrl(

@@ -22,15 +22,12 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\Tool\Service;
 
-use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 
 class ResourceLinkIdDiscover extends ConfigurableService implements ResourceLinkIdDiscoverInterface
 {
-    use OntologyAwareTrait;
-
     public function discoverByDeliveryExecution(DeliveryExecution $execution, array $ltiConfiguration): string
     {
         return empty($ltiConfiguration[LtiDeliveryContainer::CONTAINER_LTI_RESOURCE_LINK_ID])
