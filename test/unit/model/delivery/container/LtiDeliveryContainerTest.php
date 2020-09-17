@@ -70,8 +70,8 @@ class LtiDeliveryContainerTest extends TestCase
         );
         $this->subject->setRuntimeParams(
             [
-                'ltiPath' => 'launchUrl',
-                'ltiProvider' => 'providerId',
+                LtiDeliveryContainer::CONTAINER_LTI_LAUNCH_URL => 'launchUrl',
+                LtiDeliveryContainer::CONTAINER_LTI_PROVIDER_ID => 'providerId',
             ]
         );
     }

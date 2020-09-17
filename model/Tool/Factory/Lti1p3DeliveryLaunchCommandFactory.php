@@ -26,10 +26,13 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommandInterface;
+use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
+use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
 
 class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements LtiLaunchCommandFactoryInterface
 {
@@ -45,10 +48,8 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         /** @var DeliveryExecution $execution */
         $execution = $config['deliveryExecution'];
 
-        #
-        # @TODO Check with Deliver why now we do not use TAO Delivery execution URI
-        #
-        $resourceIdentifier = $execution->getIdentifier();
+        $resourceIdentifier = $this->getResourceLinkIdDiscover()
+            ->discoverByDeliveryExecution($execution, $config);
 
         $user = $this->getSessionService()
             ->getCurrentUser();
@@ -59,7 +60,8 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                 'Learner'
             ],
             [
-                'deliveryExecutionId' => $execution->getIdentifier()
+                LtiLaunchData::LIS_RESULT_SOURCEDID => $execution->getIdentifier(),
+                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => $this->getLisOutcomeServiceUrlFactory()->create(),
             ],
             $resourceIdentifier,
             $user,
@@ -71,5 +73,15 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
     private function getSessionService(): SessionService
     {
         return $this->getServiceLocator()->get(SessionService::SERVICE_ID);
+    }
+
+    private function getResourceLinkIdDiscover(): ResourceLinkIdDiscoverInterface
+    {
+        return $this->getServiceLocator()->get(ResourceLinkIdDiscover::class);
+    }
+
+    private function getLisOutcomeServiceUrlFactory(): LisOutcomeServiceUrlFactory
+    {
+        return $this->getServiceLocator()->get(LisOutcomeServiceUrlFactory::class);
     }
 }
