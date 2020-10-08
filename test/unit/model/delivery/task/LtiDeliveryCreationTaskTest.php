@@ -124,7 +124,7 @@ class LtiDeliveryCreationTaskTest extends TestCase
             ->setMethods(['searchById', 'searchByLabel'])
             ->getMock();
 
-        $ltiProviderService->method('searchByLabel')->with($ltiProviderId)->willReturn($ltiProvider);
+        $ltiProviderService->method('searchByLabel')->with($ltiProviderId)->willReturn([$ltiProvider]);
         $ltiProviderService->method('searchById')->with($ltiProviderId)->willReturn($ltiProvider);
 
         /** @var ServiceLocatorInterface|MockObject $serviceLocator */

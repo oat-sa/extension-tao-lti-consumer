@@ -54,7 +54,7 @@ class OperationsCollection extends ConfigurableService
     {
         $ops = $this->getSupportedOperations();
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $ops[$operationName]
+        return isset($ops[$operationName])
             ? $ops[$operationName][self::KEY_RESPONSE_BODY_EL]
             : null;
     }
