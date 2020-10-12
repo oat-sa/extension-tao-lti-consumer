@@ -33,7 +33,7 @@ return [
         'generis' => '>=12.15.0',
         'tao' => '>=38.13.0',
         'taoLti' => '>=11.13.0',
-        'taoDeliveryRdf' => '>=12.0.0',
+        'taoDeliveryRdf' => '>=8.3.3',
     ],
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/generis.rdf#taoLtiConsumerManager', ['ext'=>'taoLtiConsumer']],
