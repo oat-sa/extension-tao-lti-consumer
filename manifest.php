@@ -32,7 +32,7 @@ return [
     'requires' => [
         'generis' => '>=12.15.0',
         'tao' => '>=38.13.0',
-        'taoLti' => '>=11.0.0',
+        'taoLti' => '>=11.13.0',
         'taoDeliveryRdf' => '>=12.0.0',
     ],
     'acl' => [
