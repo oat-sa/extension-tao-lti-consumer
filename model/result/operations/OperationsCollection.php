@@ -37,11 +37,7 @@ class OperationsCollection extends ConfigurableService
     protected const KEY_RESPONSE_CLASS = 'response_class';
     protected const KEY_RESPONSE_SERIALIZER = 'response_serializer';
 
-    /**
-     * @param string $operationName
-     * @return OperationRequestParserInterface|null
-     */
-    public function getOperationRequestParser($operationName)
+    public function getOperationRequestParser(string $operationName): ?OperationRequestParserInterface
     {
         $ops = $this->getSupportedOperations();
         /** @noinspection PhpIncompatibleReturnTypeInspection */
@@ -58,7 +54,7 @@ class OperationsCollection extends ConfigurableService
     {
         $ops = $this->getSupportedOperations();
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $ops[$operationName]
+        return isset($ops[$operationName])
             ? $ops[$operationName][self::KEY_RESPONSE_BODY_EL]
             : null;
     }

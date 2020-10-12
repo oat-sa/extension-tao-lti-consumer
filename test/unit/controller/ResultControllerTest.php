@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,288 +21,185 @@
 namespace oat\taoLtiConsumer\test\unit\controller;
 
 use common_exception_MethodNotAllowed;
-use Exception;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use oat\taoLti\models\classes\Lis\LisAuthAdapter;
-use oat\taoLti\models\classes\Lis\LisAuthAdapterException;
-use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
-use oat\taoLti\models\classes\Lis\LtiProviderUser;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\controller\ResultController;
-use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
-use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 use oat\taoLtiConsumer\model\result\operations\failure\BasicResponseSerializer;
 use oat\taoLtiConsumer\model\result\operations\OperationsCollection;
+use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
+use oat\taoLtiConsumer\model\result\operations\replace\Service\LtiReplaceResultParserProxy;
 use oat\taoLtiConsumer\model\result\operations\ResponseSerializerInterface;
-use oat\taoLtiConsumer\model\result\ParsingException;
-use oat\taoLtiConsumer\model\result\ResultService as LtiResultService;
+use oat\taoLtiConsumer\model\result\ResultService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Log\LoggerInterface;
-use tao_models_classes_UserException;
+use Slim\Http\StatusCode;
 
 class ResultControllerTest extends TestCase
 {
-    /**
-     * @throws tao_models_classes_UserException
-     */
-    public function testManageResultMethod()
+    /** @var ResultController */
+    private $subject;
+
+    /** @var ResultService|MockObject */
+    private $resultServiceMock;
+
+    /** @var BasicResponseSerializer|MockObject */
+    private $basicResponseSerializerMock;
+
+    /** @var OperationsCollection|MockObject */
+    private $operationsCollectionMock;
+
+    /** @var LtiReplaceResultParserProxy|MockObject */
+    private $ltiReplaceResultParserProxyMock;
+
+    /** @var ServerRequestInterface|MockObject */
+    private $requestMock;
+
+    /** @var ReplaceResultOperationRequest */
+    private $replaceResultOperationRequest;
+
+    /** @var ResponseInterface|MockObject */
+    private $responseMock;
+
+    protected function setUp(): void
     {
-        $exceptions = 0;
-        $methods = ['GET', 'PUT', 'DELETE'];
-        foreach ($methods as $method) {
+        $this->subject = new ResultController();
 
-            /** @var ServerRequestInterface|MockObject $requestMock */
-            $requestMock = $this->createMock(ServerRequestInterface::class);
-            $requestMock->method('getMethod')->willReturn($method);
+        $this->resultServiceMock = $this->createMock(ResultService::class);
+        $this->basicResponseSerializerMock = $this->createMock(BasicResponseSerializer::class);
+        $this->operationsCollectionMock = $this->createMock(OperationsCollection::class);
+        $this->ltiReplaceResultParserProxyMock = $this->createMock(LtiReplaceResultParserProxy::class);
 
-            $controller = new ResultController();
-            $controller->setRequest($requestMock);
+        $this->requestMock = $this->createMock(ServerRequestInterface::class);
+        $this->responseMock = $this->createMock(ResponseInterface::class);
 
-            try {
-                $controller->manageResults();
-            } catch (common_exception_MethodNotAllowed $exception) {
-                ++$exceptions;
-                $this->assertSame(['POST'], $exception->getAllowedMethods());
-            }
-        }
-        $this->assertSame(count($methods), $exceptions);
+        $this->replaceResultOperationRequest = $this->createMock(ReplaceResultOperationRequest::class);
+
+        $this->subject->setServiceLocator(
+            $this->getServiceLocatorMock(
+                [
+                    ResultService::class => $this->resultServiceMock,
+                    BasicResponseSerializer::class => $this->basicResponseSerializerMock,
+                    OperationsCollection::class => $this->operationsCollectionMock,
+                    LtiReplaceResultParserProxy::class => $this->ltiReplaceResultParserProxyMock,
+                ]
+            )
+        );
+
+        $this->responseMock
+            ->method('withHeader')
+            ->with('Content-Type', ResultController::XML_CONTENT_TYPE)
+            ->willReturn($this->responseMock);
+
+        $this->subject->setRequest($this->requestMock);
+        $this->subject->setResponse($this->responseMock);
     }
 
-    /**
-     * @throws common_exception_MethodNotAllowed
-     * @throws tao_models_classes_UserException
-     */
-    public function testManageResultAuthError()
+    public function testManageResults(): void
     {
-        /** @var LisAuthAdapter|MockObject $listAuthAdapterMock */
-        $listAuthAdapterMock = $this->createMock(LisAuthAdapter::class);
-        $listAuthAdapterMock->method('authenticate')->willThrowException(new LisAuthAdapterException('m'));
+        $this->requestMock
+            ->method('getMethod')
+            ->willReturn('POST');
 
-        /** @var LisAuthAdapterFactory|MockObject $ltiResultServiceMock */
-        $lisAuthAdapterFactory = $this->createMock(LisAuthAdapterFactory::class);
-        $lisAuthAdapterFactory->method('create')->willReturn($listAuthAdapterMock);
+        $this->requestMock
+            ->method('getBody')
+            ->willReturn('request_body');
 
-        /** @var ServerRequestInterface|MockObject $requestMock */
-        $requestMock = $this->createMock(ServerRequestInterface::class);
-        $requestMock->method('getMethod')->willReturn('POST');
-
-        $controller = new ResultController();
-        $controller->setServiceLocator($this->getServiceLocatorMock([
-            LisAuthAdapterFactory::class => $lisAuthAdapterFactory
-        ]));
-        $controller->setRequest($requestMock);
-        $this->expectException(tao_models_classes_UserException::class);
-        $controller->manageResults();
-    }
-
-    /**
-     * @throws common_exception_MethodNotAllowed
-     * @throws tao_models_classes_UserException
-     */
-    public function testManageResultAuthInternalError()
-    {
-        /** @var LisAuthAdapter|MockObject $listAuthAdapterMock */
-        $listAuthAdapterMock = $this->createMock(LisAuthAdapter::class);
-        $listAuthAdapterMock->method('authenticate')->willThrowException(new Exception('m'));
-
-        /** @var LisAuthAdapterFactory|MockObject $ltiResultServiceMock */
-        $lisAuthAdapterFactory = $this->createMock(LisAuthAdapterFactory::class);
-        $lisAuthAdapterFactory->method('create')->willReturn($listAuthAdapterMock);
-
-        /** @var ServerRequestInterface|MockObject $requestMock */
-        $requestMock = $this->createMock(ServerRequestInterface::class);
-        $requestMock->method('getMethod')->willReturn('POST');
-
-        /** @var ResponseInterface|MockObject $responseMock */
-        $responseMock = $this->createMock(ResponseInterface::class);
-        $responseMock->method('withStatus')->with(500)->willReturn($responseMock);
-        $responseMock->method('withHeader')->with('Content-Type', 'application/xml')->willReturn($responseMock);
-        $responseMock->method('withBody')
-            ->with($this->callback(function (StreamInterface $stream) {
-                return 'xmlout' === (string) $stream;
-            }))
-            ->willReturn($responseMock);
-
-        /** @var BasicResponseSerializer|MockObject $ltiResultServiceMock */
-        $basicResponseSerializerMock = $this->createMock(BasicResponseSerializer::class);
-        $basicResponseSerializerMock->expects($this->once())
-            ->method('toXml')
-            ->with($this->callback(function (LisOutcomeResponseInterface $response) {
-                return
-                    $response->getStatus() === LisOutcomeResponseInterface::STATUS_INTERNAL_ERROR &&
-                    $response->getCodeMajor() === LisOutcomeResponseInterface::CODE_MAJOR_FAILURE;
-            }))
-            ->willReturn('xmlout');
-
-        /** @var LoggerInterface|MockObject $loggerMock */
-        $loggerMock = $this->createMock(LoggerInterface::class);
-        $loggerMock->expects($this->atLeastOnce())->method('error');
-
-        $controller = new ResultController();
-        $controller->setServiceLocator($this->getServiceLocatorMock([
-            LisAuthAdapterFactory::class => $lisAuthAdapterFactory,
-            BasicResponseSerializer::class => $basicResponseSerializerMock
-        ]));
-        $controller->setLogger($loggerMock);
-        $controller->setRequest($requestMock);
-        $controller->setResponse($responseMock);
-        $controller->manageResults();
-        $response = $controller->getPsrResponse();
-        $this->assertSame($responseMock, $response);
-    }
-
-    /**
-     * @throws common_exception_MethodNotAllowed
-     * @throws tao_models_classes_UserException
-     */
-    public function testManageResult()
-    {
-        /** @var LisOutcomeRequest|MockObject $lisRequestMock */
-        $lisRequestMock = $this->createMock(LisOutcomeRequest::class);
-
-        /** @var LisOutcomeRequestParser|MockObject $lisOutcomeRequestParserMock */
-        $lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
-        $lisOutcomeRequestParserMock->expects($this->once())
+        $this->ltiReplaceResultParserProxyMock
+            ->expects($this->once())
             ->method('parse')
-            ->with('request_body')
-            ->willReturn($lisRequestMock);
+            ->willReturn($this->replaceResultOperationRequest);
 
-        /** @var LtiProvider|MockObject $ltiProviderMock */
-        $ltiProviderMock = $this->createMock(LtiProvider::class);
-
-        /** @var LtiProviderUser|MockObject $ltiProviderUserMock */
-        $ltiProviderUserMock = $this->createMock(LtiProviderUser::class);
-        $ltiProviderUserMock->method('getLtiProvider')->willReturn($ltiProviderMock);
-
-        /** @var LisOutcomeResponseInterface|MockObject $lisResponseMock */
         $lisResponseMock = $this->createMock(LisOutcomeResponseInterface::class);
-        $lisResponseMock->method('getStatus')->willReturn(LisOutcomeResponseInterface::STATUS_SUCCESS);
 
-        /** @var ResponseSerializerInterface|MockObject $ltiResultServiceMock */
-        $responseSerializerMock = $this->createMock(ResponseSerializerInterface::class);
-        $responseSerializerMock->expects($this->once())
-            ->method('toXml')
-            ->with($lisResponseMock)
-            ->willReturn('xml_out');
+        $lisResponseMock
+            ->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(LisOutcomeResponseInterface::STATUS_SUCCESS);
 
-        /** @var OperationsCollection|MockObject $ltiResultServiceMock */
-        $operationsCollectionMock = $this->createMock(OperationsCollection::class);
-        $operationsCollectionMock->method('getResponseSerializer')
-            ->with($lisResponseMock)
-            ->willReturn($responseSerializerMock);
-
-        /** @var ResponseInterface|MockObject $responseMock */
-        $responseMock = $this->createMock(ResponseInterface::class);
-        $responseMock->method('withStatus')->with(201)->willReturn($responseMock);
-        $responseMock->method('withHeader')->with('Content-Type', 'application/xml')->willReturn($responseMock);
-        $responseMock->method('withBody')
-            ->with($this->callback(function (StreamInterface $stream) {
-                return 'xml_out' === (string) $stream;
-            }))
-            ->willReturn($responseMock);
-
-        /** @var LtiResultService|MockObject $ltiResultServiceMock */
-        $ltiResultServiceMock = $this->createMock(LtiResultService::class);
-        $ltiResultServiceMock->expects($this->once())
+        $this->resultServiceMock
+            ->expects(self::once())
             ->method('process')
-            ->with($lisRequestMock, $ltiProviderMock)
             ->willReturn($lisResponseMock);
 
-        /** @var LisAuthAdapter|MockObject $lisAuthAdapterMock */
-        $lisAuthAdapterMock = $this->createMock(LisAuthAdapter::class);
-        $lisAuthAdapterMock->method('authenticate')->willReturn($ltiProviderUserMock);
+        $responseSerializerMock = $this->createMock(ResponseSerializerInterface::class);
 
-        /** @var LisAuthAdapterFactory|MockObject $lisAuthAdapterFactory */
-        $lisAuthAdapterFactory = $this->createMock(LisAuthAdapterFactory::class);
-        $lisAuthAdapterFactory->method('create')->willReturn($lisAuthAdapterMock);
+        $this->operationsCollectionMock
+            ->expects($this->once())
+            ->method('getResponseSerializer')
+            ->willReturn($responseSerializerMock);
 
-        /** @var ServerRequestInterface|MockObject $requestMock */
-        $requestMock = $this->createMock(ServerRequestInterface::class);
-        $requestMock->method('getMethod')->willReturn('POST');
-        $requestMock->method('getBody')->willReturn('request_body');
+        $responseSerializerMock
+            ->method('toXml')
+            ->willReturn('string xml content');
 
-        $controller = new ResultController();
-        $controller->setServiceLocator($this->getServiceLocatorMock([
-            LisAuthAdapterFactory::class => $lisAuthAdapterFactory,
-            LisOutcomeRequestParser::class => $lisOutcomeRequestParserMock,
-            LtiResultService::class => $ltiResultServiceMock,
-            OperationsCollection::class => $operationsCollectionMock
-        ]));
-        $controller->setRequest($requestMock);
-        $controller->setResponse($responseMock);
-        $controller->manageResults();
-        $response = $controller->getPsrResponse();
-        $this->assertSame($responseMock, $response);
+        $this->responseMock
+            ->expects($this->once())
+            ->method('withStatus')
+            ->with(StatusCode::HTTP_CREATED)
+            ->willReturn($this->responseMock);
+
+        $this->responseMock
+            ->expects($this->once())
+            ->method('withBody')
+            ->willReturn($this->responseMock);
+
+        $this->subject->manageResults();
     }
 
-    /**
-     * @throws common_exception_MethodNotAllowed
-     * @throws tao_models_classes_UserException
-     */
-    public function testManageResultParsingException()
+    public function testManageResultsEmptySerialiser(): void
     {
-        /** @var LisOutcomeRequestParser|MockObject $lisOutcomeRequestParserMock */
-        $lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
-        $lisOutcomeRequestParserMock->expects($this->once())
+        $this->requestMock
+            ->method('getMethod')
+            ->willReturn('POST');
+
+        $this->requestMock
+            ->method('getBody')
+            ->willReturn('request_body');
+
+        $this->ltiReplaceResultParserProxyMock
+            ->expects($this->once())
             ->method('parse')
-            ->with('request_body')
-            ->willThrowException(new ParsingException('mm'));
+            ->willReturn($this->replaceResultOperationRequest);
 
-        /** @var LtiProvider|MockObject $ltiProviderMock */
-        $ltiProviderMock = $this->createMock(LtiProvider::class);
+        $lisResponseMock = $this->createMock(LisOutcomeResponseInterface::class);
 
-        /** @var LtiProviderUser|MockObject $ltiProviderUserMock */
-        $ltiProviderUserMock = $this->createMock(LtiProviderUser::class);
-        $ltiProviderUserMock->method('getLtiProvider')->willReturn($ltiProviderMock);
+        $this->resultServiceMock
+            ->expects(self::once())
+            ->method('process')
+            ->willReturn($lisResponseMock);
 
-        /** @var ResponseSerializerInterface|MockObject $basicResppnseSerializerMock */
-        $basicResppnseSerializerMock = $this->createMock(BasicResponseSerializer::class);
-        $basicResppnseSerializerMock->expects($this->once())
+        $this->operationsCollectionMock
+            ->expects($this->once())
+            ->method('getResponseSerializer')
+            ->willReturn(null);
+
+        $this->basicResponseSerializerMock
             ->method('toXml')
-            ->with($this->callback(function (LisOutcomeResponseInterface $response) {
-                return
-                    $response->getStatus() === LisOutcomeResponseInterface::STATUS_INVALID_REQUEST &&
-                    $response->getCodeMajor() === LisOutcomeResponseInterface::CODE_MAJOR_FAILURE;
-            }))
-            ->willReturn('xml_out');
+            ->willReturn('some string');
 
-        /** @var ResponseInterface|MockObject $responseMock */
-        $responseMock = $this->createMock(ResponseInterface::class);
-        $responseMock->method('withStatus')->with(400)->willReturn($responseMock);
-        $responseMock->method('withHeader')->with('Content-Type', 'application/xml')->willReturn($responseMock);
-        $responseMock->method('withBody')
-            ->with($this->callback(function (StreamInterface $stream) {
-                return 'xml_out' === (string) $stream;
-            }))
-            ->willReturn($responseMock);
+        $this->responseMock
+            ->expects($this->once())
+            ->method('withStatus')
+            ->with(StatusCode::HTTP_INTERNAL_SERVER_ERROR)
+            ->willReturn($this->responseMock);
 
-        /** @var LisAuthAdapter|MockObject $listAuthAdapterMock */
-        $listAuthAdapterMock = $this->createMock(LisAuthAdapter::class);
-        $listAuthAdapterMock->method('authenticate')->willReturn($ltiProviderUserMock);
+        $this->responseMock
+            ->expects($this->once())
+            ->method('withBody')
+            ->willReturn($this->responseMock);
 
-        /** @var LisAuthAdapterFactory|MockObject LisAuthAdapterFactory */
-        $lisAuthAdapterFactory = $this->createMock(LisAuthAdapterFactory::class);
-        $lisAuthAdapterFactory->method('create')->willReturn($listAuthAdapterMock);
+        $this->subject->manageResults();
+    }
 
-        /** @var ServerRequestInterface|MockObject $requestMock */
-        $requestMock = $this->createMock(ServerRequestInterface::class);
-        $requestMock->method('getMethod')->willReturn('POST');
-        $requestMock->method('getBody')->willReturn('request_body');
+    public function testManageResultsWithGetIsNotAllowed(): void
+    {
+        $this->expectException(common_exception_MethodNotAllowed::class);
 
-        $controller = new ResultController();
-        $controller->setServiceLocator($this->getServiceLocatorMock([
-            LisAuthAdapterFactory::class => $lisAuthAdapterFactory,
-            LisOutcomeRequestParser::class => $lisOutcomeRequestParserMock,
-            BasicResponseSerializer::class => $basicResppnseSerializerMock
-        ]));
-        $controller->setRequest($requestMock);
-        $controller->setResponse($responseMock);
-        $controller->manageResults();
-        $response = $controller->getPsrResponse();
-        $this->assertSame($responseMock, $response);
+        $this->requestMock
+            ->method('getMethod')
+            ->willReturn('GET');
+        
+        $this->subject->manageResults();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,29 +15,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2019-2020 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\operations\replace;
 
-use oat\taoLtiConsumer\model\result\operations\BasicOperationRequest;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 
 /**
  * @see https://www.imsglobal.org/specs/ltiomv1p0/specification#toc-3
  */
-class OperationRequest extends BasicOperationRequest
+class ReplaceResultOperationRequest
 {
-    /** @var string */
-    private $score;
+    /** @var LisOutcomeRequest */
+    private $lisOutcomeRequest;
 
-    public function __construct(string $sourcedId, string $score)
+    /** @var LtiProvider */
+    private $ltiProvider;
+
+    public function __construct(LisOutcomeRequest $operationRequest, LtiProvider $ltiProvider)
     {
-        parent::__construct($sourcedId);
-        $this->score = $score;
+        $this->lisOutcomeRequest = $operationRequest;
+        $this->ltiProvider = $ltiProvider;
     }
 
-    public function getScore(): string
+    public function getLisOutcomeRequest(): LisOutcomeRequest
     {
-        return $this->score;
+        return $this->lisOutcomeRequest;
+    }
+
+    public function getLtiProvider(): LtiProvider
+    {
+        return $this->ltiProvider;
     }
 }
