@@ -24,7 +24,6 @@ namespace oat\taoLtiConsumer\test\unit\model\result\operations\replace\Service;
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use OAT\Library\Lti1p3Core\Registration\RegistrationInterface;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p1ReplaceResultParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p3ReplaceResultParser;
@@ -45,9 +44,6 @@ class LtiReplaceResultParserProxyTest extends TestCase
     /** @var ServerRequestInterface|MockObject */
     private $requestMock;
 
-    /** @var RegistrationInterface|MockObject */
-    private $registrationMock;
-
     /** @var ReplaceResultOperationRequest|MockObject */
     private $replaceResultOperationRequestMock;
 
@@ -57,8 +53,6 @@ class LtiReplaceResultParserProxyTest extends TestCase
         $this->lti1p1ReplaceResultParser = $this->createMock(Lti1p1ReplaceResultParser::class);
         $this->lti1p3ReplaceResultParser = $this->createMock(Lti1p3ReplaceResultParser::class);
         $this->replaceResultOperationRequestMock = $this->createMock(ReplaceResultOperationRequest::class);
-
-        $this->registrationMock = $this->createMock(RegistrationInterface::class);
 
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
 
