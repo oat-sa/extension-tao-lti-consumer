@@ -26,7 +26,6 @@ use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
-use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\Tool\Factory\LisOutcomeServiceUrlFactory;
 use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
