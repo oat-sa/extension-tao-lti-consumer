@@ -15,19 +15,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA
  */
 
 declare(strict_types=1);
 
-namespace oat\taoLtiConsumer\model;
+namespace oat\taoLtiConsumer\model\Tool\Factory;
 
-use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\oatbox\service\ConfigurableService;
+use oat\tao\helpers\UrlHelper;
 
-interface DeliveryExecutionGetterInterface
+class LisOutcomeServiceUrlFactory extends ConfigurableService
 {
-    public const SERVICE_ID = 'taoLtiConsumer/DeliveryExecutionGetter';
+    public function create(): string
+    {
+        return $this->getUrlHelper()->buildUrl(
+            'manageResults',
+            'ResultController',
+            'taoLtiConsumer'
+        );
+    }
 
-    public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface;
+    private function getUrlHelper(): UrlHelper
+    {
+        return $this->getServiceLocator()->get(UrlHelper::class);
+    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,6 +19,8 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace oat\taoLtiConsumer\model\delivery\factory;
 
 use common_ext_Extension as Extension;
@@ -26,6 +29,7 @@ use common_report_Report as Report;
 use core_kernel_classes_Class as RdfClass;
 use core_kernel_classes_Resource as RdfResource;
 use oat\generis\model\OntologyRdfs;
+use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerService;
@@ -38,7 +42,6 @@ use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use phpmock\Mock;
 use phpmock\MockBuilder;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Psr\Log\LoggerInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
@@ -51,8 +54,8 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 class LtiDeliveryFactoryTest extends TestCase
 {
-    const FIXED_TIME = 1234567890;
-    const RESOURCE_URI = 'Uri of the resource';
+    public const FIXED_TIME = 1234567890;
+    public const RESOURCE_URI = 'Uri of the resource';
 
     /** @var Mock */
     protected $timeMock;
@@ -123,7 +126,9 @@ class LtiDeliveryFactoryTest extends TestCase
             ->getMockForAbstractClass();
         $logger->expects($this->once())->method('info')->with(sprintf(
             'Creating LTI delivery with LTI provider "%s" ' . 'with LTI test url "%s" under delivery class "%s"',
-            $ltiProviderLabel, $ltiPath, $classLabel
+            $ltiProviderLabel,
+            $ltiPath,
+            $classLabel
         ));
 
         /** @var EventManager|MockObject $eventManager */
@@ -268,10 +273,12 @@ class LtiDeliveryFactoryTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['createTask'])
             ->getMock();
-        $queueDispatcher->method('createTask')->with($this->callback(
+        $queueDispatcher->method('createTask')->with(
+            $this->callback(
             function ($callable) {
                 return $callable instanceof LtiDeliveryCreationTask;
-            }),
+            }
+        ),
             $params,
             __('Publishing of LTI delivery : "%s"', $ltiProviderLabel),
             null,

@@ -15,19 +15,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA
  */
 
 declare(strict_types=1);
 
-namespace oat\taoLtiConsumer\model;
+namespace oat\taoLtiConsumer\model\Tool\Service;
 
-use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\oatbox\service\ConfigurableService;
+use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoLtiConsumer\model\delivery\container\LtiDeliveryContainer;
 
-interface DeliveryExecutionGetterInterface
+class ResourceLinkIdDiscover extends ConfigurableService implements ResourceLinkIdDiscoverInterface
 {
-    public const SERVICE_ID = 'taoLtiConsumer/DeliveryExecutionGetter';
-
-    public function get(string $deliveryExecutionId, LtiProvider $ltiProvider): ?DeliveryExecutionInterface;
+    public function discoverByDeliveryExecution(DeliveryExecution $execution, array $ltiConfiguration): string
+    {
+        return empty($ltiConfiguration[LtiDeliveryContainer::CONTAINER_LTI_RESOURCE_LINK_ID])
+            ? $execution->getIdentifier()
+            : (string)$ltiConfiguration[LtiDeliveryContainer::CONTAINER_LTI_RESOURCE_LINK_ID];
+    }
 }

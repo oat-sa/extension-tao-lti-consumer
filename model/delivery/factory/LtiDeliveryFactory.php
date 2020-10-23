@@ -22,20 +22,20 @@ namespace oat\taoLtiConsumer\model\delivery\factory;
 
 use common_exception_InconsistentData as InconsistentDataException;
 use common_report_Report as Report;
-use core_kernel_classes_Resource as RdfResource;
 use core_kernel_classes_Class as RdfClass;
+use core_kernel_classes_Resource as RdfResource;
 use oat\generis\model\OntologyRdfs;
-use oat\tao\model\taskQueue\Task\TaskInterface;
-use oat\taoLti\models\classes\LtiProvider\LtiProvider;
-use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 use oat\oatbox\event\EventManager;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\tao\model\taskQueue\QueueDispatcher;
+use oat\tao\model\taskQueue\Task\TaskInterface;
 use oat\taoDelivery\model\container\delivery\DeliveryContainerRegistry;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoDeliveryRdf\model\DeliveryAssemblyService;
 use oat\taoDeliveryRdf\model\event\DeliveryCreatedEvent;
+use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\delivery\task\LtiDeliveryCreationTask;
 
 /**
  * Class LtiDeliveryFactory
@@ -89,7 +89,7 @@ class LtiDeliveryFactory extends ConfigurableService
         }
 
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
-        $eventManager->trigger(new DeliveryCreatedEvent($deliveryResource->getUri()));
+        $eventManager->trigger(new DeliveryCreatedEvent($deliveryResource));
 
         return new Report(
             Report::TYPE_SUCCESS,
