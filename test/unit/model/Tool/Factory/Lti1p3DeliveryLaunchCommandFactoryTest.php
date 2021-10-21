@@ -20,10 +20,10 @@
 namespace oat\taoLtiConsumer\test\unit\model\Tool\Factory;
 
 use oat\generis\test\TestCase;
+use OAT\Library\Lti1p3Core\Message\Payload\Claim\BasicOutcomeClaim;
 use oat\oatbox\session\SessionService;
 use oat\oatbox\user\User;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLtiConsumer\model\Tool\Factory\LisOutcomeServiceUrlFactory;
@@ -102,8 +102,10 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
                 'Learner'
             ],
             [
-                LtiLaunchData::LIS_RESULT_SOURCEDID => 'deliveryExecutionIdentifier',
-                LtiLaunchData::LIS_OUTCOME_SERVICE_URL => 'outcomeServiceUrl',
+                new BasicOutcomeClaim(
+                    'deliveryExecutionIdentifier',
+                    'outcomeServiceUrl'
+                ),
             ],
             'deliveryExecutionIdentifier',
             $user,
