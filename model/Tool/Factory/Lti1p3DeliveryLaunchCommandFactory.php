@@ -27,7 +27,6 @@ use OAT\Library\Lti1p3Core\Message\Payload\Claim\BasicOutcomeClaim;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoLti\models\classes\LtiLaunchData;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
