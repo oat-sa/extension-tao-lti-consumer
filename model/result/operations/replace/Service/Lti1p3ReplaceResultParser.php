@@ -25,7 +25,6 @@ namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoLti\models\classes\LtiException;
 use oat\taoLti\models\classes\Security\AccessTokenRequestValidator;
-use oat\taoLti\models\classes\Security\MissingScopeException;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
@@ -38,7 +37,6 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
     /**
      * @throws ParsingException
      * @throws LtiException
-     * @throws MissingScopeException
      * @throws tao_models_classes_UserException
      */
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
