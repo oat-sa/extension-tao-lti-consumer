@@ -19,6 +19,7 @@
 
 use oat\tao\model\user\TaoRoles;
 use oat\taoLtiConsumer\controller\ResultController;
+use oat\taoLtiConsumer\model\ServiceProvider\ContainerServiceProvider;
 use oat\taoLtiConsumer\scripts\install\RegisterLtiDeliveryContainer;
 use oat\taoLtiConsumer\scripts\update\Updater;
 
@@ -48,5 +49,8 @@ return [
     ],
     'extra' => [
         'structures' => __DIR__ . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . 'structures.xml',
-    ]
+    ],
+    'containerServiceProviders' => [
+        ContainerServiceProvider::class,
+    ],
 ];

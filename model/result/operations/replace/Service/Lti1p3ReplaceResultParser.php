@@ -32,8 +32,27 @@ use oat\taoLtiConsumer\model\result\ParsingException;
 use Psr\Http\Message\ServerRequestInterface;
 use tao_models_classes_UserException;
 
-class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceResultParserInterface
+class Lti1p3ReplaceResultParser implements ReplaceResultParserInterface
 {
+    /** @var LisOutcomeRequestParser */
+    private  $lisOutcomeRequestParser;
+
+    /** @var DeliveryLtiProviderRepository */
+    private  $ltiProviderRepository;
+
+    /** @var AccessTokenRequestValidator */
+    private  $accessTokenRequestValidator;
+
+    public function __construct(
+        LisOutcomeRequestParser $lisOutcomeRequestParser,
+        DeliveryLtiProviderRepository $ltiProviderRepository,
+        AccessTokenRequestValidator $accessTokenRequestValidator
+    ) {
+        $this->accessTokenRequestValidator = $accessTokenRequestValidator;
+        $this->ltiProviderRepository = $ltiProviderRepository;
+        $this->lisOutcomeRequestParser = $lisOutcomeRequestParser;
+    }
+
     /**
      * @throws ParsingException
      * @throws LtiException
@@ -41,36 +60,21 @@ class Lti1p3ReplaceResultParser extends ConfigurableService implements ReplaceRe
      */
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
-        $parsedPayload = $this->getLisOutcomeRequestParser()->parse((string)$request->getBody());
+        $parsedPayload = $this->lisOutcomeRequestParser->parse((string)$request->getBody());
 
         if (!$parsedPayload->getOperation()) {
             throw new ParsingException('Lis request does not contain valid operation');
         }
 
-        $ltiProvider = $this->getDeliveryLtiProviderRepository()->searchByDeliveryExecutionId(
+        $ltiProvider = $this->ltiProviderRepository->searchByDeliveryExecutionId(
             $parsedPayload->getOperation()->getSourcedId()
         );
 
-        $this->getAccessTokenRequestValidator()
+        $this->accessTokenRequestValidator
             ->withLtiProvider($ltiProvider)
             ->withRole(ReplaceResultParserInterface::REPLACE_RESULT_ROLE)
             ->validate($request);
 
         return new ReplaceResultOperationRequest($parsedPayload, $ltiProvider);
-    }
-
-    private function getLisOutcomeRequestParser(): LisOutcomeRequestParser
-    {
-        return $this->getServiceLocator()->get(LisOutcomeRequestParser::class);
-    }
-
-    private function getDeliveryLtiProviderRepository(): DeliveryLtiProviderRepository
-    {
-        return $this->getServiceLocator()->get(DeliveryLtiProviderRepository::class);
-    }
-
-    private function getAccessTokenRequestValidator(): AccessTokenRequestValidator
-    {
-        return $this->getServiceLocator()->get(AccessTokenRequestValidator::class);
     }
 }

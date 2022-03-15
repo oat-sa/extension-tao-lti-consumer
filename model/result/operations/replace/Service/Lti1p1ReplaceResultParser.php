@@ -32,8 +32,22 @@ use oat\taoLtiConsumer\model\result\ParsingException;
 use Psr\Http\Message\ServerRequestInterface;
 use tao_models_classes_UserException;
 
-class Lti1p1ReplaceResultParser extends ConfigurableService implements ReplaceResultParserInterface
+class Lti1p1ReplaceResultParser implements ReplaceResultParserInterface
 {
+    /** @var LisOutcomeRequestParser */
+    private $lisOutcomeRequestParser;
+
+    /** @var LisAuthAdapterFactory */
+    private $lisAuthAdapterFactory;
+
+    public function __construct(
+        LisOutcomeRequestParser $lisOutcomeRequestParser,
+        LisAuthAdapterFactory $lisAuthAdapterFactory
+    ) {
+        $this->lisAuthAdapterFactory = $lisAuthAdapterFactory;
+        $this->lisOutcomeRequestParser = $lisOutcomeRequestParser;
+    }
+
     /**
      * @throws ParsingException
      * @throws tao_models_classes_UserException
@@ -44,9 +58,8 @@ class Lti1p1ReplaceResultParser extends ConfigurableService implements ReplaceRe
         $ltiProvider = $user->getLtiProvider();
 
         $payload = (string)$request->getBody();
-        $requestParser = $this->getRequestParser();
 
-        return new ReplaceResultOperationRequest($requestParser->parse($payload), $ltiProvider);
+        return new ReplaceResultOperationRequest($this->lisOutcomeRequestParser->parse($payload), $ltiProvider);
     }
 
     /**
@@ -55,19 +68,9 @@ class Lti1p1ReplaceResultParser extends ConfigurableService implements ReplaceRe
     private function getAuthorizeUser(ServerRequestInterface $request): LtiProviderUser
     {
         try {
-            return $this->getLisAuthAdapterFactory()->create($request)->authenticate();
+            return $this->lisAuthAdapterFactory->create($request)->authenticate();
         } catch (common_user_auth_AuthFailedException $authFailedException) {
             throw new tao_models_classes_UserException($authFailedException->getMessage());
         }
-    }
-
-    private function getRequestParser(): LisOutcomeRequestParser
-    {
-        return $this->getServiceLocator()->get(LisOutcomeRequestParser::class);
-    }
-
-    private function getLisAuthAdapterFactory(): LisAuthAdapterFactory
-    {
-        return $this->getServiceLocator()->get(LisAuthAdapterFactory::class);
     }
 }
