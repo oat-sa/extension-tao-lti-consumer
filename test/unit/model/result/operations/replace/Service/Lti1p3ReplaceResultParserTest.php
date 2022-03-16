@@ -74,7 +74,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
 
         $this->ltiProviderServiceMock
             ->expects($this->once())
-            ->method('searchByDeliveryExecutionId')
+            ->method('searchBySourcedId')
             ->willReturn($ltiProviderMock);
 
         $this->lisOutcomeRequestParserMock

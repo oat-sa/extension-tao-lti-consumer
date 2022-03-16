@@ -22,10 +22,14 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\ServiceProvider;
 
+use oat\generis\model\data\Ontology;
 use oat\generis\model\DependencyInjection\ContainerServiceProviderInterface;
 
+use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
+use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Security\AccessTokenRequestValidator;
+use oat\taoLtiConsumer\model\delivery\lookup\DeliveryLookupByDeliveryExecution;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p1ReplaceResultParser;
@@ -70,6 +74,28 @@ class ContainerServiceProvider implements ContainerServiceProviderInterface
                 [
                     service(Lti1p1ReplaceResultParser::class),
                     service(Lti1p3ReplaceResultParser::class),
+                ]
+            );
+
+        $services
+            ->set(DeliveryLookupByDeliveryExecution::class, DeliveryLookupByDeliveryExecution::class)
+            ->public()
+            ->args(
+                [
+                    service(DeliveryExecutionService::SERVICE_ID)
+                ]
+            );
+
+        $services
+            ->set(DeliveryLtiProviderRepository::class, DeliveryLtiProviderRepository::class)
+            ->public()
+            ->args(
+                [
+                    service(LtiProviderService::SERVICE_ID),
+                    service(Ontology::SERVICE_ID),
+                    [
+                        service(DeliveryLookupByDeliveryExecution::class)
+                    ]
                 ]
             );
     }

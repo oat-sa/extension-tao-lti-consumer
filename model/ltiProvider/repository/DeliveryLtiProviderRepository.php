@@ -22,28 +22,41 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\ltiProvider\repository;
 
-use oat\generis\model\OntologyAwareTrait;
-use oat\oatbox\service\ConfigurableService;
-use oat\taoDelivery\model\execution\DeliveryExecutionService;
+use oat\generis\model\data\Ontology;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoLti\models\classes\LtiException;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderRepositoryInterface;
-use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLtiConsumer\model\delivery\lookup\DeliveryLookupInterface;
 
-class DeliveryLtiProviderRepository extends ConfigurableService
+class DeliveryLtiProviderRepository
 {
-    use OntologyAwareTrait;
+    /** @var LtiProviderRepositoryInterface */
+    private $ltiProviderRepository;
 
-    public function searchByDeliveryExecutionId(string $deliveryExecutionId): LtiProvider
+    /** @var Ontology  */
+    private $ontology;
+
+    /** @var array */
+    private $deliveryLookupProviders;
+
+    public function __construct(
+        LtiProviderRepositoryInterface $ltiProviderRepository,
+        Ontology $ontology,
+        array $deliveryLookupProviders
+    ) {
+        $this->ltiProviderRepository = $ltiProviderRepository;
+        $this->ontology = $ontology;
+        $this->deliveryLookupProviders = $deliveryLookupProviders;
+    }
+
+    public function searchBySourcedId(string $sourcedId): LtiProvider
     {
-        $delivery = $this->getDeliveryExecutionService()
-            ->getDeliveryExecution($deliveryExecutionId)
-            ->getDelivery();
+        $delivery = $this->findDelivery($sourcedId);
 
-        $containerJson = $containerJson = json_decode(
+        $containerJson = json_decode(
             (string)$delivery->getOnePropertyValue(
-                $this->getProperty(ContainerRuntime::PROPERTY_CONTAINER)
+                $this->ontology->getProperty(ContainerRuntime::PROPERTY_CONTAINER)
             ),
             true
         );
@@ -52,16 +65,18 @@ class DeliveryLtiProviderRepository extends ConfigurableService
             throw new LtiException('This delivery does not contain required lti provider defined');
         }
 
-        return $this->getLtiProvider()->searchById($containerJson['params']['ltiProvider']);
+        return $this->ltiProviderRepository->searchById($containerJson['params']['ltiProvider']);
     }
 
-    private function getDeliveryExecutionService(): DeliveryExecutionService
+    private function findDelivery(string $sourcedId)
     {
-        return $this->getServiceLocator()->get(DeliveryExecutionService::SERVICE_ID);
-    }
+        /** @var DeliveryLookupInterface $provider */
+        foreach ($this->deliveryLookupProviders as $provider) {
+            if ($delivery = $provider->searchBySourcedId($sourcedId)) {
+                return $delivery;
+            }
+        }
 
-    private function getLtiProvider(): LtiProviderRepositoryInterface
-    {
-        return $this->getServiceLocator()->get(LtiProviderService::SERVICE_ID);
+        throw new LtiException('Could not find delivery for provided sourcedId');
     }
 }

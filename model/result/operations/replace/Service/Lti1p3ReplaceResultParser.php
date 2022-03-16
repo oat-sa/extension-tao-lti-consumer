@@ -66,7 +66,7 @@ class Lti1p3ReplaceResultParser implements ReplaceResultParserInterface
             throw new ParsingException('Lis request does not contain valid operation');
         }
 
-        $ltiProvider = $this->ltiProviderRepository->searchByDeliveryExecutionId(
+        $ltiProvider = $this->ltiProviderRepository->searchBySourcedId(
             $parsedPayload->getOperation()->getSourcedId()
         );
 
