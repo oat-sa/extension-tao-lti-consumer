@@ -26,11 +26,11 @@ use core_kernel_classes_Property;
 use core_kernel_classes_Resource;
 use oat\generis\model\data\Ontology;
 use oat\generis\test\TestCase;
-use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\LtiException;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
+use oat\taoLtiConsumer\model\delivery\lookup\DeliveryLookupByDeliveryExecution;
+use oat\taoLtiConsumer\model\delivery\lookup\DeliveryLookupInterface;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -39,14 +39,8 @@ class DeliveryLtiProviderRepositoryTest extends TestCase
     /** @var DeliveryLtiProviderRepository */
     private $subject;
 
-    /** @var DeliveryExecutionService|MockObject */
-    private $deliveryExecutionService;
-
     /** @var LtiProviderService|MockObject */
     private $ltiProviderService;
-
-    /** @var DeliveryExecution|MockObject */
-    private $deliveryExecution;
 
     /** @var core_kernel_classes_Resource|MockObject */
     private $delivery;
@@ -60,38 +54,32 @@ class DeliveryLtiProviderRepositoryTest extends TestCase
     /** @var LtiProvider|MockObject */
     private $ltiProvider;
 
+    /** @var DeliveryLookupByDeliveryExecution|MockObject  */
+    private $deliveryLookup;
+
     public function setUp(): void
     {
-        $this->deliveryExecutionService = $this->createMock(DeliveryExecutionService::class);
         $this->ltiProviderService = $this->createMock(LtiProviderService::class);
-        $this->deliveryExecution = $this->createMock(DeliveryExecution::class);
         $this->delivery = $this->createMock(core_kernel_classes_Resource::class);
         $this->deliveryProperty = $this->createMock(core_kernel_classes_Property::class);
         $this->model = $this->createMock(Ontology::class);
         $this->ltiProvider = $this->createMock(LtiProvider::class);
+        $this->deliveryLookup = $this->createMock(DeliveryLookupInterface::class);
 
-        $this->subject = new DeliveryLtiProviderRepository();
-        $this->subject->setModel($this->model);
+        $this->subject = new DeliveryLtiProviderRepository(
+            $this->ltiProviderService,
+            $this->model,
+            [
+                $this->deliveryLookup
+            ]
 
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    DeliveryExecutionService::SERVICE_ID => $this->deliveryExecutionService,
-                    LtiProviderService::SERVICE_ID => $this->ltiProviderService,
-                ]
-            )
         );
     }
 
-    public function testSearchByDeliveryExecutionId(): void
+    public function testSearchBySourcedId(): void
     {
-        $this->deliveryExecutionService
-            ->expects($this->once())
-            ->method('getDeliveryExecution')
-            ->willReturn($this->deliveryExecution);
-
-        $this->deliveryExecution
-            ->method('getDelivery')
+        $this->deliveryLookup
+            ->method('searchBySourcedId')
             ->willReturn($this->delivery);
 
         $this->model
@@ -110,20 +98,15 @@ class DeliveryLtiProviderRepositoryTest extends TestCase
             ->method('searchById')
             ->willReturn($this->ltiProvider);
 
-        $this->subject->searchByDeliveryExecutionId('deliveryExecutionId');
+        $this->subject->searchBySourcedId('deliveryExecutionId');
     }
 
-    public function testSearchByDeliveryExecutionIdWithWrongProperty(): void
+    public function testSearchBySourcedIdWithWrongProperty(): void
     {
         $this->expectException(LtiException::class);
 
-        $this->deliveryExecutionService
-            ->expects($this->once())
-            ->method('getDeliveryExecution')
-            ->willReturn($this->deliveryExecution);
-
-        $this->deliveryExecution
-            ->method('getDelivery')
+        $this->deliveryLookup
+            ->method('searchBySourcedId')
             ->willReturn($this->delivery);
 
         $this->model
@@ -137,7 +120,7 @@ class DeliveryLtiProviderRepositoryTest extends TestCase
             ->method('getOnePropertyValue')
             ->willReturn($this->getInvalidDeliveryContainerProperty());
 
-        $this->assertSame($this->ltiProvider, $this->subject->searchByDeliveryExecutionId('deliveryExecutionId'));
+        $this->assertSame($this->ltiProvider, $this->subject->searchBySourcedId('deliveryExecutionId'));
     }
 
     private function getDeliveryContainerProperty(string $ltiProvider, string $ltiProviderPath): string

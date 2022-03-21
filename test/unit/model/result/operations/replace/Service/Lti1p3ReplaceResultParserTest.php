@@ -57,23 +57,14 @@ class Lti1p3ReplaceResultParserTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->subject = new Lti1p3ReplaceResultParser();
+        $this->subject = new Lti1p3ReplaceResultParser(
+            $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class),
+            $this->ltiProviderServiceMock = $this->createMock(DeliveryLtiProviderRepository::class),
+            $this->accessTokenRequestValidatorMock = $this->createMock(AccessTokenRequestValidator::class)
+        );
 
-        $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
-        $this->ltiProviderServiceMock = $this->createMock(DeliveryLtiProviderRepository::class);
-        $this->accessTokenRequestValidatorMock = $this->createMock(AccessTokenRequestValidator::class);
         $this->lisOutcomeRequestMock = $this->createMock(LisOutcomeRequest::class);
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
-
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    LisOutcomeRequestParser::class => $this->lisOutcomeRequestParserMock,
-                    DeliveryLtiProviderRepository::class=> $this->ltiProviderServiceMock,
-                    AccessTokenRequestValidator::class => $this->accessTokenRequestValidatorMock,
-                ]
-            )
-        );
     }
 
     public function testParse(): void
@@ -83,7 +74,7 @@ class Lti1p3ReplaceResultParserTest extends TestCase
 
         $this->ltiProviderServiceMock
             ->expects($this->once())
-            ->method('searchByDeliveryExecutionId')
+            ->method('searchBySourcedId')
             ->willReturn($ltiProviderMock);
 
         $this->lisOutcomeRequestParserMock
