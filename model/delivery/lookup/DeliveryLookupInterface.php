@@ -23,6 +23,9 @@ namespace oat\taoLtiConsumer\model\delivery\lookup;
 
 interface DeliveryLookupInterface
 {
+    /**
+     * Search for a delivery by the LTI lis_result_sourcedid parameter value
+     */
     public function searchBySourcedId(string $sourcedId);
 }
 
