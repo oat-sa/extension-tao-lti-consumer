@@ -49,21 +49,13 @@ class LtiReplaceResultParserProxyTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->subject = new LtiReplaceResultParserProxy();
-        $this->lti1p1ReplaceResultParser = $this->createMock(Lti1p1ReplaceResultParser::class);
-        $this->lti1p3ReplaceResultParser = $this->createMock(Lti1p3ReplaceResultParser::class);
+        $this->subject = new LtiReplaceResultParserProxy(
+            $this->lti1p1ReplaceResultParser = $this->createMock(Lti1p1ReplaceResultParser::class),
+            $this->lti1p3ReplaceResultParser = $this->createMock(Lti1p3ReplaceResultParser::class)
+        );
         $this->replaceResultOperationRequestMock = $this->createMock(ReplaceResultOperationRequest::class);
 
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
-
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    Lti1p1ReplaceResultParser::class => $this->lti1p1ReplaceResultParser,
-                    Lti1p3ReplaceResultParser::class => $this->lti1p3ReplaceResultParser,
-                ]
-            )
-        );
     }
 
     public function testParseIsLti1p3(): void

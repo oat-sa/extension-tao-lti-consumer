@@ -190,6 +190,6 @@ class ResultController extends tao_actions_CommonModule
 
     private function getLtiReplaceResultParser(): ReplaceResultParserInterface
     {
-        return $this->getServiceLocator()->get(LtiReplaceResultParserProxy::class);
+        return $this->getPsrContainer()->get(LtiReplaceResultParserProxy::class);
     }
 }

@@ -29,8 +29,21 @@ use oat\taoLtiConsumer\model\result\ParsingException;
 use Psr\Http\Message\ServerRequestInterface;
 use tao_models_classes_UserException;
 
-class LtiReplaceResultParserProxy extends ConfigurableService implements ReplaceResultParserInterface
+class LtiReplaceResultParserProxy implements ReplaceResultParserInterface
 {
+    /** @var ReplaceResultParserInterface */
+    private $lti1p1Parser;
+    /** @var ReplaceResultParserInterface */
+    private $lti1p3Parser;
+
+    public function __construct(
+        ReplaceResultParserInterface $lti1p1Parser,
+        ReplaceResultParserInterface $lti1p3Parser
+    ) {
+        $this->lti1p3Parser = $lti1p3Parser;
+        $this->lti1p1Parser = $lti1p1Parser;
+    }
+
     /**
      * @throws ParsingException
      * @throws tao_models_classes_UserException
@@ -41,25 +54,15 @@ class LtiReplaceResultParserProxy extends ConfigurableService implements Replace
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
         if ($this->isLti1p3($request)) {
-            return $this->getLti1p3ReplaceResultParser()->parse($request);
+            return $this->lti1p3Parser->parse($request);
         }
 
-        return $this->getLti1p1ReplaceResultParser()->parse($request);
+        return $this->lti1p1Parser->parse($request);
     }
 
     private function isLti1p3(ServerRequestInterface $request): bool
     {
         return $request->hasHeader('authorization') &&
             strpos($request->getHeader('authorization')[0], 'Bearer') === 0;
-    }
-
-    private function getLti1p1ReplaceResultParser(): ReplaceResultParserInterface
-    {
-        return $this->getServiceLocator()->get(Lti1p1ReplaceResultParser::class);
-    }
-
-    private function getLti1p3ReplaceResultParser(): ReplaceResultParserInterface
-    {
-        return $this->getServiceLocator()->get(Lti1p3ReplaceResultParser::class);
     }
 }

@@ -51,18 +51,11 @@ class Lti1p1ReplaceResultParserTest extends TestCase
 
     public function setUp(): void
     {
-        $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class);
-        $this->lisAuthAdapterFactoryMock = $this->createMock(LisAuthAdapterFactory::class);
         $this->requestMock = $this->createMock(ServerRequestInterface::class);
 
-        $this->subject = new Lti1p1ReplaceResultParser();
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    LisOutcomeRequestParser::class => $this->lisOutcomeRequestParserMock,
-                    LisAuthAdapterFactory::class => $this->lisAuthAdapterFactoryMock,
-                ]
-            )
+        $this->subject = new Lti1p1ReplaceResultParser(
+            $this->lisOutcomeRequestParserMock = $this->createMock(LisOutcomeRequestParser::class),
+            $this->lisAuthAdapterFactoryMock = $this->createMock(LisAuthAdapterFactory::class)
         );
     }
 
