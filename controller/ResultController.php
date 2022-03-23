@@ -58,18 +58,15 @@ class ResultController extends tao_actions_CommonModule
 
         try {
             $operationRequest = $this->getLtiReplaceResultParser()->parse($this->getPsrRequest());
-        } catch (tao_models_classes_UserException $userException) {
-            throw $userException;
-        } catch (Throwable $throwable) {
-            $this->response = $this->createInternalErrorResponse($throwable);
-            return;
-        }
 
-        try {
             $this->response = $this->processLisRequest(
                 $operationRequest->getLisOutcomeRequest(),
                 $operationRequest->getLtiProvider()
             );
+        } catch (tao_models_classes_UserException $userException) {
+            throw $userException;
+        } catch (common_exception_NotFound $notFoundException) {
+            $this->response = $this->createNotFoundResponse($notFoundException);
         } catch (ParsingException $parsingException) {
             $this->response = $this->createParseErrorResponse($parsingException);
         } catch (Throwable $throwable) {
@@ -111,6 +108,15 @@ class ResultController extends tao_actions_CommonModule
             default:
                 return StatusCode::HTTP_INTERNAL_SERVER_ERROR;
         }
+    }
+
+    private function createNotFoundResponse(common_exception_NotFound $notFoundException): ResponseInterface
+    {
+        return $this->getXmlFailureResponse(
+            StatusCode::HTTP_NOT_FOUND,
+            LisOutcomeResponseInterface::STATUS_NOT_FOUND,
+            $notFoundException->getMessage()
+        );
     }
 
     private function createParseErrorResponse(ParsingException $parsingException): ResponseInterface

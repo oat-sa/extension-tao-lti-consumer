@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\result\operations\replace\Service;
 
-use oat\oatbox\service\ConfigurableService;
+use common_exception_NotFound;
 use oat\taoLti\models\classes\LtiException;
 use oat\taoLti\models\classes\Security\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
@@ -30,7 +30,6 @@ use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\ReplaceResultOperationRequest;
 use oat\taoLtiConsumer\model\result\ParsingException;
 use Psr\Http\Message\ServerRequestInterface;
-use tao_models_classes_UserException;
 
 class Lti1p3ReplaceResultParser implements ReplaceResultParserInterface
 {
@@ -56,7 +55,7 @@ class Lti1p3ReplaceResultParser implements ReplaceResultParserInterface
     /**
      * @throws ParsingException
      * @throws LtiException
-     * @throws tao_models_classes_UserException
+     * @throws common_exception_NotFound
      */
     public function parse(ServerRequestInterface $request): ReplaceResultOperationRequest
     {
