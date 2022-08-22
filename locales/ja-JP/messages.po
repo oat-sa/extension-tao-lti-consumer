@@ -1,0 +1,71 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TAO 2022.09\n"
+"PO-Revision-Date: 2022-08-12T16:45:56\n"
+"Last-Translator: TAO Translation Team <translation@tao.lu>\n"
+"MIME-Version: 1.0\n"
+"Language: ja-JP\n"
+"sourceLanguage: en-US\n"
+"targetLanguage: ja-JP\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: ../../\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "Compiled based delivery must be linked to a valid QTI test."
+msgstr ""
+
+msgid "Create a LTI provider"
+msgstr "LTIプロバイダ作成"
+
+msgid "Create a new delivery"
+msgstr "新規デリバリ作成"
+
+msgid "Create a test"
+msgstr "テスト作成"
+
+#, tao-public
+msgid "Deliveries"
+msgstr "デリバリ"
+
+msgid "Delivery creation impossible without QTI test neither LTI provider."
+msgstr ""
+
+msgid "LTI based delivery cannot be created without LTI provider and LTI test url."
+msgstr ""
+
+msgid "LTI delivery container successfully registered."
+msgstr ""
+
+msgid "LTI delivery successfully created."
+msgstr ""
+
+msgid "LTI Provider"
+msgstr "LTIプロバイダ"
+
+#, tao-public
+msgid "New delivery"
+msgstr "新規デリバリ"
+
+msgid "Provide the URL for the LTI compatible test"
+msgstr "LTI対応テストのURLをご提示ください"
+
+msgid "Publish"
+msgstr ""
+
+msgid "Publishing of LTI delivery : \"%s"
+msgstr ""
+
+msgid "Select the Provider you want to publish"
+msgstr ""
+
+msgid "There are currently no lti provider available."
+msgstr ""
+
+msgid "There are currently no tests available to publish."
+msgstr ""
+
+msgid "Unable to load LTI providers"
+msgstr ""
+
