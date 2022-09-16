@@ -67,7 +67,7 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
     {
         $execution = $this->createMock(DeliveryExecution::class);
 
-        $execution->method('getIdentifier')
+        $execution->method('getOriginalIdentifier')
             ->willReturn('deliveryExecutionIdentifier');
 
         $ltiProvider = $this->createMock(LtiProvider::class);

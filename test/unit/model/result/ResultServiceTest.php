@@ -69,7 +69,7 @@ class ResultServiceTest extends TestCase
 
         /** @var DeliveryExecutionInterface|MockObject $deliveryExecutionMock */
         $deliveryExecutionMock = $this->createMock(DeliveryExecution::class);
-        $deliveryExecutionMock->method('getIdentifier')->willReturn('de_id');
+        $deliveryExecutionMock->method('getOriginalIdentifier')->willReturn('de_id');
 
         /** @var ScoreWriterService|MockObject $scoreWritterMock */
         $scoreWritterMock = $this->createMock(ScoreWriterService::class);
