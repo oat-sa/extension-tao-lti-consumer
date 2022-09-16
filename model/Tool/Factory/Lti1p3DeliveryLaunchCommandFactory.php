@@ -61,7 +61,7 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
             ],
             [
                 new BasicOutcomeClaim(
-                    $execution->getIdentifier(),
+                    $execution->getOriginalIdentifier(),
                     $this->getLisOutcomeServiceUrlFactory()->create()
                 ),
             ],
