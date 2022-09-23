@@ -25,7 +25,7 @@
     "tao-extension-name" : "taoLtiConsumer"
   },
   "require-dev": {
-    "php-mock/php-mock": ">=2.3.1"
+    "php-mock/php-mock": "^2.3"
   },
   "require": {
     "ext-dom": "*",
