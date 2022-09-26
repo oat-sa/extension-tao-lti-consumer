@@ -129,7 +129,7 @@ class ResultService extends ConfigurableService
         /** @var EventManager $eventManager*/
         $eventManager = $this->getServiceLocator()->get(EventManager::SERVICE_ID);
         /** @noinspection PhpUnhandledExceptionInspection */
-        $eventManager->trigger(new LisScoreReceivedEvent($deliveryExecution->getIdentifier()));
+        $eventManager->trigger(new LisScoreReceivedEvent($deliveryExecution->getOriginalIdentifier()));
 
         $this->logInfo(
             sprintf(

@@ -24,6 +24,9 @@
   "extra" : {
     "tao-extension-name" : "taoLtiConsumer"
   },
+  "require-dev": {
+    "php-mock/php-mock": "^2.3"
+  },
   "require": {
     "ext-dom": "*",
     "ext-simplexml": "*",
@@ -31,7 +34,7 @@
     "oat-sa/generis" : ">=14.0.0",
     "oat-sa/tao-core" : ">=47.0.0",
     "oat-sa/extension-tao-lti" : ">=15.7.1",
-    "oat-sa/extension-tao-delivery" : ">=15.0.0",
+    "oat-sa/extension-tao-delivery" : ">=15.13.0",
     "oat-sa/extension-tao-delivery-rdf" : ">=14.0.0",
     "oat-sa/extension-tao-outcome" : ">=13.0.0"
   },
