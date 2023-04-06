@@ -106,7 +106,9 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
                     'deliveryExecutionIdentifier',
                     'outcomeServiceUrl'
                 ),
-                'https://purl.imsglobal.org/spec/lti/claim/launch_presentation' => ['return_url' => _url('index', 'DeliveryServer', 'taoDelivery')]
+                'https://purl.imsglobal.org/spec/lti/claim/launch_presentation' => [
+                    'return_url' => $this->getReturnUrl()
+                ]
             ],
             'deliveryExecutionIdentifier',
             $user,
@@ -115,5 +117,10 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
         );
 
         $this->assertEquals($expectedCommand, $this->subject->create($config));
+    }
+
+    private function getReturnUrl(): string
+    {
+        return _url('index', 'DeliveryServer', 'taoDelivery');
     }
 }

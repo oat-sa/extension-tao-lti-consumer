@@ -97,5 +97,4 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         }
         return _url('index', 'DeliveryServer', 'taoDelivery');
     }
-
 }
