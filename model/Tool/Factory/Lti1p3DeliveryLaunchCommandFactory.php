@@ -24,9 +24,11 @@ namespace oat\taoLtiConsumer\model\Tool\Factory;
 
 use oat\generis\model\OntologyAwareTrait;
 use OAT\Library\Lti1p3Core\Message\Payload\Claim\BasicOutcomeClaim;
+use OAT\Library\Lti1p3Core\Message\Payload\LtiMessagePayloadInterface;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\taoDelivery\models\classes\ReturnUrlService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
@@ -64,6 +66,7 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                     $execution->getOriginalIdentifier(),
                     $this->getLisOutcomeServiceUrlFactory()->create()
                 ),
+                LtiMessagePayloadInterface::CLAIM_LTI_LAUNCH_PRESENTATION => ['return_url' => $this->getReturnUrl()],
             ],
             $resourceIdentifier,
             $user,
@@ -86,4 +89,13 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
     {
         return $this->getServiceLocator()->get(LisOutcomeServiceUrlFactory::class);
     }
+
+    private function getReturnUrl()
+    {
+        if ($this->getServiceLocator()->has(ReturnUrlService::SERVICE_ID)) {
+            return $this->getServiceLocator()->get(ReturnUrlService::SERVICE_ID)->getReturnUrl();
+        }
+        return _url('index', 'DeliveryServer', 'taoDelivery');
+    }
+
 }
