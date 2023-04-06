@@ -106,6 +106,7 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
                     'deliveryExecutionIdentifier',
                     'outcomeServiceUrl'
                 ),
+                'https://purl.imsglobal.org/spec/lti/claim/launch_presentation' => ['return_url' => _url('index', 'DeliveryServer', 'taoDelivery')]
             ],
             'deliveryExecutionIdentifier',
             $user,
