@@ -28,13 +28,13 @@ use OAT\Library\Lti1p3Core\Message\Payload\LtiMessagePayloadInterface;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
 use oat\taoDelivery\model\execution\DeliveryExecution;
-use oat\taoDelivery\models\classes\ReturnUrlService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommandInterface;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
+use tao_helpers_Uri;
 
 class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements LtiLaunchCommandFactoryInterface
 {
@@ -90,11 +90,8 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         return $this->getServiceLocator()->get(LisOutcomeServiceUrlFactory::class);
     }
 
-    private function getReturnUrl()
+    private function getReturnUrl(): string
     {
-        if ($this->getServiceLocator()->has(ReturnUrlService::SERVICE_ID)) {
-            return $this->getServiceLocator()->get(ReturnUrlService::SERVICE_ID)->getReturnUrl();
-        }
-        return _url('index', 'DeliveryServer', 'taoDelivery');
+        return tao_helpers_Uri::getRootUrl();
     }
 }
