@@ -32,6 +32,7 @@ use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use tao_helpers_Uri;
 
 class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
 {
@@ -122,6 +123,6 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
 
     private function getReturnUrl(): string
     {
-        return _url('index', 'DeliveryServer', 'taoDelivery');
+        return tao_helpers_Uri::getRootUrl();
     }
 }
