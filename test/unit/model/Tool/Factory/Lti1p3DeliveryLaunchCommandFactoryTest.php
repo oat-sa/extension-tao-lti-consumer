@@ -1,4 +1,5 @@
 <?php
+
 /**
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -31,6 +32,7 @@ use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use tao_helpers_Uri;
 
 class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
 {
@@ -106,6 +108,9 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
                     'deliveryExecutionIdentifier',
                     'outcomeServiceUrl'
                 ),
+                'https://purl.imsglobal.org/spec/lti/claim/launch_presentation' => [
+                    'return_url' => $this->getReturnUrl()
+                ]
             ],
             'deliveryExecutionIdentifier',
             $user,
@@ -114,5 +119,10 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
         );
 
         $this->assertEquals($expectedCommand, $this->subject->create($config));
+    }
+
+    private function getReturnUrl(): string
+    {
+        return tao_helpers_Uri::getRootUrl();
     }
 }
