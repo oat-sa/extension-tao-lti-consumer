@@ -22,10 +22,14 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\controller;
 
+use common_exception_BadRequest;
+use common_exception_ClientException;
 use common_exception_Error;
 use common_exception_MethodNotAllowed;
 use common_exception_NotFound;
+use oat\oatbox\log\LoggerService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
+use oat\taoLtiConsumer\model\RemoteDeliverySubmittingService;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeResponseInterface;
 use oat\taoLtiConsumer\model\result\operations\BasicResponse;
@@ -39,6 +43,7 @@ use Psr\Http\Message\ResponseInterface;
 use Request;
 use Slim\Http\StatusCode;
 use tao_actions_CommonModule;
+use tao_helpers_Uri;
 use tao_models_classes_UserException;
 use Throwable;
 use function GuzzleHttp\Psr7\stream_for;
@@ -75,6 +80,19 @@ class ResultController extends tao_actions_CommonModule
         } catch (Throwable $throwable) {
             $this->response = $this->createInternalErrorResponse($throwable);
         }
+    }
+
+    public function submitRemoteExecution(): void
+    {
+        if (!$this->isRequestGet()) {
+            throw new common_exception_MethodNotAllowed(null, 0, [Request::HTTP_GET]);
+        }
+
+        $this->getRemoteDeliverySubmittingService()->submitRemoteExecution(
+            $this->getPsrRequest()->getQueryParams()
+        );
+
+        $this->redirect(tao_helpers_Uri::getRootUrl());
     }
 
     /**
@@ -191,5 +209,10 @@ class ResultController extends tao_actions_CommonModule
     private function getLtiReplaceResultParser(): ReplaceResultParserInterface
     {
         return $this->getPsrContainer()->get(LtiReplaceResultParserProxy::class);
+    }
+
+    private function getRemoteDeliverySubmittingService(): RemoteDeliverySubmittingService
+    {
+        return $this->getServiceLocator()->getContainer()->get(RemoteDeliverySubmittingService::class);
     }
 }

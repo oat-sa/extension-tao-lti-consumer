@@ -25,12 +25,14 @@ namespace oat\taoLtiConsumer\model\ServiceProvider;
 use oat\generis\model\data\Ontology;
 use oat\generis\model\DependencyInjection\ContainerServiceProviderInterface;
 
+use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
 use oat\taoLti\models\classes\LtiProvider\LtiProviderService;
 use oat\taoLti\models\classes\Security\AccessTokenRequestValidator;
 use oat\taoLtiConsumer\model\delivery\lookup\DeliveryLookupByDeliveryExecution;
 use oat\taoLtiConsumer\model\ltiProvider\repository\DeliveryLtiProviderRepository;
+use oat\taoLtiConsumer\model\RemoteDeliverySubmittingService;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequestParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p1ReplaceResultParser;
 use oat\taoLtiConsumer\model\result\operations\replace\Service\Lti1p3ReplaceResultParser;
@@ -96,6 +98,16 @@ class ContainerServiceProvider implements ContainerServiceProviderInterface
                     [
                         service(DeliveryLookupByDeliveryExecution::class)
                     ]
+                ]
+            );
+
+        $services
+            ->set(RemoteDeliverySubmittingService::class, RemoteDeliverySubmittingService::class)
+            ->public()
+            ->args(
+                [
+                    service(UrlHelper::class),
+                    service(DeliveryExecutionService::SERVICE_ID)
                 ]
             );
     }
