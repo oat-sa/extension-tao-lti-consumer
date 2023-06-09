@@ -22,12 +22,9 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\controller;
 
-use common_exception_BadRequest;
-use common_exception_ClientException;
 use common_exception_Error;
 use common_exception_MethodNotAllowed;
 use common_exception_NotFound;
-use oat\oatbox\log\LoggerService;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLtiConsumer\model\RemoteDeliverySubmittingService;
 use oat\taoLtiConsumer\model\result\messages\LisOutcomeRequest;
@@ -46,6 +43,7 @@ use tao_actions_CommonModule;
 use tao_helpers_Uri;
 use tao_models_classes_UserException;
 use Throwable;
+
 use function GuzzleHttp\Psr7\stream_for;
 
 class ResultController extends tao_actions_CommonModule

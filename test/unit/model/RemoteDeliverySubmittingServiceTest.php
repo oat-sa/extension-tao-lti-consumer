@@ -70,6 +70,24 @@ class RemoteDeliverySubmittingServiceTest extends TestCase
         $this->assertEquals('http://example.com/submitRemoteExecution?execution=execution_id', $submitUrl);
     }
 
+    public function testProvideSubmitUrlWithRuntimeError()
+    {
+        $this->urlHelper->expects($this->once())
+            ->method('buildUrl')
+            ->with(
+                'submitRemoteExecution',
+                'ResultController',
+                'taoLtiConsumer',
+                [self::EXECUTION_ID_QUERY_PARAM => 'execution_id']
+            )
+            ->willThrowException(new RuntimeException('Runtime error'));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Runtime error');
+
+        $this->service->provideSubmitUrl(self::EXPECTED_EXECUTION_ID);
+    }
+
     public function testSubmitRemoteExecutionWithMissingExecutionIdQueryParam()
     {
         $this->expectException(RuntimeException::class);

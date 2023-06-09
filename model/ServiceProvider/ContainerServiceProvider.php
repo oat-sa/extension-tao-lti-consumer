@@ -24,7 +24,6 @@ namespace oat\taoLtiConsumer\model\ServiceProvider;
 
 use oat\generis\model\data\Ontology;
 use oat\generis\model\DependencyInjection\ContainerServiceProviderInterface;
-
 use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use oat\taoLti\models\classes\Lis\LisAuthAdapterFactory;
