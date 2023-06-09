@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model;
 
-use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecution;
+use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecutionInterface;
 use oat\taoDelivery\model\execution\DeliveryExecutionService;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
@@ -76,7 +76,7 @@ class RemoteDeliverySubmittingService
             array_key_exists(self::LTI_ERROR_MSG_QUERY_PARAM, $queryParams)
             || array_key_exists(self::LTI_ERROR_LOG_QUERY_PARAM, $queryParams)
         )) {
-            $deliveryExecution->setState(DeliveryExecution::STATE_FINISHED);
+            $deliveryExecution->setState(DeliveryExecutionInterface::STATE_FINISHED);
             return;
         }
 
@@ -84,7 +84,7 @@ class RemoteDeliverySubmittingService
             array_key_exists(self::LTI_ERROR_LOG_QUERY_PARAM, $queryParams)
             && strpos($queryParams[self::LTI_ERROR_LOG_QUERY_PARAM], self::IRRECOVERABLE_ERROR_LOG_HINT) !== false
         ) {
-            $deliveryExecution->setState(DeliveryExecution::STATE_TERMINATED);
+            $deliveryExecution->setState(DeliveryExecutionInterface::STATE_TERMINATED);
             return;
         }
 

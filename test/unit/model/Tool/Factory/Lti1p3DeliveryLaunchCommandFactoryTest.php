@@ -27,6 +27,7 @@ use oat\oatbox\user\User;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
+use oat\taoLtiConsumer\model\RemoteDeliverySubmittingService;
 use oat\taoLtiConsumer\model\Tool\Factory\LisOutcomeServiceUrlFactory;
 use oat\taoLtiConsumer\model\Tool\Factory\Lti1p3DeliveryLaunchCommandFactory;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
@@ -36,6 +37,9 @@ use tao_helpers_Uri;
 
 class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
 {
+    private const EXPECTED_EXECUTION_ID = 'deliveryExecutionIdentifier';
+    private const EXPECTED_SUBMIT_URL = 'https://submit.url';
+
     /** @var ResourceLinkIdDiscoverInterface|MockObject */
     private $resourceLinkIdDiscover;
 
@@ -47,12 +51,18 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
 
     /** @var Lti1p3DeliveryLaunchCommandFactory */
     private $subject;
+    /** @var RemoteDeliverySubmittingService|MockObject */
+    private $remoteDeliverySubmittingServiceMock;
 
     public function setUp(): void
     {
         $this->sessionService = $this->createMock(SessionService::class);
         $this->lisOutcomeServiceUrlFactory = $this->createMock(LisOutcomeServiceUrlFactory::class);
         $this->resourceLinkIdDiscover = $this->createMock(ResourceLinkIdDiscoverInterface::class);
+        $this->remoteDeliverySubmittingServiceMock = $this->createMock(
+            RemoteDeliverySubmittingService::class
+        );
+
         $this->subject = new Lti1p3DeliveryLaunchCommandFactory();
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
@@ -60,6 +70,7 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
                     SessionService::SERVICE_ID => $this->sessionService,
                     ResourceLinkIdDiscover::class => $this->resourceLinkIdDiscover,
                     LisOutcomeServiceUrlFactory::class => $this->lisOutcomeServiceUrlFactory,
+                    RemoteDeliverySubmittingService::class => $this->remoteDeliverySubmittingServiceMock
                 ]
             )
         );
@@ -70,7 +81,7 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
         $execution = $this->createMock(DeliveryExecution::class);
 
         $execution->method('getOriginalIdentifier')
-            ->willReturn('deliveryExecutionIdentifier');
+            ->willReturn(self::EXPECTED_EXECUTION_ID);
 
         $ltiProvider = $this->createMock(LtiProvider::class);
 
@@ -96,7 +107,14 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
         $this->resourceLinkIdDiscover
             ->method('discoverByDeliveryExecution')
             ->with($execution, $config)
-            ->willReturn('deliveryExecutionIdentifier');
+            ->willReturn(self::EXPECTED_EXECUTION_ID);
+
+        $this->remoteDeliverySubmittingServiceMock
+            ->expects(self::once())
+            ->method('provideSubmitUrl')
+            ->with(self::EXPECTED_EXECUTION_ID)
+            ->willReturn(self::EXPECTED_SUBMIT_URL)
+        ;
 
         $expectedCommand = new LtiLaunchCommand(
             $ltiProvider,
@@ -105,11 +123,11 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
             ],
             [
                 new BasicOutcomeClaim(
-                    'deliveryExecutionIdentifier',
+                    self::EXPECTED_EXECUTION_ID,
                     'outcomeServiceUrl'
                 ),
                 'https://purl.imsglobal.org/spec/lti/claim/launch_presentation' => [
-                    'return_url' => $this->getReturnUrl()
+                    'return_url' => self::EXPECTED_SUBMIT_URL
                 ]
             ],
             'deliveryExecutionIdentifier',
@@ -119,10 +137,5 @@ class Lti1p3DeliveryLaunchCommandFactoryTest extends TestCase
         );
 
         $this->assertEquals($expectedCommand, $this->subject->create($config));
-    }
-
-    private function getReturnUrl(): string
-    {
-        return tao_helpers_Uri::getRootUrl();
     }
 }
