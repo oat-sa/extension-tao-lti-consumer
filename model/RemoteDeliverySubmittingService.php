@@ -73,10 +73,8 @@ class RemoteDeliverySubmittingService
         }
 
         if (
-            !(
-                array_key_exists(self::LTI_ERROR_MSG_QUERY_PARAM, $queryParams)
-                || array_key_exists(self::LTI_ERROR_LOG_QUERY_PARAM, $queryParams)
-            )
+            !array_key_exists(self::LTI_ERROR_MSG_QUERY_PARAM, $queryParams)
+            && !array_key_exists(self::LTI_ERROR_LOG_QUERY_PARAM, $queryParams)
         ) {
             $deliveryExecution->setState(DeliveryExecutionInterface::STATE_FINISHED);
             return;
