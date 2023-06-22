@@ -27,13 +27,16 @@ use OAT\Library\Lti1p3Core\Message\Payload\Claim\BasicOutcomeClaim;
 use OAT\Library\Lti1p3Core\Message\Payload\LtiMessagePayloadInterface;
 use oat\oatbox\service\ConfigurableService;
 use oat\oatbox\session\SessionService;
+use oat\tao\helpers\UrlHelper;
 use oat\taoDelivery\model\execution\DeliveryExecution;
 use oat\taoLti\models\classes\LtiProvider\LtiProvider;
 use oat\taoLti\models\classes\Tool\Factory\LtiLaunchCommandFactoryInterface;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommand;
 use oat\taoLti\models\classes\Tool\LtiLaunchCommandInterface;
+use oat\taoLtiConsumer\model\RemoteDeliverySubmittingService;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscover;
 use oat\taoLtiConsumer\model\Tool\Service\ResourceLinkIdDiscoverInterface;
+use Ramsey\Uuid\Uuid;
 use tao_helpers_Uri;
 
 class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements LtiLaunchCommandFactoryInterface
@@ -66,7 +69,11 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
                     $execution->getOriginalIdentifier(),
                     $this->getLisOutcomeServiceUrlFactory()->create()
                 ),
-                LtiMessagePayloadInterface::CLAIM_LTI_LAUNCH_PRESENTATION => ['return_url' => $this->getReturnUrl()],
+                LtiMessagePayloadInterface::CLAIM_LTI_LAUNCH_PRESENTATION => [
+                    'return_url' => $this->getRemoteDeliverySubmittingService()->provideSubmitUrl(
+                        $execution->getOriginalIdentifier()
+                    ),
+                ],
             ],
             $resourceIdentifier,
             $user,
@@ -90,8 +97,8 @@ class Lti1p3DeliveryLaunchCommandFactory extends ConfigurableService implements 
         return $this->getServiceLocator()->get(LisOutcomeServiceUrlFactory::class);
     }
 
-    private function getReturnUrl(): string
+    private function getRemoteDeliverySubmittingService(): RemoteDeliverySubmittingService
     {
-        return tao_helpers_Uri::getRootUrl();
+        return $this->getServiceLocator()->getContainer()->get(RemoteDeliverySubmittingService::class);
     }
 }
