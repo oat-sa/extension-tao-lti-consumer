@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace oat\taoLtiConsumer\model\ltiProvider\repository;
 
+use common_exception_NotFound;
 use oat\generis\model\data\Ontology;
 use oat\taoDeliveryRdf\model\ContainerRuntime;
 use oat\taoLti\models\classes\LtiException;
@@ -50,6 +51,10 @@ class DeliveryLtiProviderRepository
         $this->deliveryLookupProviders = $deliveryLookupProviders;
     }
 
+    /**
+     * @throws LtiException
+     * @throws common_exception_NotFound
+     */
     public function searchBySourcedId(string $sourcedId): LtiProvider
     {
         $delivery = $this->findDelivery($sourcedId);
@@ -68,6 +73,9 @@ class DeliveryLtiProviderRepository
         return $this->ltiProviderRepository->searchById($containerJson['params']['ltiProvider']);
     }
 
+    /**
+     * @throws common_exception_NotFound
+     */
     private function findDelivery(string $sourcedId)
     {
         /** @var DeliveryLookupInterface $provider */
@@ -77,6 +85,6 @@ class DeliveryLtiProviderRepository
             }
         }
 
-        throw new LtiException('Could not find delivery for provided sourcedId');
+        throw new common_exception_NotFound(sprintf("Resource '%s' not found", $sourcedId));
     }
 }
