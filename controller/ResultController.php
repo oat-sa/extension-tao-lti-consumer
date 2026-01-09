@@ -43,8 +43,7 @@ use tao_actions_CommonModule;
 use tao_helpers_Uri;
 use tao_models_classes_UserException;
 use Throwable;
-
-use function GuzzleHttp\Psr7\stream_for;
+use GuzzleHttp\Psr7\Utils;
 
 class ResultController extends tao_actions_CommonModule
 {
@@ -162,7 +161,7 @@ class ResultController extends tao_actions_CommonModule
         return $this->getPsrResponse()
             ->withStatus($statusCode)
             ->withHeader('Content-Type', self::XML_CONTENT_TYPE)
-            ->withBody(stream_for($xml));
+            ->withBody(Utils::streamFor($xml));
     }
 
     /**
