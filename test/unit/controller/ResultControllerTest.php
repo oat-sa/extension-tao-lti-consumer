@@ -33,7 +33,7 @@ use oat\taoLtiConsumer\model\result\operations\ResponseSerializerInterface;
 use oat\taoLtiConsumer\model\result\ResultService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Http\StatusCode;
+use oat\tao\model\mvc\error\HttpStatusCode;
 
 class ResultControllerTest extends TestCase
 {
@@ -136,7 +136,7 @@ class ResultControllerTest extends TestCase
         $this->responseMock
             ->expects($this->once())
             ->method('withStatus')
-            ->with(StatusCode::HTTP_CREATED)
+            ->with(HttpStatusCode::HTTP_CREATED)
             ->willReturn($this->responseMock);
 
         $this->responseMock
@@ -181,7 +181,7 @@ class ResultControllerTest extends TestCase
         $this->responseMock
             ->expects($this->once())
             ->method('withStatus')
-            ->with(StatusCode::HTTP_INTERNAL_SERVER_ERROR)
+            ->with(HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR)
             ->willReturn($this->responseMock);
 
         $this->responseMock
