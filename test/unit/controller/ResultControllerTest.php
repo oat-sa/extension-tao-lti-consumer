@@ -199,7 +199,7 @@ class ResultControllerTest extends TestCase
         $this->requestMock
             ->method('getMethod')
             ->willReturn('GET');
-        
+
         $this->subject->manageResults();
     }
 }
