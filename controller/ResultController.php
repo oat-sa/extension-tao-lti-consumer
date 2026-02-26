@@ -38,7 +38,7 @@ use oat\taoLtiConsumer\model\result\ParsingException;
 use oat\taoLtiConsumer\model\result\ResultService;
 use Psr\Http\Message\ResponseInterface;
 use Request;
-use Slim\Http\StatusCode;
+use oat\tao\model\mvc\error\HttpStatusCode;
 use tao_actions_CommonModule;
 use tao_helpers_Uri;
 use tao_models_classes_UserException;
@@ -115,23 +115,23 @@ class ResultController extends tao_actions_CommonModule
     {
         switch ($lisResponseStatus) {
             case LisOutcomeResponseInterface::STATUS_SUCCESS:
-                return StatusCode::HTTP_CREATED;
+                return HttpStatusCode::HTTP_CREATED;
             case LisOutcomeResponseInterface::STATUS_INVALID_REQUEST:
-                return StatusCode::HTTP_BAD_REQUEST;
+                return HttpStatusCode::HTTP_BAD_REQUEST;
             case LisOutcomeResponseInterface::STATUS_NOT_FOUND:
-                return StatusCode::HTTP_NOT_FOUND;
+                return HttpStatusCode::HTTP_NOT_FOUND;
             case LisOutcomeResponseInterface::STATUS_UNSUPPORTED:
-                return StatusCode::HTTP_NOT_IMPLEMENTED;
+                return HttpStatusCode::HTTP_NOT_IMPLEMENTED;
             // including LisOutcomeResponseInterface::STATUS_INTERNAL_ERROR
             default:
-                return StatusCode::HTTP_INTERNAL_SERVER_ERROR;
+                return HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR;
         }
     }
 
     private function createParseErrorResponse(ParsingException $parsingException): ResponseInterface
     {
         return $this->getXmlFailureResponse(
-            StatusCode::HTTP_BAD_REQUEST,
+            HttpStatusCode::HTTP_BAD_REQUEST,
             LisOutcomeResponseInterface::STATUS_INVALID_REQUEST,
             'Invalid input xml: ' . $parsingException->getMessage(),
             $parsingException->getXmlMessageId()
@@ -150,7 +150,7 @@ class ResultController extends tao_actions_CommonModule
             $this->logError($throwable->getTraceAsString());
         }
         return $this->getXmlFailureResponse(
-            StatusCode::HTTP_INTERNAL_SERVER_ERROR,
+            HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR,
             LisOutcomeResponseInterface::STATUS_INTERNAL_ERROR,
             'Internal error'
         );
