@@ -5,7 +5,7 @@
         <sections>
             <section id="manage_delivery_assembly" name="Deliveries" url="/taoDeliveryRdf/DeliveryMgmt/index">
                 <actions >
-                    <action id="delivery-new" name="New delivery" url="/taoLtiConsumer/DeliveryMgmt/wizard" context="resource" group="tree" weight="1">
+                    <action id="delivery-new" name="New delivery" url="/taoLtiConsumer/DeliveryMgmt/wizard" context="resource" group="tree" weight="7">
                         <icon id="icon-delivery"/>
                     </action>
                 </actions>
